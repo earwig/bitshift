@@ -1,3 +1,6 @@
+.sass-cache
+
+# github premade rules
 *.py[cod]
 
 # C extensions
