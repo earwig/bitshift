@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<!-- Global layout template, to be inherited by other project HTML files. -->
+
 <html>
   <head>
     <title>
@@ -6,9 +8,16 @@
       = endblock
     </title>
 
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+    <meta name="description" content="bitshift is an online code snippet
+      exchange."/>
+    <meta name="keywords" content="code snippet exchange golf programming
+      software community"/>
+    <meta name="author" content="Benjamin Attal Ben Kurtovic Severyn Kozak"/>
+
+    {{ assets.tag("main.css") }}
+
     = block head
-      <link rel="stylesheet" type="text/css"
-        href={{ url_for('static', filename='css/main.css') }}>
     = endblock
   </head>
   <body>
