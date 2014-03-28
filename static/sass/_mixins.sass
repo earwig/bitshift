@@ -1,0 +1,11 @@
+/*
+ Partial to contain all globally-applicable mixins
+ */
+
+// add vendor prefixes for the property $property with value $value
+@mixin vendor($property, $value)
+    -webkit-#{$property}: $value
+    -moz-#{$property}: $value
+    -ms-#{$property}: $value
+    -o-#{$property}: $value
+    #{$property}: $value
