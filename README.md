@@ -1,4 +1,4 @@
 bitshift
 ========
 
-bitshift is an online code snippet exchange.
+bitshift is a semantic search engine for source code.
