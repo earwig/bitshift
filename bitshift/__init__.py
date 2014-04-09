@@ -1,1 +1,1 @@
-__all__ = ["config", "assets"]
+from . import assets, config

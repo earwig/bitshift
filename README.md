@@ -3,6 +3,16 @@ bitshift
 
 bitshift is a semantic search engine for source code.
 
+Branches
+--------
+
+- `master`: working, tested, version-numbered code - no direct commits; should
+  only accept merges from `develop` when ready to release
+- `develop`: integration branch with unreleased but mostly functional code -
+  direct commits allowed but should be minor
+- `feature/*`: individual components of the project with untested, likely
+  horribly broken code - branch off from and merge into `develop` when done
+
 Documentation
 -------------
 
