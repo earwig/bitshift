@@ -5,7 +5,7 @@ Module to contain all the project's Flask server plumbing.
 from flask import Flask
 from flask import render_template, session
 
-from bitshift import *
+from bitshift.query import parse_query
 
 app = Flask(__name__)
 app.config.from_object("bitshift.config")
@@ -17,6 +17,12 @@ app_env.globals.update(assets = assets)
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/search/<query>")
+def search(query):
+    ## tree = parse_query(query)
+    ## database.search(tree)
+    pass
 
 if __name__ == "__main__":
     app.run()
