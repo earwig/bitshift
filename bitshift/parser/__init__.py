@@ -7,13 +7,26 @@ _all__ = ["parse"]
 
 # TODO: modify to incorporate tags from stackoverflow
 def _lang(codelet):
+    """
+    Private function to identify the language of a codelet.
+
+    :param codelet: The codelet object to identified.
+
+    :type code: Codelet
+    """
     if codelet.filename is not None:
         return pgl.guess_lexer_for_filename(codelet.filename).name
 
     return pgl.guess_lexer(codelet.code)
 
-# dispatches the codelet to the correct parser
 def parser(codelet):
+    """
+    Dispatch codelet to correct parser by language of code.
+
+    :param codelet: The codelet object to parsed.
+
+    :type code: Codelet
+    """
     lang = _lang(codelet)
 
     if lang == "Python":
