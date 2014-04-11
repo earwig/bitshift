@@ -1,6 +1,5 @@
 """
-.. module:: assets
-   :synopsis: Helper functions for use inside the project's Jinja templates.
+:synopsis: Helper functions for use inside the project's Jinja templates.
 """
 
 from flask import Markup

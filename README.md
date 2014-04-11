@@ -13,6 +13,11 @@ Branches
 - `feature/*`: individual components of the project with untested, likely
   horribly broken code - branch off from and merge into `develop` when done
 
+Style
+-----
+bitshift uses [SASS][SASS] for styling; compile the stylesheets to CSS with
+`sass --watch static/sass/:static/css`.
+
 Documentation
 -------------
 
@@ -24,3 +29,5 @@ new modules or packages, but *not* when adding functions or changing
 docstrings), run `sphinx-apidoc -fo docs/source/api bitshift` from the project
 root. Note that this will revert any custom changes made to the files in
 `docs/source/api`, so you might want to update them by hand instead.
+
+[SASS]: http://sass-lang.com/guide
