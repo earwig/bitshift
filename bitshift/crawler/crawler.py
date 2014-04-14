@@ -1,13 +1,15 @@
 """
+:synopsis: Main crawler module, to oversee all site-specific crawlers.
 
+...more info soon...
 """
 
 import requests, time
 
 import git_indexer
 
-# from .codelet import Codelet
-# from .database import Database
+from .codelet import Codelet
+from .database import Database
 
 def github():
     """
@@ -29,7 +31,7 @@ def github():
         response = requests.get(next_api_url, params=authentication_params)
 
         for repo in response.json():
-            codelets = git_indexer.index_repository(repo["html_url"])
+            index_repository(repo["html_url"], framework)
 
         if int(response.headers["x-ratelimit-remaining"]) == 0:
             time.sleep(int(response.headers["x-ratelimit-reset"]) - time.time())

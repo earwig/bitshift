@@ -1,48 +1,61 @@
 """
 :synopsis: Index all the files in a Git repository.
 
-Clone a Git repository, and retrieve the following information about each file:
-filename, contributor names, dates of creation and last modification, and the
-file text.
+...more info soon...
 """
 
 import fileinput, subprocess, os
 
-def index_repository(repo_url):
+from .database import Database
+
+def index_repository(repo_url, framework_name):
     """
-    Generate metadata for every file in a Git repository.
+    Insert a Codelet for every file in a Git repository.
 
-    `git clone` the Git repository located at **repo_url**, and return metadata
-    about every one of non-binary (text) files in its if main branch (usually
+    `git clone` the Git repository located at **repo_url**, and create a Codelet
+    for every one of non-binary (text) files in its if main branch (usually
     *master*).
-
-    :return: An array of metadata dictionaries.
-        .. code-block:: python
-           sample_returned_array = [
-               {
-                   "filename" : (str) "myfile"
-                   "time_created" : (int) 1395939566,
-                   "time_last_modified" : (int) 1396920409,
-                   "source" : (str) "The source code of the file."
-               }
-           ]
     """
 
     repo_name = repo_url.split("/")[-1]
     subprocess.call("git clone %s" % repo_url, shell=True)
     os.chdir(repo_name)
 
-    files_meta = []
     commits_meta = _get_commits_metadata()
     for filename in commits_meta.keys():
-        commits_meta[filename]["filename"] = filename
         with open(filename, "r") as source_file:
-            commits_meta[filename]["source"] = source_file.read()
-        files_meta.append(commits_meta[filename])
+            source = source_file.read()
+
+        authors = [(author,) for author in commits_meta["authors"]]
+        codelet = Codelet("%s:%s" % (repo_name, filename), source, filename,
+                          None, authors, _generate_file_url(filename, repo_url),
+                          framework_name, commits_meta["time_created"],
+                          commits_meta["time_last_modified"])
+        Database.insert(codelet)
 
     os.chdir("..")
     subprocess.call("rm -rf %s" % repo_name, shell=True)
-    return files_meta
+
+def _generate_file_url(filename, repo_url, framework_name):
+    """
+    Return a url for a filename from a Git wrapper framework.
+
+    :param filename: The path of the file.
+    :param repo_url: The url of the file's parent repository.
+    :param framework_name: The name of the framework the repository is from.
+
+    :type filename: str
+    :type repo_url: str
+    :type framework_name: str
+
+    :return: The file's full url on the given framework.
+    :rtype: str
+    """
+
+    if framework_name == "github":
+        default branch = subprocess.check_output("git branch --no-color", \
+                                                 shell=True)[2:-1]
+        return "%s/blob/%s/%s" % (repo_url, default_branch, filename)
 
 def _get_git_commits():
     """
@@ -58,14 +71,15 @@ def _get_git_commits():
                {
                    "author" : (str) "author"
                    "timestamp" : (int) 1396919293,
-                   "filename" : (str array) ["file1", "file2"]
+                   "filenames" : (str array) ["file1", "file2"]
                }
            ]
     :rtype: dictionary
     """
 
-    git_log = subprocess.check_output("git --no-pager log --name-only \
-        --pretty=format:'%n%n%an%n%at' -z", shell=True)
+    git_log_cmd = ("git --no-pager --no-color log --name-only "
+        "--pretty=format:'%n%n%an%n%at' -z")
+    git_log = subprocess.check_output(git_log_cmd, shell=True)
 
     commits = []
     for commit in git_log.split("\n\n"):
