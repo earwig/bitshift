@@ -1,6 +1,7 @@
 from .python import parse_py
 from .c import parse_c
 from .java import parse_java
+from bitshift.config import LANG_PYTHON, LANG_C, LANG_JAVA, PYG_IDS
 import pygments.lexers as pgl
 
 _all__ = ["parse"]
@@ -17,7 +18,7 @@ def _lang(codelet):
     if codelet.filename is not None:
         return pgl.guess_lexer_for_filename(codelet.filename).name
 
-    return pgl.guess_lexer(codelet.code)
+    return PYG_IDS[pgl.guess_lexer(codelet.code)]
 
 def parser(codelet):
     """
@@ -29,10 +30,10 @@ def parser(codelet):
     """
     lang = _lang(codelet)
 
-    if lang == "Python":
+    if lang == LANG_PYTHON:
         parse_py(codelet)
-    elif lang == "C":
+    elif lang == LANG_C:
         parse_c(codelet)
-    elif lang == "Java":
+    elif lang == LANG_JAVA:
         parse_java(codelet)
 
