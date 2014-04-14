@@ -1,15 +1,20 @@
 import ast
 
-def _serialize(tree):
+class PyTreeCutter(ast.NodeVisitor):
     """
-    Private function to serialize an abstract syntax tree so it is indexable by the database.
+    Local node visitor for python abstract syntax trees.
 
-    :param tree: The syntax tree to be serialized.
-
-    :type tree: list or ast.AST
+    :ivar accum: (dict) Relevant data accumulated from an abstract syntax tree.
     """
 
-    def _start_n_end(big_node):
+    def __init__(self):
+        """
+        Create a PyTreeCutter instance.
+        """
+
+        self.accum = {'vars': {}, 'functions': {}, 'classes': {}}
+
+    def start_n_end(self, big_node):
         """
         Helper function to get the start and end lines of a code node.
 
@@ -27,57 +32,63 @@ def _serialize(tree):
         end_line = temp_node.lineno
         return (start_line, end_line)
 
-    def _helper(cur_node, accum):
+    def visit_Assign(self, node):
         """
-        Helper function for _serialize which recursively updates the 'vars', 'functions', and 'classes' in the parsed version of the tree.
+        Visits Assign nodes in a tree.  Adds relevant data about them to accum.
 
-        :param cur_node: The node in the syntax tree currently being parsed.
-        :param accum: Dicitonary holding parsed version of the tree.
+        :param node: The current node.
 
-        :type cur_node: list or ast.AST
-        :type accum: dict
+        :type node: ast.Assign
+
+        .. todo::
+            Add value and type metadata to accum.
         """
 
-        if isinstance(cur_node, list):
-            for node in cur_node:
-                _helper(node, accum)
+        for t in node.targets:
+            if isinstance(t, ast.Tuple):
+                for n in t.elts:
+                    line, col = n.lineno, n.col_offset
+                    self.accum['vars'][n.id] = {'ln': line, 'col': col}
+            else:
+                line, col = t.lineno, t.col_offset
+                self.accum['vars'][t.id] = {'ln': line, 'col': col}
 
-        elif isinstance(cur_node, ast.Assign):
-            # return name
-            # return col and line offset
-            # in the future add value and type metadata
-            for t in cur_node.targets:
-                if isinstance(t, ast.Tuple):
-                    for n in t.elts:
-                        line, col = n.lineno, n.col_offset
-                        accum['vars'][n.id] = {'ln': line, 'col': col}
-                else:
-                    line, col = t.lineno, t.col_offset
-                    accum['vars'][t.id] = {'ln': line, 'col': col}
+        self.generic_visit(node)
 
+    def visit_FunctionDef(self, node):
+        """
+        Visits FunctionDef nodes in a tree.  Adds relevant data about them to accum.
 
-        elif isinstance(cur_node, ast.FunctionDef):
-            # return name
-            # return start and end of the function
-            # in the future add arguments and decorators metadata
-            start_line, end_line = _start_n_end(cur_node)
-            accum['functions'][cur_node.name] = {'start_ln': start_line , 'end_ln': end_line}
+        :param node: The current node.
 
-        elif isinstance(cur_node, ast.ClassDef):
-            # return name
-            # return start and end of the class
-            # in the future add arguments, inherits, and decorators metadata
-            start_line, end_line = _start_n_end(cur_node)
-            accum['classes'][cur_node.name] = {'start_ln': start_line , 'end_ln': end_line}
+        :type node: ast.FunctionDef
 
-        if isinstance(cur_node, ast.AST):
-            for k in cur_node.__dict__.keys():
-                node = cur_node.__dict__[k]
-                _helper(node, accum)
+        .. todo::
+            Add arguments and decorators metadata to accum.
+        """
 
-    accum = {'vars': {}, 'functions': {}, 'classes': {}}
-    _helper(tree, accum)
-    return accum
+        start_line, end_line = self.start_n_end(node)
+        self.accum['functions'][node.name] = {'start_ln': start_line,
+            'end_ln': end_line}
+
+        self.generic_visit(node)
+
+    def visit_ClassDef(self, node):
+        """
+        Visits ClassDef nodes in a tree.  Adds relevant data about them to accum.
+
+        :param node: The current node.
+
+        :type node: ast.ClassDef
+
+        .. todo::
+            Add arguments, inherits, and decorators metadata to accum.
+        """
+        start_line, end_line = self.start_n_end(node)
+        self.accum['functions'][node.name] = {'start_ln': start_line,
+            'end_ln': end_line}
+
+        self.generic_visit(node)
 
 def parse_py(codelet):
     """
@@ -87,7 +98,8 @@ def parse_py(codelet):
 
     :type code: Codelet
     """
+
     tree = ast.parse(codelet.code)
-    symbols = _serialize(tree)
-    codelet.symbols = symbols
-    print symbols
+    cutter = PyTreeCutter()
+    cutter.visit(tree)
+    codelet.symbols = cutter.accum
