@@ -18,7 +18,7 @@ class Codelet(object):
         code was last modified.
     :ivar rank: (float) A quanitification of the source code's quality, as
         per available ratings (stars, forks, upvotes, etc.).
-    :ivar symbols: Dictionary containing dictionaries of functions, classes,
+    :ivar symbols: (dict) Dictionary containing dictionaries of functions, classes,
         variable definitions, etc.
     """
 

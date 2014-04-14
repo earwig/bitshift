@@ -6,7 +6,6 @@ import pygments.lexers as pgl
 
 _all__ = ["parse"]
 
-# TODO: modify to incorporate tags from stackoverflow
 def _lang(codelet):
     """
     Private function to identify the language of a codelet.
@@ -14,7 +13,11 @@ def _lang(codelet):
     :param codelet: The codelet object to identified.
 
     :type code: Codelet
+
+    .. todo::
+        Modify function to incorporate tags from stackoverflow.
     """
+
     if codelet.filename is not None:
         return pgl.guess_lexer_for_filename(codelet.filename).name
 
@@ -28,6 +31,7 @@ def parser(codelet):
 
     :type code: Codelet
     """
+
     lang = _lang(codelet)
 
     if lang == LANG_PYTHON:
