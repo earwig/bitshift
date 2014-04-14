@@ -70,12 +70,12 @@ def _serialize(tree):
             start_line, end_line = _start_n_end(cur_node)
             accum['classes'][cur_node.name] = {'start_ln': start_line , 'end_ln': end_line}
 
-        elif isinstance(cur_node, ast.AST):
+        if isinstance(cur_node, ast.AST):
             for k in cur_node.__dict__.keys():
-                node = node.__dict__[k]
+                node = cur_node.__dict__[k]
                 _helper(node, accum)
 
-    accum = {}
+    accum = {'vars': {}, 'functions': {}, 'classes': {}}
     _helper(tree, accum)
     return accum
 
