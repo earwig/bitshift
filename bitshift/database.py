@@ -16,3 +16,24 @@ class Database(object):
 
     def _create(self):
         pass
+
+    def search(self, query):
+        """
+        Search the database.
+
+        :param query: The query to search for.
+        :type query: :py:class:`~.query.tree.Tree`
+
+        :return: A list of search results.
+        :rtype: list of :py:class:`.Codelet`\ s
+        """
+        pass
+
+    def insert(self, codelet):
+        """
+        Insert a codelet into the database.
+
+        :param codelet: The codelet to insert.
+        :type codelet: :py:class:`.Codelet`
+        """
+        pass
