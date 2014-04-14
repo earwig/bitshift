@@ -16,11 +16,11 @@ class PyTreeCutter(ast.NodeVisitor):
 
     def start_n_end(self, big_node):
         """
-        Helper function to get the start and end lines of a code node.
+        Helper function to get the start and end lines of an AST node.
 
         :param big_node: The node.
 
-        :type big_node: ast.FunctionDef, ast.ClassDef, ast.Module
+        :type big_node: ast.FunctionDef or ast.ClassDef or ast.Module
         """
 
         start_line = big_node.lineno
