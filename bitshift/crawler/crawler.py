@@ -4,14 +4,22 @@
 ...more info soon...
 """
 
-import requests, time
+import requests, time, threading
 
-import git_indexer
+import bitshift.crawler.git_indexer
 
 from ..codelet import Codelet
 from ..database import Database
 
-def github():
+class GitHubCrawler(threading.Thread):
+    def __init__(self, repository_queue):
+        self.repository_queue = repository_queue
+        super(GitHubCrawler, self).__init__()
+
+    def run():
+        _github()
+
+def _github():
     """
     Query the GitHub API for data about every public repository.
 
@@ -33,7 +41,11 @@ def github():
         response = requests.get(next_api_url, params=authentication_params)
 
         for repo in response.json():
-            print repo["id"]
+            self.repository_queue.put({
+                "url" : repo["html_url"],
+                "framework_name" : "GitHub"
+            })
+            self.repository_queue.task_done()
 
         if int(response.headers["x-ratelimit-remaining"]) == 0:
             time.sleep(int(response.headers["x-ratelimit-reset"]) - time.time())

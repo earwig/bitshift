@@ -5,14 +5,26 @@
     Add documentation, threaded Indexer class.
 """
 
-import shutil, subprocess, os
+import os, shutil, subprocess, threading
 
 from ..database import Database
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp"
 
-class ChangeDir(object):
+class GitIndexer(threading.Thread):
+    def __init__(self, repository_queue):
+        self.repository_queue = repository_queue
+        super(GitIndexer, self).__init__()
+
+    def run(self):
+        while True:
+            while self.repository_queue.empty():
+                pass
+            new_repo = self.repository_queue.get()
+            _index_repository(new_repo["url"], new_repo["framework_name"])
+
+class _ChangeDir(object):
     """
     A wrapper class for os.chdir(), to map onto `with` and handle exceptions.
 
@@ -22,7 +34,7 @@ class ChangeDir(object):
 
     def __init__(self, new_path):
         """
-        Create a ChangeDir instance.
+        Create a _ChangeDir instance.
 
         :param new_path: The directory to enter.
 
@@ -50,7 +62,7 @@ class ChangeDir(object):
 
         os.chdir(self.old_path)
 
-def index_repository(repo_url, framework_name):
+def _index_repository(repo_url, framework_name):
     """
     Clone and index (create and insert Codeletes for) a Git repository.
 
@@ -70,9 +82,9 @@ def index_repository(repo_url, framework_name):
     repo_name = repo_url.split("/")[-1]
     codelets = []
 
-    with ChangeDir(GIT_CLONE_DIR) as git_clone_dir:
+    with _ChangeDir(GIT_CLONE_DIR) as git_clone_dir:
         subprocess.call("git clone %s" % repo_url, shell=True)
-        with ChangeDir(repo_name) as repository_dir:
+        with _ChangeDir(repo_name) as repository_dir:
             codelets = _insert_repository_codelets(repo_url, repo_name,
                                                    framework_name)
         shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
@@ -128,7 +140,7 @@ def _generate_file_url(filename, repo_url, framework_name):
     :rtype: str
     """
 
-    if framework_name == "github":
+    if framework_name == "GitHub":
         default_branch = subprocess.check_output("git branch --no-color",
                                                  shell=True)[2:-1]
         return "%s/blob/%s/%s" % (repo_url, default_branch, filename)
@@ -164,7 +176,7 @@ def _get_git_commits():
             commits.append({
                 "author" : fields[0],
                 "timestamp" : int(fields[1]),
-                "filenames" : fields[2].split("\0")[:-2]
+                "filenames" : fields[2].split("\x00")[:-2]
             })
 
     return commits
