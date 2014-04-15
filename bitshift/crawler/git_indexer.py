@@ -4,10 +4,46 @@
 ...more info soon...
 """
 
-import fileinput, subprocess, os
+import shutil, subprocess, os
 
 from ..database import Database
 from ..codelet import Codelet
+
+GIT_CLONE_DIR = "/tmp"
+
+class ChangeDir(object):
+    """
+    A wrapper class for os.chdir(), to map onto `with` and handle exceptions.
+
+    :ivar new_path: (str) The path to change the current directory to.
+    :ivar old_path: (str) The path of the directory to return to.
+    """
+
+    def __init__(self, new_path):
+        """
+        Construct the object.
+
+        :param new_path: The directory to enter.
+
+        :type new_path: str
+        """
+
+        self.new_path = new_path
+
+    def __enter__(self):
+        """
+        Change the current working-directory to **new_path**.
+        """
+
+        self.old_path = os.getcwd()
+        os.chdir(self.new_path)
+
+    def __exit__(self, etype, value, traceback):
+        """
+        Change the current working-directory to **old_path**.
+        """
+
+        os.chdir(self.old_path)
 
 def index_repository(repo_url, framework_name):
     """
@@ -19,9 +55,18 @@ def index_repository(repo_url, framework_name):
     """
 
     repo_name = repo_url.split("/")[-1]
-    subprocess.call("git clone %s" % repo_url, shell=True)
-    os.chdir(repo_name)
+    codelets = []
 
+    with ChangeDir(GIT_CLONE_DIR) as git_clone_dir:
+        subprocess.call("git clone %s" % repo_url, shell=True)
+        with ChangeDir(repo_name) as repository_dir:
+            codelets = _insert_repository_codelets(repo_url, repo_name,
+                                                   framework_name)
+        shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
+
+    return codelets
+
+def _insert_repository_codelets(repo_url, repo_name, framework_name):
     codelets = []
     commits_meta = _get_commits_metadata()
     for filename in commits_meta.keys():
@@ -36,10 +81,6 @@ def index_repository(repo_url, framework_name):
                         commits_meta[filename]["time_created"],
                         commits_meta[filename]["time_last_modified"]))
 
-        # Database.insert(codelet)
-
-    os.chdir("..")
-    subprocess.call("rm -rf %s" % repo_name, shell=True)
     return codelets
 
 def _generate_file_url(filename, repo_url, framework_name):
