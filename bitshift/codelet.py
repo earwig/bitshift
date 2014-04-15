@@ -4,10 +4,11 @@ class Codelet(object):
     """
     A source-code object with code metadata and composition analysis.
 
+    :ivar name: (str) A suitable name for the codelet.
     :ivar code: (str) A containing the raw source code.
     :ivar filename: (str, or None) The filename of the snippet.
     :ivar language: (str, or None) The inferred language of `code`.
-    :ivar authors: (array of str tuple) An array of tuples containing an
+    :ivar authors: (array of str tuples) An array of tuples containing an
         author's name and profile URL (on the service the code was pulled from).
     :ivar code_url: (str) The url of the (page containing the) source code.
     :ivar date_created: (str, or None) The date the code was published.
@@ -19,6 +20,7 @@ class Codelet(object):
         """
         Create a Codelet instance.
 
+        :param name: The name of the codelet.
         :param code: The raw source code.
         :param filename: The filename of the code, if any.
         :param language: The inferred language.
@@ -28,16 +30,17 @@ class Codelet(object):
         :param date_created: The date the code was published.
         :param date_modified: The date the code was last modified.
 
+        :type name: str
         :type code: str
         :type filename: str, or None
-        :type authors: array of str tuples, or None
         :type language: str, or None
+        :type authors: array of str tuples, or None
         :type code_url: str
-        :type author_urls: str array, or none
         :type date_created: str, or None
         :type date_modified: str, or None
         """
 
+        self.name = name
         self.code = code
         self.filename = filename
         self.language = language

@@ -6,7 +6,8 @@
 
 import fileinput, subprocess, os
 
-from .database import Database
+from ..database import Database
+from ..codelet import Codelet
 
 def index_repository(repo_url, framework_name):
     """
@@ -21,20 +22,25 @@ def index_repository(repo_url, framework_name):
     subprocess.call("git clone %s" % repo_url, shell=True)
     os.chdir(repo_name)
 
+    codelets = []
     commits_meta = _get_commits_metadata()
     for filename in commits_meta.keys():
         with open(filename, "r") as source_file:
             source = source_file.read()
 
-        authors = [(author,) for author in commits_meta["authors"]]
-        codelet = Codelet("%s:%s" % (repo_name, filename), source, filename,
-                          None, authors, _generate_file_url(filename, repo_url),
-                          framework_name, commits_meta["time_created"],
-                          commits_meta["time_last_modified"])
-        Database.insert(codelet)
+        authors = [(author,) for author in commits_meta[filename]["authors"]]
+        codelets.append(
+                Codelet("%s:%s" % (repo_name, filename), source, filename,
+                        None, authors, _generate_file_url(filename, repo_url,
+                                                          framework_name),
+                        commits_meta[filename]["time_created"],
+                        commits_meta[filename]["time_last_modified"]))
+
+        # Database.insert(codelet)
 
     os.chdir("..")
     subprocess.call("rm -rf %s" % repo_name, shell=True)
+    return codelets
 
 def _generate_file_url(filename, repo_url, framework_name):
     """
@@ -53,7 +59,7 @@ def _generate_file_url(filename, repo_url, framework_name):
     """
 
     if framework_name == "github":
-        default branch = subprocess.check_output("git branch --no-color", \
+        default_branch = subprocess.check_output("git branch --no-color",
                                                  shell=True)[2:-1]
         return "%s/blob/%s/%s" % (repo_url, default_branch, filename)
 
@@ -77,9 +83,9 @@ def _get_git_commits():
     :rtype: dictionary
     """
 
-    git_log_cmd = ("git --no-pager --no-color log --name-only "
-        "--pretty=format:'%n%n%an%n%at' -z")
-    git_log = subprocess.check_output(git_log_cmd, shell=True)
+    git_log = subprocess.check_output(
+            ("git --no-pager log --name-only"
+            " --pretty=format:'%n%n%an%n%at' -z"), shell=True)
 
     commits = []
     for commit in git_log.split("\n\n"):
@@ -105,8 +111,9 @@ def _get_tracked_files():
     :rtype: str array
     """
 
-    tracked_files = subprocess.check_output("perl -le 'for (@ARGV){ print if \
-        -f && -T }' $(find . -type d -name .git -prune -o -print)", shell=True)
+    tracked_files = subprocess.check_output(
+            ("perl -le 'for (@ARGV){ print if -f && -T }'"
+            " $(find . -type d -name .git -prune -o -print)"), shell=True)
     return [filename[2:] for filename in tracked_files.split("\n")[:-1]]
 
 def _get_commits_metadata():
@@ -138,7 +145,8 @@ def _get_commits_metadata():
             if filename not in files_meta.keys():
                 files_meta[filename] = {
                     "authors" : [commit["author"]],
-                    "time_last_modified" : commit["timestamp"]
+                    "time_last_modified" : commit["timestamp"],
+                    "time_created" : commit["timestamp"]
                 }
             else:
                 if commit["author"] not in files_meta[filename]["authors"]:
