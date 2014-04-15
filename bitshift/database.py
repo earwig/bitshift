@@ -3,19 +3,18 @@ Module with classes and functions to handle communication with the MySQL
 database backend, which manages the search index.
 """
 
+import mmh3
 import oursql
 
 class Database(object):
     """Represents the MySQL database."""
 
     def __init__(self):
-        pass
+        self._connect()
 
     def _connect(self):
-        pass
-
-    def _create(self):
-        pass
+        """Establish a connection to the database."""
+        self._conn = oursql.connect()
 
     def search(self, query):
         """
@@ -36,4 +35,5 @@ class Database(object):
         :param codelet: The codelet to insert.
         :type codelet: :py:class:`.Codelet`
         """
+        # code_hash = mmh3.hash64(codelet.code)[0]
         pass
