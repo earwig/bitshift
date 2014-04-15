@@ -4,7 +4,16 @@ class PyTreeCutter(ast.NodeVisitor):
     """
     Local node visitor for python abstract syntax trees.
 
-    :ivar accum: (dict) Relevant data accumulated from an abstract syntax tree.
+    :ivar accum: (dict) Information on variables, functions, and classes
+        accumulated from an abstract syntax tree.
+
+    :ivar cache: (dict or None) Information stored about parent nodes. Added
+        to accum when node reaches the lowest possible level.
+
+    .. todo::
+        Add visit funciton for ast.Name to record all uses of a variable.
+
+        Use self.cache to store extra information about nodes.
     """
 
     def __init__(self):
@@ -13,24 +22,25 @@ class PyTreeCutter(ast.NodeVisitor):
         """
 
         self.accum = {'vars': {}, 'functions': {}, 'classes': {}}
+        self.cache = None
 
-    def start_n_end(self, big_node):
+    def start_n_end(self, node):
         """
         Helper function to get the start and end lines of an AST node.
 
-        :param big_node: The node.
+        :param node: The node.
 
-        :type big_node: ast.FunctionDef or ast.ClassDef or ast.Module
+        :type node: ast.FunctionDef or ast.ClassDef or ast.Module
         """
 
-        start_line = big_node.lineno
+        start_line, start_col = node.lineno, node.col_offset
 
-        temp_node = big_node
+        temp_node = node
         while 'body' in temp_node.__dict__:
             temp_node = temp_node.body[-1]
 
-        end_line = temp_node.lineno
-        return (start_line, end_line)
+        end_line, end_col = temp_node.lineno, temp_node.col_offset
+        return (start_line, start_col, end_line, end_col)
 
     def visit_Assign(self, node):
         """
@@ -48,10 +58,16 @@ class PyTreeCutter(ast.NodeVisitor):
             if isinstance(t, ast.Tuple):
                 for n in t.elts:
                     line, col = n.lineno, n.col_offset
-                    self.accum['vars'][n.id] = {'ln': line, 'col': col}
+                    self.accum['functions'][n.id]['start_ln'] = line
+                    self.accum['functions'][n.id]['start_col'] = col
+                    self.accum['functions'][n.id]['end_ln'] = line
+                    self.accum['functions'][n.id]['end_ln'] = col
             else:
                 line, col = t.lineno, t.col_offset
-                self.accum['vars'][t.id] = {'ln': line, 'col': col}
+                self.accum['functions'][t.id]['start_ln'] = line
+                self.accum['functions'][t.id]['start_col'] = col
+                self.accum['functions'][t.id]['end_ln'] = line
+                self.accum['functions'][t.id]['end_ln'] = col
 
         self.generic_visit(node)
 
@@ -67,9 +83,11 @@ class PyTreeCutter(ast.NodeVisitor):
             Add arguments and decorators metadata to accum.
         """
 
-        start_line, end_line = self.start_n_end(node)
-        self.accum['functions'][node.name] = {'start_ln': start_line,
-            'end_ln': end_line}
+        start_line, start_col, end_line, end_col = self.start_n_end(node)
+        self.accum['functions'][node.name]['start_ln'] = start_line
+        self.accum['functions'][node.name]['start_col'] = start_col
+        self.accum['functions'][node.name]['end_ln'] = end_line
+        self.accum['functions'][node.name]['end_ln'] = end_col
 
         self.generic_visit(node)
 
@@ -84,15 +102,18 @@ class PyTreeCutter(ast.NodeVisitor):
         .. todo::
             Add arguments, inherits, and decorators metadata to accum.
         """
-        start_line, end_line = self.start_n_end(node)
-        self.accum['functions'][node.name] = {'start_ln': start_line,
-            'end_ln': end_line}
+
+        start_line, start_col, end_line, end_col = self.start_n_end(node)
+        self.accum['functions'][node.name]['start_ln'] = start_line
+        self.accum['functions'][node.name]['start_col'] = start_col
+        self.accum['functions'][node.name]['end_ln'] = end_line
+        self.accum['functions'][node.name]['end_ln'] = end_col
 
         self.generic_visit(node)
 
 def parse_py(codelet):
     """
-    Adds 'symbols' field to the codelet after parsing the code.
+    Adds 'symbols' field to the codelet after parsing the python code.
 
     :param codelet: The codelet object to parsed.
 
