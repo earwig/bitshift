@@ -1,7 +1,8 @@
 """
 :synopsis: Index all the files in a Git repository.
 
-...more info soon...
+.. todo::
+    Add documentation, threaded Indexer class.
 """
 
 import shutil, subprocess, os
@@ -21,7 +22,7 @@ class ChangeDir(object):
 
     def __init__(self, new_path):
         """
-        Construct the object.
+        Create a ChangeDir instance.
 
         :param new_path: The directory to enter.
 
@@ -38,20 +39,32 @@ class ChangeDir(object):
         self.old_path = os.getcwd()
         os.chdir(self.new_path)
 
-    def __exit__(self, etype, value, traceback):
+    def __exit__(self, *exception):
         """
         Change the current working-directory to **old_path**.
+
+        :param exception: Various exception arguments passed by `with`.
+
+        :type exception: varargs
         """
 
         os.chdir(self.old_path)
 
 def index_repository(repo_url, framework_name):
     """
-    Insert a Codelet for every file in a Git repository.
+    Clone and index (create and insert Codeletes for) a Git repository.
 
-    `git clone` the Git repository located at **repo_url**, and create a Codelet
-    for every one of non-binary (text) files in its if main branch (usually
-    *master*).
+    `git clone` the Git repository located at **repo_url**, call
+    _insert_repository_codelets, then remove said repository.
+
+    :param repo_url: The url the Git repository was cloned from.
+    :param framework_name: The name of the framework the repository is from.
+
+    :type repo_url: str
+    :type framework_name: str
+
+    :return: Temporary: the new codelets, for testing purposes.
+    :rtype: Codelet array
     """
 
     repo_name = repo_url.split("/")[-1]
@@ -67,6 +80,22 @@ def index_repository(repo_url, framework_name):
     return codelets
 
 def _insert_repository_codelets(repo_url, repo_name, framework_name):
+    """
+    Create a Codelet for the files inside a Git repository.
+
+    Create a new Codelet, and insert it into the Database singlet, for every
+    file inside the current working directory's default branch (usually
+    *master*).
+
+    :param repo_url: The url the Git repository was cloned from.
+    :param repo_name: The name of the repository.
+    :param framework_name: The name of the framework the repository is from.
+
+    :type repo_url: str
+    :type repo_name: str
+    :type framework_name: str
+    """
+
     codelets = []
     commits_meta = _get_commits_metadata()
     for filename in commits_meta.keys():
