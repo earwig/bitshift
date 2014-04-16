@@ -1,12 +1,12 @@
 """
 :synopsis: Main crawler module, to oversee all site-specific crawlers.
 
-...more info soon...
+Contains all website/framework-specific Class crawlers.
 """
 
 import requests, time, threading
 
-import bitshift.crawler.git_indexer
+import bitshift.crawler.indexer
 
 from ..codelet import Codelet
 from ..database import Database
@@ -17,12 +17,12 @@ class GitHubCrawler(threading.Thread):
 
     GitHubCrawler is a threaded singleton that queries GitHub's API for URLs
     to its public repositories, which it inserts into a :class:`Queue.Queue`
-    shared with :class:`bitshift.crawler.git_indexer.GitIndexer`.
+    shared with :class:`bitshift.crawler.indexer.GitIndexer`.
 
     :ivar repository_queue: (:class:`Queue.Queue`) Contains dictionaries with
         repository information retrieved by `GitHubCrawler`, and other Git
         crawlers, to be processed by
-        :class:`bitshift.crawler.git_indexer.GitIndexer`.
+        :class:`bitshift.crawler.indexer.GitIndexer`.
     """
 
     def __init__(self, repository_queue):
@@ -31,7 +31,7 @@ class GitHubCrawler(threading.Thread):
 
         :param repository_queue: A queue containing dictionaries of  repository
             metadata retrieved by `GitHubCrawler`, meant to be processed by an
-            instance of :class:`bitshift.crawler.git_indexer.GitIndexer`.
+            instance of :class:`bitshift.crawler.indexer.GitIndexer`.
 
             .. code-block:: python
                 sample_dict = {
@@ -42,7 +42,6 @@ class GitHubCrawler(threading.Thread):
 
         :type repository_queue: :class:`Queue.Queue`
         """
-
 
         self.repository_queue = repository_queue
         super(GitHubCrawler, self).__init__()
@@ -65,26 +64,16 @@ class GitHubCrawler(threading.Thread):
         api_request_interval = 5e3 / 60 ** 2
 
         while len(next_api_url) > 0:
-            # DEBUG
-            db.log.insert({
-                "time" : str(time.time()).split(".")[0][-4:],
-                "qsize" : self.repository_queue.qsize()
-            })
-
             start_time = time.time()
             response = requests.get(next_api_url, params=authentication_params)
 
             for repo in response.json():
-                logging.basicConfig(filename="crawler.log", level=logging.DEBUG)
-                logging.debug("crawler: %-20s: %-5s: %-5s: %s",
-                             str(time.time()).split(".")[0],
-                             self.repository_queue.qsize(), repo["id"],
-                             repo["name"])
                 while self.repository_queue.full():
                     pass
+
                 self.repository_queue.put({
                     "url" : repo["html_url"],
-                    "name" : repo["html_url"].split("/")[-1],
+                    "name" : repo["name"],
                     "framework_name" : "GitHub"
                 })
 

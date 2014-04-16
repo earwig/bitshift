@@ -6,8 +6,7 @@ Contains functions for initializing all subsidiary, threaded crawlers.
 
 import Queue
 
-from bitshift.crawler import crawler
-from bitshift.crawler import git_indexer
+from bitshift.crawler import crawler, indexer
 
 __all__ = ["crawl"]
 
@@ -19,12 +18,12 @@ def crawl():
 
     Start the:
     1. GitHub crawler, :class:`bitshift.crawler.crawler.GitHubCrawler`
-    2. Git indexer, :class:`bitshift.crawler.git_indexer.GitIndexer`
+    2. Git indexer, :class:`bitshift.crawler.indexer.GitIndexer`
     """
 
     repository_queue = Queue.Queue(maxsize=MAX_URL_QUEUE_SIZE)
     github_crawler = crawler.GitHubCrawler(repository_queue)
-    indexer = git_indexer.GitIndexer(repository_queue)
+    git_indexer = indexer.GitIndexer(repository_queue)
 
-    for thread in [github_crawler, indexer]:
+    for thread in [github_crawler, git_indexer]:
         thread.start()
