@@ -31,6 +31,10 @@ class GitIndexer(threading.Thread):
         """
 
         self.repository_queue = repository_queue
+
+        if not os.path.exists(GIT_CLONE_DIR):
+            os.makedirs(GIT_CLONE_DIR)
+
         super(GitIndexer, self).__init__()
 
     def run(self):
@@ -53,7 +57,7 @@ class GitIndexer(threading.Thread):
             try:
                 _index_repository(repo["url"], repo["name"],
                         repo["framework_name"])
-            except: # desperate times -- will be modified later
+            except:
                 pass
 
 class _ChangeDir(object):
@@ -110,16 +114,19 @@ def _index_repository(repo_url, repo_name, framework_name):
     :type framework_name: str
     """
 
-    GIT_CLONE_TIMEOUT = 60
+    GIT_CLONE_TIMEOUT = 600
 
     with _ChangeDir(GIT_CLONE_DIR) as git_clone_dir:
         if subprocess.call("perl -e 'alarm shift @ARGV; exec @ARGV' %d git \
                 clone %s" % (GIT_CLONE_TIMEOUT, repo_url), shell=True) != 0:
+            if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
+                shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
             return
 
         with _ChangeDir(repo_name) as repository_dir:
             _insert_repository_codelets(repo_url, repo_name, framework_name)
-        shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
+
+    shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
 
 def _insert_repository_codelets(repo_url, repo_name, framework_name):
     """
@@ -152,11 +159,6 @@ def _insert_repository_codelets(repo_url, repo_name, framework_name):
                                 framework_name),
                         commits_meta[filename]["time_created"],
                         commits_meta[filename]["time_last_modified"])
-
-        db.codelets.insert({
-            "name" : codelet.name,
-            "authors" : codelet.authors
-        })
 
         # Database.insert(codelet)
 
@@ -230,6 +232,8 @@ def _get_tracked_files():
     """
 
     GIT_IGNORE_FILES = [".*licen[cs]e.*", ".*readme.*"]
+    GIT_IGNORE_EXTENSIONS = ["t[e]?xt(ile)?", "m(ark)?down", "mkd[n]?",
+            "md(wn|t[e]?xt)?", "rst"]
 
     tracked_files = subprocess.check_output(("perl -le 'for (@ARGV){ print if \
             -f && -T }' $(find . -type d -name .git -prune -o -print)"),
@@ -239,7 +243,11 @@ def _get_tracked_files():
     for filename in tracked_files:
         filename_match = any([re.match(pattern, filename, flags=re.IGNORECASE)
                 for pattern in GIT_IGNORE_FILES])
-        if not filename_match:
+        extension = filename.split(".")[-1]
+        extension_match = any([re.match(pattern, filename, flags=re.IGNORECASE)
+                for pattern in GIT_IGNORE_EXTENSIONS])
+
+        if not (filename_match or extension_match):
             valuable_files.append(filename[2:])
     return valuable_files
 
@@ -301,7 +309,8 @@ def _decode(raw):
     """
 
     try:
-        return raw.decode(bs4.BeautifulSoup(raw).original_encoding)
+        encoding = bs4.BeautifulSoup(raw).original_encoding
+        return raw.decode(encoding) if encoding is not None else None
 
-    except (UnicodeDecodeError, UserWarning):
+    except:
         return None
