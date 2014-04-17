@@ -28,13 +28,15 @@ class Database(object):
         :return: A list of search results.
         :rtype: list of :py:class:`.Codelet`\ s
         """
-        # query tree hash + page -> cached?
+        # search for cache_hash = mmh3.hash(query.serialize() + str(page))
         #   cache HIT:
-        #       if qcache_created is too old: invalidate cache, goto cache MISS
-        #       update qcache_last_used
-        #       parse qcache_results, fetch codelets
+        #       update cache_last_used
+        #       return codelets
         #   cache MISS:
         #       build complex search query
+        #       fetch codelets
+        #       cache results
+        #       return codelets
         pass
 
     def insert(self, codelet):
@@ -44,5 +46,5 @@ class Database(object):
         :param codelet: The codelet to insert.
         :type codelet: :py:class:`.Codelet`
         """
-        # code_hash = mmh3.hash64(codelet.code)[0]
+        # code_hash = mmh3.hash64(codelet.code.encode("utf8"))[0]
         pass
