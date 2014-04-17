@@ -3,7 +3,7 @@
     repositories.
 """
 
-import bs4, os, re, shutil, subprocess, threading
+import bs4, logging, os, re, shutil, subprocess, threading
 
 from ..database import Database
 from ..codelet import Codelet
@@ -35,7 +35,8 @@ class GitIndexer(threading.Thread):
         if not os.path.exists(GIT_CLONE_DIR):
             os.makedirs(GIT_CLONE_DIR)
 
-        super(GitIndexer, self).__init__()
+        logging.info("Starting.")
+        super(GitIndexer, self).__init__(name=self.__class__.__name__)
 
     def run(self):
         """
@@ -53,12 +54,8 @@ class GitIndexer(threading.Thread):
 
             repo = self.repository_queue.get()
             self.repository_queue.task_done()
-
-            try:
-                _index_repository(repo["url"], repo["name"],
-                        repo["framework_name"])
-            except:
-                pass
+            _index_repository(repo["url"], repo["name"],
+                    repo["framework_name"])
 
 class _ChangeDir(object):
     """
@@ -116,15 +113,23 @@ def _index_repository(repo_url, repo_name, framework_name):
 
     GIT_CLONE_TIMEOUT = 600
 
+    logging.info("Indexing repository %s." % repo_url)
     with _ChangeDir(GIT_CLONE_DIR) as git_clone_dir:
         if subprocess.call("perl -e 'alarm shift @ARGV; exec @ARGV' %d git \
                 clone %s" % (GIT_CLONE_TIMEOUT, repo_url), shell=True) != 0:
+            logging.debug("_index_repository(): Cloning %s failed." % repo_url)
             if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
                 shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
             return
 
         with _ChangeDir(repo_name) as repository_dir:
-            _insert_repository_codelets(repo_url, repo_name, framework_name)
+            try:
+                _insert_repository_codelets(repo_url, repo_name,
+                        framework_name)
+            except Exception as exception:
+                logging.warning("%s: _insert_repository_codelets"
+                        " failed %s." % (exception, repo_url))
+                pass
 
     shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
 
@@ -312,5 +317,6 @@ def _decode(raw):
         encoding = bs4.BeautifulSoup(raw).original_encoding
         return raw.decode(encoding) if encoding is not None else None
 
-    except:
+    except Exception as exception:
+        logging.warning("_debug(): %s", exception)
         return None

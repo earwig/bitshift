@@ -4,7 +4,7 @@
 Contains all website/framework-specific Class crawlers.
 """
 
-import requests, time, threading
+import logging, requests, time, threading
 
 import bitshift.crawler.indexer
 
@@ -44,7 +44,8 @@ class GitHubCrawler(threading.Thread):
         """
 
         self.repository_queue = repository_queue
-        super(GitHubCrawler, self).__init__()
+        logging.info("Starting.")
+        super(GitHubCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
         """
@@ -66,6 +67,8 @@ class GitHubCrawler(threading.Thread):
         while len(next_api_url) > 0:
             start_time = time.time()
             response = requests.get(next_api_url, params=authentication_params)
+            logging.info("API call made. Limit remaining: %s." %
+                    response.headers["x-ratelimit-remaining"])
 
             for repo in response.json():
                 while self.repository_queue.full():
