@@ -6,7 +6,7 @@ Contains all website/framework-specific Class crawlers.
 
 import logging, requests, time, threading
 
-import bitshift.crawler.indexer
+from bitshift.crawler import indexer
 
 from ..codelet import Codelet
 from ..database import Database
@@ -19,31 +19,22 @@ class GitHubCrawler(threading.Thread):
     to its public repositories, which it inserts into a :class:`Queue.Queue`
     shared with :class:`bitshift.crawler.indexer.GitIndexer`.
 
-    :ivar repository_queue: (:class:`Queue.Queue`) Contains dictionaries with
-        repository information retrieved by `GitHubCrawler`, and other Git
-        crawlers, to be processed by
+    :ivar clone_queue: (:class:`Queue.Queue`) Contains :class:`GitRepository`
+        with repository metadata retrieved by :class:`GitHubCrawler`, and other
+        Git crawlers, to be processed by
         :class:`bitshift.crawler.indexer.GitIndexer`.
     """
 
-    def __init__(self, repository_queue):
+    def __init__(self, clone_queue):
         """
         Create an instance of the singleton `GitHubCrawler`.
 
-        :param repository_queue: A queue containing dictionaries of  repository
-            metadata retrieved by `GitHubCrawler`, meant to be processed by an
-            instance of :class:`bitshift.crawler.indexer.GitIndexer`.
+        :param clone_queue: see :attr:`self.clone_queue`
 
-            .. code-block:: python
-                sample_dict = {
-                    "url" : "https://github.com/user/repo",
-                    "name" : "repo",
-                    "framework_name" : "GitHub"
-                }
-
-        :type repository_queue: :class:`Queue.Queue`
+        :type clone_queue: see :attr:`self.clone_queue`
         """
 
-        self.repository_queue = repository_queue
+        self.clone_queue = clone_queue
         logging.info("Starting.")
         super(GitHubCrawler, self).__init__(name=self.__class__.__name__)
 
@@ -54,7 +45,8 @@ class GitHubCrawler(threading.Thread):
         Pull all of GitHub's repositories by making calls to its API in a loop,
         accessing a subsequent page of results via the "next" URL returned in an
         API response header. Uses Severyn Kozak's (sevko) authentication
-        credentials.
+        credentials. For every new repository, a :class:`GitRepository` is
+        inserted into :attr:`self.clone_queue`.
         """
 
         next_api_url = "https://api.github.com/repositories"
@@ -67,18 +59,21 @@ class GitHubCrawler(threading.Thread):
         while len(next_api_url) > 0:
             start_time = time.time()
             response = requests.get(next_api_url, params=authentication_params)
-            logging.info("API call made. Limit remaining: %s." %
-                    response.headers["x-ratelimit-remaining"])
+
+            queue_percent_full = (float(self.clone_queue.qsize()) /
+                    self.clone_queue.maxsize) * 100
+            logging.info("API call made. Limit remaining: %s. Queue-size: (%d"
+                    "%%) %d/%d" % (response.headers["x-ratelimit-remaining"],
+                    queue_percent_full, self.clone_queue.qsize(),
+                    self.clone_queue.maxsize))
 
             for repo in response.json():
-                while self.repository_queue.full():
-                    pass
+                while self.clone_queue.full():
+                    time.sleep(1)
 
-                self.repository_queue.put({
-                    "url" : repo["html_url"],
-                    "name" : repo["name"],
-                    "framework_name" : "GitHub"
-                })
+                self.clone_queue.put(indexer.GitRepository(
+                        repo["html_url"], repo["full_name"].replace("/", ""),
+                        "GitHub"))
 
             if int(response.headers["x-ratelimit-remaining"]) == 0:
                 time.sleep(int(response.headers["x-ratelimit-reset"]) -
