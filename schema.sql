@@ -1,12 +1,6 @@
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
 
-CREATE TABLE `languages` (
-    `language_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `language_name` VARCHAR(64) NOT NULL,
-    PRIMARY KEY (`language_id`)
-) ENGINE=InnoDB;
-
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `origin_name` VARCHAR(64) NOT NULL,
@@ -31,16 +25,15 @@ CREATE TABLE `codelets` (
     `codelet_lang` SMALLINT UNSIGNED DEFAULT NULL,
     `codelet_origin` TINYINT UNSIGNED NOT NULL,
     `codelet_url` VARCHAR(512) NOT NULL,
+    `codelet_rank` FLOAT NOT NULL,
     `codelet_date_created` DATETIME DEFAULT NULL,
     `codelet_date_modified` DATETIME DEFAULT NULL,
     PRIMARY KEY (`codelet_id`),
+    KEY (`codelet_rank`),
     KEY (`codelet_date_created`),
     KEY (`codelet_date_modified`),
     FOREIGN KEY (`codelet_code_id`)
         REFERENCES `code` (`code_id`)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    FOREIGN KEY (`codelet_lang`)
-        REFERENCES `languages` (`language_id`)
         ON DELETE RESTRICT ON UPDATE CASCADE,
     FOREIGN KEY (`codelet_origin`)
         REFERENCES `origins` (`origin_id`)

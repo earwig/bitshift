@@ -6,6 +6,8 @@ database backend, which manages the search index.
 import mmh3
 import oursql
 
+# from .languages import ...
+
 class Database(object):
     """Represents the MySQL database."""
 
