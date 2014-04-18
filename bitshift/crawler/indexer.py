@@ -8,9 +8,6 @@ import bs4, logging, os, Queue, re, shutil, subprocess, time, threading
 from ..database import Database
 from ..codelet import Codelet
 
-import pymongo #debug
-db = pymongo.MongoClient().bitshift #debug
-
 GIT_CLONE_DIR = "/tmp/bitshift"
 THREAD_QUEUE_SLEEP = 0.5
 
@@ -88,7 +85,6 @@ class GitIndexer(threading.Thread):
 
         while True:
             while self.index_queue.empty():
-                logging.warning("Empty.")
                 time.sleep(THREAD_QUEUE_SLEEP)
 
             repo = self.index_queue.get()
@@ -154,20 +150,20 @@ class _GitCloner(threading.Thread):
                 queue_percent_full, self.index_queue.qsize(),
                 self.index_queue.maxsize))
 
-        with _ChangeDir(GIT_CLONE_DIR) as git_clone_dir:
-            if subprocess.call("perl -e 'alarm shift @ARGV; exec @ARGV' %d git"
-                " clone %s %s" % (GIT_CLONE_TIMEOUT, repo.url, repo.name),
-                shell=True) != 0:
-                logging.debug("_clone_repository(): Cloning %s failed." %
-                        repo.url)
-                if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
-                    shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
-                return
+        command = ("perl -e 'alarm shift @ARGV; exec @ARGV' %d git clone"
+        " --single-branch %s %s/%s || pkill -f git")
+        if subprocess.call(command % (GIT_CLONE_TIMEOUT, repo.url,
+                GIT_CLONE_DIR, repo.name), shell=True) != 0:
+            logging.warning("_clone_repository(): Cloning %s failed." %
+                    repo.url)
+            if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
+                shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
+            return
 
-            while self.index_queue.full():
-                time.sleep(THREAD_QUEUE_SLEEP)
+        while self.index_queue.full():
+            time.sleep(THREAD_QUEUE_SLEEP)
 
-            self.index_queue.put(repo)
+        self.index_queue.put(repo)
 
 class _ChangeDir(object):
     """
@@ -229,8 +225,9 @@ def _index_repository(repo_url, repo_name, framework_name):
             _insert_repository_codelets(repo_url, repo_name,
                     framework_name)
         except Exception as exception:
-            logging.warning("%s: _insert_repository_codelets failed %s." %
-                    (exception, repo_url))
+            logging.warning(
+                    "_insert_repository_codelets() failed: %s: %s: %s" %
+                    (exception.__class__.__name__, exception, repo_url))
 
     if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
         shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
@@ -254,10 +251,15 @@ def _insert_repository_codelets(repo_url, repo_name, framework_name):
 
     commits_meta = _get_commits_metadata()
     for filename in commits_meta.keys():
-        with open(filename, "r") as source_file:
-            source = _decode(source_file.read())
-            if source is None:
-                return
+        try:
+            with open(filename, "r") as source_file:
+                source = _decode(source_file.read())
+                if source is None:
+                    return
+        except IOError as exception:
+            logging.warning(
+                    "_insert_repository_codelets() failed: %s: %s: %s" %
+                    (exception.__class__.__name__, exception, repo_url))
 
         authors = [(_decode(author),) for author in \
                 commits_meta[filename]["authors"]]
@@ -266,9 +268,6 @@ def _insert_repository_codelets(repo_url, repo_name, framework_name):
                                 framework_name),
                         commits_meta[filename]["time_created"],
                         commits_meta[filename]["time_last_modified"])
-        db.codelets.insert({
-            "name" : codelet.name
-        })
 
         # Database.insert(codelet)
 
@@ -284,14 +283,24 @@ def _generate_file_url(filename, repo_url, framework_name):
     :type repo_url: str
     :type framework_name: str
 
-    :return: The file's full url on the given framework.
-    :rtype: str
+    :return: The file's full url on the given framework, if successfully
+        derived.
+    :rtype: str, or None
+
+    .. warning::
+        `git branch` will occasionally fail, and, seeing as its a crucial
+        component of GitHub's repository file urls, None will be returned.
     """
 
     if framework_name == "GitHub":
-        default_branch = subprocess.check_output("git branch --no-color",
-                shell=True)[2:-1]
-        return "%s/blob/%s/%s" % (repo_url, default_branch, filename)
+        try:
+            default_branch = subprocess.check_output("git branch --no-color",
+                    shell=True)[2:-1]
+            return "%s/blob/%s/%s" % (repo_url, default_branch, filename)
+        except CalledProcessError as exception:
+            logging.warning("_generate_file_url(): %s: %s",
+                    exception.__class__.name, exception)
+            return None
 
 def _get_git_commits():
     """
@@ -423,5 +432,6 @@ def _decode(raw):
         return raw.decode(encoding) if encoding is not None else None
 
     except Exception as exception:
-        logging.warning("_debug(): %s", exception)
+        logging.warning("_decode(): %s: %s", exception.__class__.__name__,
+                exception)
         return None
