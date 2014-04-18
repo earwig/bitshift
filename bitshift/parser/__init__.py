@@ -1,8 +1,26 @@
 import os, ast
+import pygments.lexers as pgl
+from ..languages import LANGS
+from .python import parse_py
 
 _all__ = ["parse"]
 
-WRITE_F = "../../tmp/parser.proc"
+def _lang(codelet):
+    """
+    Private function to identify the language of a codelet.
+
+    :param codelet: The codelet object to identified.
+
+    :type code: Codelet
+
+    .. todo::
+        Modify function to incorporate tags from stackoverflow.
+    """
+
+    if codelet.filename is not None:
+        return pgl.guess_lexer_for_filename(codelet.filename).name
+
+    return LANGS.index(pgl.guess_lexer(codelet.code))
 
 def parse(codelet, pid):
     """
@@ -16,28 +34,29 @@ def parse(codelet, pid):
     :param pid: str.
 
     .. todo::
-        Create a named pipe for python process to communicate with Java
-        process.
-
-        Send the process id and codelet code through the named pipe.
-
-        Read the result from the named pipe and turn it into a dict.
+        Identify languages using pygments and change the write file based on
+        that.
     """
 
-    with open(WRITE_F, 'a') as wf:
-        wf.write('pid:' + str(pid) + '\n')
-        wf.write('body:\n' + codelet.code)
+    codelet.language = _lang(codelet)
 
-    read_f = '../../tmp/%s_py.data' % str(pid)
-    data = ''
+    if codelet.language == LANGS.index("Python"):
+        parse_py(codelet)
 
-    while data == '':
-        with open(read_f) as rf:
-            data = rf.read()
+    else:
+        write_f = "../../tmp/%d_parser.proc" % codelet.language
 
-    os.remove(read_f)
+        with open(write_f, 'a') as wf:
+            wf.write('pid:' + str(pid) + '\n')
+            wf.write('body:\n' + codelet.code)
 
-    results = data.split('\n')
-    codelet.language = results[0].split(',')[1]
-    codelet.symbols = ast.literal_eval(results[1].split(',')[1])
+        read_f = '../../tmp/%s_py.data' % str(pid)
+        data = ''
+
+        while data == '':
+            with open(read_f) as rf:
+                data = rf.read()
+
+        os.remove(read_f)
+        codelet.symbols = ast.literal_eval(data.split(',')[1])
 

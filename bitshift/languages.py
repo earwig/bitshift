@@ -1,2 +1,2 @@
 
-LANGS = ["Python", "C"]
+LANGS = ["Python", "C", "Java", "Ruby"]
