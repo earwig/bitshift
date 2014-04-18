@@ -1,0 +1,2 @@
+
+LANGS = ["Python", "C"]

@@ -1,6 +1,6 @@
 from pycparser import c_parser, c_ast
 
-class CTreeCutter(c_ast.NodeVisitor):
+class _TreeCutter(c_ast.NodeVisitor):
     """
     Local node visitor for c abstract syntax trees.
 
@@ -18,7 +18,7 @@ class CTreeCutter(c_ast.NodeVisitor):
 
     def __init__(self):
         """
-        Create a CTreeCutter instance.
+        Create a _TreeCutter instance.
         """
 
         self.accum = {'vars': {}, 'functions': {}, 'structs': {}}
@@ -101,6 +101,6 @@ def parse_c(codelet):
     """
 
     tree = c_parser.CParser().parse(codelet.code)
-    cutter = CTreeCutter()
+    cutter = _TreeCutter()
     cutter.visit(tree)
     codelet.symbols = cutter.accum

@@ -1,6 +1,6 @@
 import ast
 
-class PyTreeCutter(ast.NodeVisitor):
+class _TreeCutter(ast.NodeVisitor):
     """
     Local node visitor for python abstract syntax trees.
 
@@ -18,7 +18,7 @@ class PyTreeCutter(ast.NodeVisitor):
 
     def __init__(self):
         """
-        Create a PyTreeCutter instance.
+        Create a _TreeCutter instance.
         """
 
         self.accum = {'vars': {}, 'functions': {}, 'classes': {}}
@@ -121,6 +121,6 @@ def parse_py(codelet):
     """
 
     tree = ast.parse(codelet.code)
-    cutter = PyTreeCutter()
+    cutter = _TreeCutter()
     cutter.visit(tree)
     codelet.symbols = cutter.accum

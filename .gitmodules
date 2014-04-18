@@ -1,0 +1,3 @@
+[submodule "bitshift/parser/pylj"]
+	path = bitshift/parser/pylj
+	url = git@github.com:musiKk/plyj.git
