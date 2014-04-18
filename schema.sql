@@ -13,14 +13,15 @@ CREATE TABLE `origins` (
 CREATE TABLE `code` (
     `code_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `code_hash` BIGINT NOT NULL,
-    `code_code` MEDIUMTEXT NOT NULL, -- TODO: full-text search index
+    `code_code` MEDIUMTEXT NOT NULL,
     PRIMARY KEY (`code_id`),
-    KEY (`code_hash`)
+    KEY (`code_hash`),
+    FULLTEXT KEY (`codelet_code`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `codelets` (
     `codelet_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `codelet_name` VARCHAR(300) NOT NULL, -- TODO: full-text search index
+    `codelet_name` VARCHAR(300) NOT NULL,
     `codelet_code_id` BIGINT UNSIGNED NOT NULL,
     `codelet_lang` SMALLINT UNSIGNED DEFAULT NULL,
     `codelet_origin` TINYINT UNSIGNED NOT NULL,
@@ -29,6 +30,7 @@ CREATE TABLE `codelets` (
     `codelet_date_created` DATETIME DEFAULT NULL,
     `codelet_date_modified` DATETIME DEFAULT NULL,
     PRIMARY KEY (`codelet_id`),
+    FULLTEXT KEY (`codelet_name`),
     KEY (`codelet_rank`),
     KEY (`codelet_date_created`),
     KEY (`codelet_date_modified`),
@@ -43,9 +45,10 @@ CREATE TABLE `codelets` (
 CREATE TABLE `authors` (
     `author_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `author_codelet` BIGINT UNSIGNED NOT NULL,
-    `author_name` VARCHAR(128) NOT NULL, -- TODO: full-text search index
+    `author_name` VARCHAR(128) NOT NULL,
     `author_url` VARCHAR(512) DEFAULT NULL,
     PRIMARY KEY (`author_id`),
+    FULLTEXT KEY (`author_name`),
     FOREIGN KEY (`author_codelet`)
         REFERENCES `codelet` (`codelet_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
