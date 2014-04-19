@@ -2,16 +2,15 @@ package org.bitshift.parsing.parsers;
 
 import org.bitshift.parsing.symbols.Symbols;
 
-public class Parser {
+public abstract class Parser {
 
     protected String source;
 
     public Parser(String source) {
-    
+        this.source = source;
     }
 
-    public Symbols genSymbols() {
+    abstract Symbols genSymbols();
     
-    }
 }
 
