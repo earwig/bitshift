@@ -34,7 +34,7 @@ class GitHubCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
-        logging.info("Starting %s." % self.__class__.__name__)
+        # logging.info("Starting %s." % self.__class__.__name__)
         super(GitHubCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -61,10 +61,10 @@ class GitHubCrawler(threading.Thread):
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
                     self.clone_queue.maxsize) * 100
-            logging.info("API call made. Limit remaining: %s. Queue-size: (%d"
-                    "%%) %d/%d" % (response.headers["x-ratelimit-remaining"],
-                    queue_percent_full, self.clone_queue.qsize(),
-                    self.clone_queue.maxsize))
+            # logging.info("API call made. Limit remaining: %s. Queue-size: (%d"
+                    # "%%) %d/%d" % (response.headers["x-ratelimit-remaining"],
+                    # queue_percent_full, self.clone_queue.qsize(),
+                    # self.clone_queue.maxsize))
 
             for repo in response.json():
                 while self.clone_queue.full():
@@ -107,7 +107,7 @@ class BitbucketCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
-        logging.info("Starting %s." % self.__class__.__name__)
+        # logging.info("Starting %s." % self.__class__.__name__)
         super(BitbucketCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -127,9 +127,9 @@ class BitbucketCrawler(threading.Thread):
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
                     self.clone_queue.maxsize) * 100
-            logging.info("API call made. Queue-size: (%d%%) %d/%d" % (
-                queue_percent_full, self.clone_queue.qsize(),
-                self.clone_queue.maxsize))
+            # logging.info("API call made. Queue-size: (%d%%) %d/%d" % (
+                # queue_percent_full, self.clone_queue.qsize(),
+                # self.clone_queue.maxsize))
 
             for repo in response["values"]:
                 if repo["scm"] == "git":

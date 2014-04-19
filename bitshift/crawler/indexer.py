@@ -3,7 +3,7 @@
     repositories.
 """
 
-import bs4, logging, os, Queue, re, shutil, subprocess, time, threading
+import bs4, logging, os, Queue, re, shutil, string, subprocess, time, threading
 
 from ..database import Database
 from ..codelet import Codelet
@@ -63,10 +63,12 @@ class GitIndexer(threading.Thread):
 
         MAX_INDEX_QUEUE_SIZE = 10
 
-        logging.info("Starting.")
+        # logging.info("Starting.")
+
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
         self.git_cloner = _GitCloner(clone_queue, self.index_queue)
         self.git_cloner.start()
+        self.codelet_count = 0 #debug
 
         if not os.path.exists(GIT_CLONE_DIR):
             os.makedirs(GIT_CLONE_DIR)
@@ -89,14 +91,91 @@ class GitIndexer(threading.Thread):
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
-            _index_repository(repo.url, repo.name, repo.framework_name)
+            self._index_repository(repo.url, repo.name, repo.framework_name)
+
+    def _index_repository(self, repo_url, repo_name, framework_name):
+        """
+        Clone and index (create and insert Codeletes for) a Git repository.
+
+        `git clone` the Git repository located at **repo_url**, call
+        _insert_repository_codelets, then remove said repository.
+
+        :param repo_url: The url the Git repository was cloned from.
+        :param repo_name: The name of the repository.
+        :param framework_name: The name of the framework the repository is from.
+
+        :type repo_url: str
+        :type repo_name: str
+        :type framework_name: str
+        """
+
+        # logging.info("Indexing repository %s." % repo_url)
+        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo_name)) as repository_dir:
+            try:
+                self._insert_repository_codelets(repo_url, repo_name,
+                        framework_name)
+            except Exception as exception:
+                # logging.warning(
+                        # "_insert_repository_codelets() failed: %s: %s: %s" %
+                        # (exception.__class__.__name__, exception, repo_url))
+                pass
+
+        if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
+            shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
+
+    def _insert_repository_codelets(self, repo_url, repo_name, framework_name):
+        """
+        Create and insert a Codelet for the files inside a Git repository.
+
+        Create a new Codelet, and insert it into the Database singleton, for every
+        file inside the current working directory's default branch (usually
+        *master*).
+
+        :param repo_url: The url the Git repository was cloned from.
+        :param repo_name: The name of the repository.
+        :param framework_name: The name of the framework the repository is from.
+
+        :type repo_url: str
+        :type repo_name: str
+        :type framework_name: str
+        """
+
+        commits_meta = _get_commits_metadata()
+        for filename in commits_meta.keys():
+            try:
+                with open(filename, "r") as source_file:
+                    source = _decode(source_file.read())
+                    if source is None:
+                        return
+            except IOError as exception:
+                # logging.warning(
+                        # "_insert_repository_codelets() failed: %s: %s: %s" %
+                        # (exception.__class__.__name__, exception, repo_url))
+                pass
+
+            authors = [(_decode(author),) for author in \
+                    commits_meta[filename]["authors"]]
+            codelet = Codelet("%s:%s" % (repo_name, filename), source, filename,
+                            None, authors, _generate_file_url(filename, repo_url,
+                                    framework_name),
+                            commits_meta[filename]["time_created"],
+                            commits_meta[filename]["time_last_modified"])
+
+            self.codelet_count += 1 #debug
+            if self.codelet_count % 500 == 0: #debug
+                logging.info("Number of codelets indexed: %d.", self.codelet_count) #debug
+
+            # Database.insert(codelet)
 
 class _GitCloner(threading.Thread):
     """
     A singleton Git repository cloner.
 
+    Clones the repositories crawled by :class:`crawler.GitHubCrawler` for
+    :class:`GitIndexer` to index.
+
     :ivar clone_queue: (:class:`Queue.Queue`) see
-        :attr:`bitshift.crawler.crawler.GitHubCrawler.clone_queue`.
+        :attr:`crawler.GitHubCrawler.clone_queue`.
     :ivar index_queue: (:class:`Queue.Queue`) see
         :attr:`GitIndexer.index_queue`.
     """
@@ -111,6 +190,8 @@ class _GitCloner(threading.Thread):
         :type clone_queue: see :attr:`self.clone_queue`
         :type index_queue: see :attr:`self.index_queue`
         """
+
+        # logging.info("Starting.")
 
         self.clone_queue = clone_queue
         self.index_queue = index_queue
@@ -146,16 +227,29 @@ class _GitCloner(threading.Thread):
 
         queue_percent_full = (float(self.index_queue.qsize()) /
                 self.index_queue.maxsize) * 100
-        logging.info("Cloning %s. Queue-size: (%d%%) %d/%d" % (repo.url,
-                queue_percent_full, self.index_queue.qsize(),
-                self.index_queue.maxsize))
+        # logging.info("Cloning %s. Queue-size: (%d%%) %d/%d" % (repo.url,
+                # queue_percent_full, self.index_queue.qsize(),
+                # self.index_queue.maxsize))
 
+        exit_code = None
         command = ("perl -e 'alarm shift @ARGV; exec @ARGV' %d git clone"
         " --single-branch %s %s/%s || pkill -f git")
-        if subprocess.call(command % (GIT_CLONE_TIMEOUT, repo.url,
-                GIT_CLONE_DIR, repo.name), shell=True) != 0:
-            logging.warning("_clone_repository(): Cloning %s failed." %
-                    repo.url)
+
+        while exit_code is None:
+            try:
+                exit_code = subprocess.call(command % (GIT_CLONE_TIMEOUT,
+                        repo.url, GIT_CLONE_DIR, repo.name), shell=True)
+            except:
+                # logging.warning("_clone_repository() failed: %s: %s",
+                        # exception.__class__.__name__, exception)
+                time.sleep(1)
+                continue
+            else:
+                break
+
+        if exit_code != 0:
+            # logging.warning("_clone_repository(): Cloning %s failed." %
+                    # repo.url)
             if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
                 shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
             return
@@ -203,74 +297,6 @@ class _ChangeDir(object):
 
         os.chdir(self.old_path)
 
-def _index_repository(repo_url, repo_name, framework_name):
-    """
-    Clone and index (create and insert Codeletes for) a Git repository.
-
-    `git clone` the Git repository located at **repo_url**, call
-    _insert_repository_codelets, then remove said repository.
-
-    :param repo_url: The url the Git repository was cloned from.
-    :param repo_name: The name of the repository.
-    :param framework_name: The name of the framework the repository is from.
-
-    :type repo_url: str
-    :type repo_name: str
-    :type framework_name: str
-    """
-
-    logging.info("Indexing repository %s." % repo_url)
-    with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo_name)) as repository_dir:
-        try:
-            _insert_repository_codelets(repo_url, repo_name,
-                    framework_name)
-        except Exception as exception:
-            logging.warning(
-                    "_insert_repository_codelets() failed: %s: %s: %s" %
-                    (exception.__class__.__name__, exception, repo_url))
-
-    if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
-        shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
-
-def _insert_repository_codelets(repo_url, repo_name, framework_name):
-    """
-    Create and insert a Codelet for the files inside a Git repository.
-
-    Create a new Codelet, and insert it into the Database singleton, for every
-    file inside the current working directory's default branch (usually
-    *master*).
-
-    :param repo_url: The url the Git repository was cloned from.
-    :param repo_name: The name of the repository.
-    :param framework_name: The name of the framework the repository is from.
-
-    :type repo_url: str
-    :type repo_name: str
-    :type framework_name: str
-    """
-
-    commits_meta = _get_commits_metadata()
-    for filename in commits_meta.keys():
-        try:
-            with open(filename, "r") as source_file:
-                source = _decode(source_file.read())
-                if source is None:
-                    return
-        except IOError as exception:
-            logging.warning(
-                    "_insert_repository_codelets() failed: %s: %s: %s" %
-                    (exception.__class__.__name__, exception, repo_url))
-
-        authors = [(_decode(author),) for author in \
-                commits_meta[filename]["authors"]]
-        codelet = Codelet("%s:%s" % (repo_name, filename), source, filename,
-                        None, authors, _generate_file_url(filename, repo_url,
-                                framework_name),
-                        commits_meta[filename]["time_created"],
-                        commits_meta[filename]["time_last_modified"])
-
-        # Database.insert(codelet)
-
 def _generate_file_url(filename, repo_url, framework_name):
     """
     Return a url for a filename from a Git wrapper framework.
@@ -288,19 +314,25 @@ def _generate_file_url(filename, repo_url, framework_name):
     :rtype: str, or None
 
     .. warning::
-        `git branch` will occasionally fail, and, seeing as its a crucial
-        component of GitHub's repository file urls, None will be returned.
+        Various Git subprocesses will occasionally fail, and, seeing as the
+        information they provide is a crucial component of some repository file
+        urls, None may be returned.
     """
 
-    if framework_name == "GitHub":
-        try:
-            default_branch = subprocess.check_output("git branch --no-color",
-                    shell=True)[2:-1]
-            return "%s/blob/%s/%s" % (repo_url, default_branch, filename)
-        except CalledProcessError as exception:
-            logging.warning("_generate_file_url(): %s: %s",
-                    exception.__class__.name, exception)
-            return None
+    try:
+        if framework_name == "GitHub":
+                default_branch = subprocess.check_output("git branch"
+                        " --no-color", shell=True)[2:-1]
+                return ("%s/blob/%s/%s" % (repo_url, default_branch,
+                        filename)).replace("//", "/")
+        elif framework_name == "Bitbucket":
+                commit_hash = subprocess.check_output("git rev-parse HEAD",
+                        shell=True).replace("\n", "")
+                return ("%s/src/%s/%s" % (repo_url, commit_hash,
+                        filename)).replace("//", "/")
+    except subprocess.CalledProcessError as exception:
+        # logging.warning("_generate_file_url() failed: %s", exception)
+        return None
 
 def _get_git_commits():
     """
@@ -354,12 +386,15 @@ def _get_tracked_files():
     GIT_IGNORE_EXTENSIONS = ["t[e]?xt(ile)?", "m(ark)?down", "mkd[n]?",
             "md(wn|t[e]?xt)?", "rst"]
 
-    tracked_files = subprocess.check_output(("perl -le 'for (@ARGV){ print if \
-            -f && -T }' $(find . -type d -name .git -prune -o -print)"),
-            shell=True).split("\n")[:-1]
+    files = []
+    for dirname, subdir_names, filenames in os.walk("."):
+        for filename in filenames:
+            path = os.path.join(dirname, filename)
+            if _is_ascii(path):
+                files.append(path)
 
     valuable_files = []
-    for filename in tracked_files:
+    for filename in files:
         filename_match = any([re.match(pattern, filename, flags=re.IGNORECASE)
                 for pattern in GIT_IGNORE_FILES])
         extension = filename.split(".")[-1]
@@ -431,7 +466,47 @@ def _decode(raw):
         encoding = bs4.BeautifulSoup(raw).original_encoding
         return raw.decode(encoding) if encoding is not None else None
 
-    except Exception as exception:
-        logging.warning("_decode(): %s: %s", exception.__class__.__name__,
-                exception)
+    except (LookupError, UnicodeDecodeError, UserWarning) as exception:
+        # logging.warning("_decode() failed: %s: %s",
+                # exception.__class__.__name__, exception)
         return None
+
+def _is_ascii(filename):
+    """
+    Heuristically determine whether a file is ASCII text or binary.
+
+    If a portion of the file contains null bytes, or the percentage of bytes
+    that aren't ASCII is greater than 30%, then the file is concluded to be
+    binary. This heuristic is used by the `file` utility, Perl's inbuilt `-T`
+    operator, and is the de-facto method for in : passdetermining whether a
+    file is ASCII.
+
+    :param filename: The path of the file to test.
+
+    :type filename: str
+
+    :return: Whether the file is probably ASCII.
+    :rtype: Boolean
+    """
+
+    try:
+        with open(filename) as source:
+            file_snippet = source.read(512)
+
+            if not file_snippet:
+                return True
+
+            ascii_characters = "".join(map(chr, range(32, 127)) +
+                    list("\n\r\t\b"))
+            null_trans = string.maketrans("", "")
+
+            if "\0" in file_snippet:
+                return False
+
+            non_ascii = file_snippet.translate(null_trans, ascii_characters)
+            return not float(len(non_ascii)) / len(file_snippet) > 0.30
+
+    except IOError as exception:
+        # logging.warning("_is_ascii() failed: %s: %s",
+                # exception.__class__.__name__, exception)
+        return False
