@@ -1,7 +1,6 @@
 package com.bitshift.parsing.symbols;
 
 import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import com.bitshift.parsing.symbols.Symbols;
@@ -10,19 +9,19 @@ import com.bitshift.parsing.symbols.Symbols;
 public class JavaSymbols extends Symbols {
 
     private String _packageName;
-    private Map<String, Object> _classes;
-    private Map<String, Object> _interfaces;
-    private Map<String, Object> _methods;
-    private Map<String, Object> _fields;
-    private Map<String, Object> _vars;
+    private HashMap<String, HashMap<String, Object>> _classes;
+    private HashMap<String, HashMap<String, Object>> _interfaces;
+    private HashMap<String, HashMap<String, Object>> _methods;
+    private HashMap<String, HashMap<String, Object>> _fields;
+    private HashMap<String, HashMap<String, Object>> _vars;
 
     public JavaSymbols() {
         _packageName = null;
-        _classes = new HashMap<String, Object>();
-        _interfaces = new HashMap<String, Object>();
-        _methods = new HashMap<String, Object>();
-        _fields = new HashMap<String, Object>();
-        _vars = new HashMap<String, Object>();
+        _classes = new HashMap<String, HashMap<String, Object>>();
+        _interfaces = new HashMap<String, HashMap<String, Object>>();
+        _methods = new HashMap<String, HashMap<String, Object>>();
+        _fields = new HashMap<String, HashMap<String, Object>>();
+        _vars = new HashMap<String, HashMap<String, Object>>();
     }
 
     public boolean setPackage(String name) {
@@ -30,118 +29,78 @@ public class JavaSymbols extends Symbols {
         return true;
     }
 
-    public boolean insertClassDeclaration(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(0, pos);
-        this._classes.put(name, copy);
-        return true;
-    }
-    public boolean insertClassInstance(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(pos);
-        this._classes.put(name, copy);
+    public boolean insertClassDeclaration(String name, HashMap<String, Object> data) {
+        this._classes.put(name, data);
         return true;
     }
 
-    public boolean insertInterfaceDeclaration(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_interfaces.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(0, pos);
-        this._interfaces.put(name, copy);
-        return true;
-    }
-    public boolean insertInterfaceInstance(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_interfaces.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(pos);
-        this._interfaces.put(name, copy);
+    public boolean insertInterfaceDeclaration(String name, HashMap<String, Object> data) {
+        this._interfaces.put(name, data);
         return true;
     }
 
-    public boolean insertMethodDeclaration(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_methods.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
+    public boolean insertMethodDeclaration(String name, HashMap<String, Object> data) {
+        HashMap<String, Object> method = this._methods.get(name);
+        if (method == null) {
+            method = new HashMap<String, Object>();
+            method.put("declaration", data);
+        } else {
+            method.put("declaration", data);
+        }
 
-        copy.add(0, pos);
-        this._methods.put(name, copy);
+        this._methods.put(name, method);
         return true;
     }
-    public boolean insertMethodInvocation(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_methods.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
+    public boolean insertMethodInvocation(String name, HashMap<String, Object> data) {
+        HashMap<String, Object> method = this._methods.get(name);
+        if (method == null) {
+            method = new HashMap<String, Object>();
+            ArrayList<Object> calls = new ArrayList<Object>(10);
+            calls.add(data);
+            method.put("calls", calls);
+        } else {
+            ArrayList<Object> calls = (ArrayList<Object>)method.get("calls");
+            calls = (calls == null) ? new ArrayList<Object>(10) : calls;
+            calls.add(data);
+            method.put("calls", calls);
+        }
 
-        copy.add(pos);
-        this._methods.put(name, copy);
-        return true;
-    }
-
-    public boolean insertFieldDeclaration(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_fields.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(0, pos);
-        this._fields.put(name, copy);
-        return true;
-    }
-    public boolean insertFieldAccess(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_fields.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(pos);
-        this._fields.put(name, copy);
+        this._methods.put(name, method);
         return true;
     }
 
-    public boolean insertVariableDeclaration(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_vars.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
-
-        copy.add(0, pos);
-        this._vars.put(name, copy);
+    public boolean insertFieldDeclaration(String name, HashMap<String, Object> data) {
+        this._fields.put(name, data);
         return true;
     }
-    public boolean insertVariableAccess(String name, Integer startLine, Integer startCol, Integer endLine, Integer endCol) {
-        List<Integer> pos = new ArrayList<Integer>(4);
-        pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
-        
-        List<List<Integer>> copy = (List<List<Integer>>)_vars.get(name);
-        copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
-        copy.add(pos);
-        this._vars.put(name, copy);
+    public boolean insertVariableDeclaration(String name, HashMap<String, Object> data) {
+        HashMap<String, Object> var = this._vars.get(name);
+        if (var == null) {
+            var = new HashMap<String, Object>();
+            var.put("declaration", data);
+        } else {
+            var.put("declaration", data);
+        }
+
+        this._vars.put(name, var);
+        return true;
+    }
+    public boolean insertVariableAccess(String name, HashMap<String, Object> data) {
+        HashMap<String, Object> var = this._vars.get(name);
+        if (var == null) {
+            var = new HashMap<String, Object>();
+            ArrayList<Object> uses = new ArrayList<Object>(10);
+            uses.add(data);
+            var.put("uses", uses);
+        } else {
+            ArrayList<Object> uses = (ArrayList<Object>)var.get("uses");
+            uses = (uses == null) ? new ArrayList<Object>(10) : uses;
+            uses.add(data);
+            var.put("uses", uses);
+        }
+
+        this._vars.put(name, var);
         return true;
     }
 

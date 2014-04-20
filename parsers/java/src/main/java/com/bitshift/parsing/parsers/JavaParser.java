@@ -5,11 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.IOException;
-
 import java.net.Socket;
 
 import org.eclipse.jdt.core.JavaCore;
@@ -46,44 +41,8 @@ public class JavaParser extends Parser {
         super(clientSocket);
     }
 
-    private String readFromClient() {
-        String fromClient = "";
-
-        try {
-            BufferedReader clientReader = new BufferedReader(
-                    new InputStreamReader(this.clientSocket.getInputStream()));
-
-            int bytes = Integer.parseInt(clientReader.readLine());
-
-            StringBuilder builder = new StringBuilder();
-            int i = 0;
-
-            while(i < bytes) {
-                char aux = (char)clientReader.read();
-                builder.append(aux);
-                i++;
-            }
-
-            fromClient = builder.toString();
-
-        } catch (IOException ex) {
-        }
-
-        return fromClient;
-    }
-
-    private void writeToClient(String toClient) {
-        try {
-            PrintWriter clientWriter = new PrintWriter(
-                    this.clientSocket.getOutputStream(), true);
-
-            clientWriter.println(toClient);
-        } catch (IOException ex) {
-        }
-    }
-
     @Override
-    public Symbols genSymbols() {
+    protected Symbols genSymbols() {
         char[] source = this.readFromClient().toCharArray();
 
         ASTParser parser = ASTParser.newParser(AST.JLS3);
@@ -118,28 +77,24 @@ public class JavaParser extends Parser {
             this._cache = new Stack<HashMap<String, Object>>();
         }
 
-        public boolean visit(ClassInstanceCreation node) {
-            return true;
-        }
-
-        public boolean visit(FieldAccess node) {
-            Name nameObj = node.getName();
-            String name = nameObj.isQualifiedName() ?
-                ((QualifiedName) nameObj).getFullyQualifiedName() :
-                ((SimpleName) nameObj).getIdentifier();
-
+        public boolean visit(FieldDeclaration node) {
+            HashMap<String, Object> data = new HashMap<String, Object>();
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            this.symbols.insertFieldAccess(name, sl, sc, null, null);
+            data.put("coord", Symbols.createCoord(sl, sc, null, null));
+            this._cache.push(data);
             return true;
         }
 
-        public boolean visit(FieldDeclaration node) {
-            return true;
+        public void endVisit(FieldDeclaration node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+            this.symbols.insertFieldDeclaration(name, data);
         }
 
         public boolean visit(MethodDeclaration node) {
+            HashMap<String, Object> data = new HashMap<String, Object>();
             Name nameObj = node.getName();
             String name = nameObj.isQualifiedName() ?
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
@@ -152,59 +107,114 @@ public class JavaParser extends Parser {
             int el = this.root.getLineNumber(last.getStartPosition());
             int ec = this.root.getColumnNumber(last.getStartPosition());
 
-            this.symbols.insertMethodDeclaration(name, sl, sc, el, ec);
+            data.put("coord", Symbols.createCoord(sl, sc, null, null));
+            data.put("name", name);
+            this._cache.push(data);
             return true;
+        }
+
+        public void endVisit(MethodDeclaration node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+            this.symbols.insertMethodDeclaration(name, data);
         }
 
         public boolean visit(MethodInvocation node) {
+            HashMap<String, Object> data = new HashMap<String, Object>();
             Name nameObj = node.getName();
             String name = nameObj.isQualifiedName() ?
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
-
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            this.symbols.insertMethodInvocation(name, sl, sc, null, null);
+            data.put("coord", Symbols.createCoord(sl, sc, null, null));
+            data.put("name", name);
+            this._cache.push(data);
             return true;
+        }
+
+        public void endVisit(MethodInvocation node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+            this.symbols.insertMethodInvocation(name, data);
         }
 
         public boolean visit(PackageDeclaration node) {
-            Name nameObj = node.getName();
-            String name = nameObj.isQualifiedName() ?
-                ((QualifiedName) nameObj).getFullyQualifiedName() :
-                ((SimpleName) nameObj).getIdentifier();
-
-            this.symbols.setPackage(name);
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            this._cache.push(data);
             return true;
         }
 
+        public void endVisit(PackageDeclaration node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+            this.symbols.setPackage(name);
+        }
+
         public boolean visit(TypeDeclaration node) {
-            Name nameObj = node.getName();
-            String name = nameObj.isQualifiedName() ?
-                ((QualifiedName) nameObj).getFullyQualifiedName() :
-                ((SimpleName) nameObj).getIdentifier();
+            HashMap<String, Object> data = new HashMap<String, Object>();
 
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
+            data.put("coord", Symbols.createCoord(sl, sc, null, null));
+            this._cache.push(data);
+            return true;
+        }
+
+        public void endVisit(TypeDeclaration node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+
             if (node.isInterface()) {
-                this.symbols.insertInterfaceDeclaration(name, sl, sc, null, null);
+                this.symbols.insertInterfaceDeclaration(name, data);
             } else {
-                this.symbols.insertClassDeclaration(name, sl, sc, null, null);
+                this.symbols.insertClassDeclaration(name, data);
+            }
+        }
+
+        public boolean visit(VariableDeclarationFragment node) {
+            HashMap<String, Object> data = new HashMap<String, Object>();
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition());
+
+            data.put("coord", Symbols.createCoord(sl, sc, null, null));
+            this._cache.push(data);
+            return true;
+        }
+
+        public void endVisit(VariableDeclarationFragment node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+            this.symbols.insertVariableDeclaration(name, data);
+        }
+
+        public boolean visit(QualifiedName node) {
+            if (!this._cache.empty()) {
+                HashMap<String, Object> data = this._cache.pop();
+
+                if(!data.containsKey("name")) {
+                    String name = node.getFullyQualifiedName();
+                    data.put("name", name);
+                }
+
+                this._cache.push(data);
             }
             return true;
         }
 
-        public boolean visit(VariableDeclarationFragment node) {
-            Name nameObj = node.getName();
-            String name = nameObj.isQualifiedName() ?
-                ((QualifiedName) nameObj).getFullyQualifiedName() :
-                ((SimpleName) nameObj).getIdentifier();
+        public boolean visit(SimpleName node) {
+            if (!this._cache.empty()) {
+                HashMap<String, Object> data = this._cache.pop();
 
-            int sl = this.root.getLineNumber(node.getStartPosition());
-            int sc = this.root.getColumnNumber(node.getStartPosition());
-            this.symbols.insertVariableDeclaration(name, sl, sc, null, null);
+                if(!data.containsKey("name")) {
+                    String name = node.getIdentifier();
+                    data.put("name", name);
+                }
+
+                this._cache.push(data);
+            }
             return true;
         }
 
