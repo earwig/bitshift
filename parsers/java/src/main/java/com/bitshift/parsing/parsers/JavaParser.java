@@ -13,18 +13,14 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
@@ -32,9 +28,7 @@ import com.bitshift.parsing.parsers.Parser;
 import com.bitshift.parsing.symbols.Symbols;
 import com.bitshift.parsing.symbols.JavaSymbols;
 
-/*TODO: Work on parsing partial java code.
- * Change visits to endVisit and implement a cache for more concise code structure.
- * Get rid of unecessary imports.*/
+/*TODO: Work on parsing partial java code.*/
 public class JavaParser extends Parser {
 
     public JavaParser(Socket clientSocket) {

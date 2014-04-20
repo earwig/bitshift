@@ -1,6 +1,5 @@
 package com.bitshift.parsing.symbols;
 
-import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import com.bitshift.parsing.symbols.Symbols;
