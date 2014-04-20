@@ -94,14 +94,19 @@ public class JavaParser extends Parser {
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
             List<Statement> statements = node.getBody().statements();
-            Statement last = statements.get(statements.size() - 1);
 
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
-            int el = this.root.getLineNumber(last.getStartPosition());
-            int ec = this.root.getColumnNumber(last.getStartPosition());
+            Integer el = null;
+            Integer ec = null;
 
-            data.put("coord", Symbols.createCoord(sl, sc, null, null));
+            if (statements.size() > 0) {
+                Statement last = statements.get(statements.size() - 1);
+                el = this.root.getLineNumber(last.getStartPosition());
+                ec = this.root.getColumnNumber(last.getStartPosition());
+            }
+
+            data.put("coord", Symbols.createCoord(sl, sc, el, ec));
             data.put("name", name);
             this._cache.push(data);
             return true;
