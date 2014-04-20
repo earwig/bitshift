@@ -57,7 +57,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_interfaces.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(0, pos);
@@ -68,7 +68,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_interfaces.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(pos);
@@ -80,7 +80,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_methods.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(0, pos);
@@ -91,7 +91,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_methods.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(pos);
@@ -103,7 +103,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_fields.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(0, pos);
@@ -114,7 +114,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_fields.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(pos);
@@ -126,7 +126,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_vars.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(0, pos);
@@ -137,7 +137,7 @@ public class JavaSymbols extends Symbols {
         List<Integer> pos = new ArrayList<Integer>(4);
         pos.add(startLine); pos.add(startCol); pos.add(endLine); pos.add(endCol);
         
-        List<List<Integer>> copy = (List<List<Integer>>)_classes.get(name);
+        List<List<Integer>> copy = (List<List<Integer>>)_vars.get(name);
         copy = (copy == null) ? new ArrayList<List<Integer>>() : copy;
 
         copy.add(pos);

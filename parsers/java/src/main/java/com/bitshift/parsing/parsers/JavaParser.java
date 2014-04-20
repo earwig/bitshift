@@ -39,8 +39,7 @@ import com.bitshift.parsing.symbols.JavaSymbols;
 
 /*TODO: Work on parsing partial java code.
  * Change visits to endVisit and implement a cache for more concise code structure.
- * Get rid of unecessary imports.
- * Fix column and line numbers.*/
+ * Get rid of unecessary imports.*/
 public class JavaParser extends Parser {
 
     public JavaParser(Socket clientSocket) {
@@ -55,7 +54,6 @@ public class JavaParser extends Parser {
                     new InputStreamReader(this.clientSocket.getInputStream()));
 
             int bytes = Integer.parseInt(clientReader.readLine());
-            System.out.println(bytes);
 
             StringBuilder builder = new StringBuilder();
             int i = 0;
@@ -105,7 +103,6 @@ public class JavaParser extends Parser {
     @Override
     public void run() {
         JavaSymbols symbols = (JavaSymbols) this.genSymbols();
-        System.out.println(symbols.toString());
         writeToClient(symbols.toString());
     }
 
@@ -131,8 +128,8 @@ public class JavaParser extends Parser {
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
 
-            int sl = this.root.getLineNumber(node.getStartPosition()) - 1;
-            int sc = this.root.getColumnNumber(node.getStartPosition()) - 1;
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition());
 
             this.symbols.insertFieldAccess(name, sl, sc, null, null);
             return true;
@@ -150,10 +147,10 @@ public class JavaParser extends Parser {
             List<Statement> statements = node.getBody().statements();
             Statement last = statements.get(statements.size() - 1);
 
-            int sl = this.root.getLineNumber(node.getStartPosition()) - 1;
-            int sc = this.root.getColumnNumber(node.getStartPosition()) - 1;
-            int el = this.root.getLineNumber(last.getStartPosition()) - 1;
-            int ec = this.root.getColumnNumber(last.getStartPosition()) - 1;
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition());
+            int el = this.root.getLineNumber(last.getStartPosition());
+            int ec = this.root.getColumnNumber(last.getStartPosition());
 
             this.symbols.insertMethodDeclaration(name, sl, sc, el, ec);
             return true;
@@ -165,8 +162,8 @@ public class JavaParser extends Parser {
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
 
-            int sl = this.root.getLineNumber(node.getStartPosition()) - 1;
-            int sc = this.root.getColumnNumber(node.getStartPosition()) - 1;
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition());
 
             this.symbols.insertMethodInvocation(name, sl, sc, null, null);
             return true;
@@ -188,8 +185,8 @@ public class JavaParser extends Parser {
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
 
-            int sl = this.root.getLineNumber(node.getStartPosition()) - 1;
-            int sc = this.root.getColumnNumber(node.getStartPosition()) - 1;
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition());
 
             if (node.isInterface()) {
                 this.symbols.insertInterfaceDeclaration(name, sl, sc, null, null);
@@ -205,8 +202,8 @@ public class JavaParser extends Parser {
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
 
-            int sl = this.root.getLineNumber(node.getStartPosition()) - 1;
-            int sc = this.root.getColumnNumber(node.getStartPosition()) - 1;
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition());
             this.symbols.insertVariableDeclaration(name, sl, sc, null, null);
             return true;
         }

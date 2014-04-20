@@ -42,4 +42,5 @@ nosetests.xml
 .pydevproject
 
 # Maven
-*/target/*
+parsers/java/target/*
+*/tags
