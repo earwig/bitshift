@@ -43,4 +43,7 @@ nosetests.xml
 
 # Maven
 parsers/java/target/*
+
+# Ctags
 */tags
+logs/*
