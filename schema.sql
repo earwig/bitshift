@@ -16,7 +16,7 @@ CREATE TABLE `code` (
     `code_code` MEDIUMTEXT NOT NULL,
     PRIMARY KEY (`code_id`),
     KEY (`code_hash`),
-    FULLTEXT KEY (`codelet_code`)
+    FULLTEXT KEY (`code_code`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `codelets` (
@@ -50,7 +50,7 @@ CREATE TABLE `authors` (
     PRIMARY KEY (`author_id`),
     FULLTEXT KEY (`author_name`),
     FOREIGN KEY (`author_codelet`)
-        REFERENCES `codelet` (`codelet_id`)
+        REFERENCES `codelets` (`codelet_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
@@ -64,7 +64,7 @@ CREATE TABLE `symbols` (
     PRIMARY KEY (`symbol_id`),
     KEY (`symbol_type`, `symbol_name`(32)),
     FOREIGN KEY (`symbol_codelet`)
-        REFERENCES `codelet` (`codelet_id`)
+        REFERENCES `codelets` (`codelet_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
@@ -85,6 +85,6 @@ CREATE TABLE `cache_data` (
         REFERENCES `cache` (`cache_id`)
         ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (`cdata_codelet`)
-        REFERENCES `codelet` (`codelet_id`)
+        REFERENCES `codelets` (`codelet_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
