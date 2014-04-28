@@ -58,16 +58,20 @@ class _TreeCutter(ast.NodeVisitor):
             if isinstance(t, ast.Tuple):
                 for n in t.elts:
                     line, col = n.lineno, n.col_offset
-                    self.accum['functions'][n.id]['start_ln'] = line
-                    self.accum['functions'][n.id]['start_col'] = col
-                    self.accum['functions'][n.id]['end_ln'] = line
-                    self.accum['functions'][n.id]['end_ln'] = col
+
+                    if not self.accum['vars'].has_key(node.name):
+                        self.accum['vars'][node.name] = {'declaration': {}, 'uses': []}
+
+                    self.accum['vars'][n.id]['declaration']['start_ln'] = line
+                    self.accum['vars'][n.id]['declaration']['start_col'] = col
+                    self.accum['vars'][n.id]['declaration']['end_ln'] = line
+                    self.accum['vars'][n.id]['declaration']['end_ln'] = col
             else:
                 line, col = t.lineno, t.col_offset
-                self.accum['functions'][t.id]['start_ln'] = line
-                self.accum['functions'][t.id]['start_col'] = col
-                self.accum['functions'][t.id]['end_ln'] = line
-                self.accum['functions'][t.id]['end_ln'] = col
+                self.accum['vars'][t.id]['declaration']['start_ln'] = line
+                self.accum['vars'][t.id]['declaration']['start_col'] = col
+                self.accum['vars'][t.id]['declaration']['end_ln'] = line
+                self.accum['vars'][t.id]['declaration']['end_ln'] = col
 
         self.generic_visit(node)
 
@@ -84,12 +88,44 @@ class _TreeCutter(ast.NodeVisitor):
         """
 
         start_line, start_col, end_line, end_col = self.start_n_end(node)
-        self.accum['functions'][node.name]['start_ln'] = start_line
-        self.accum['functions'][node.name]['start_col'] = start_col
-        self.accum['functions'][node.name]['end_ln'] = end_line
-        self.accum['functions'][node.name]['end_ln'] = end_col
+
+        if not self.accum['functions'].has_key(node.name):
+            self.accum['functions'][node.name] = {'declaration': {}, 'calls': []}
+
+        self.accum['functions'][node.name]['declaration']['start_ln'] = start_line
+        self.accum['functions'][node.name]['declaration']['start_col'] = start_col
+        self.accum['functions'][node.name]['declaration']['end_ln'] = end_line
+        self.accum['functions'][node.name]['declaration']['end_ln'] = end_col
 
         self.generic_visit(node)
+
+    def visit_Call(self, node):
+        """
+        Visits Function Call nodes in a tree.  Adds relevant data about them
+            in the functions section for accum.
+
+        :param node: The current node.
+
+        :type node: ast.Call
+
+        .. todo::
+            Add arguments and decorators metadata to accum.
+        """
+
+        line, col = node.line_no, node.col_offset
+
+        if not self.accum['functions'].has_key(node.name):
+            self.accum['functions'][node.name] = {'declaration': {}, 'calls': []}
+
+        pos = {}
+        pos['start_line'] = line
+        pos['start_col'] = col
+        pos['end_line'] = line
+        pos['end_col'] = col
+        self.accum['functions'][node.name]['calls'].append(pos)
+
+        self.generic_visit(node)
+
 
     def visit_ClassDef(self, node):
         """
@@ -104,12 +140,16 @@ class _TreeCutter(ast.NodeVisitor):
         """
 
         start_line, start_col, end_line, end_col = self.start_n_end(node)
-        self.accum['functions'][node.name]['start_ln'] = start_line
-        self.accum['functions'][node.name]['start_col'] = start_col
-        self.accum['functions'][node.name]['end_ln'] = end_line
-        self.accum['functions'][node.name]['end_ln'] = end_col
+
+        self.accum['classes'][node.name]['start_ln'] = start_line
+        self.accum['classes'][node.name]['start_col'] = start_col
+        self.accum['classes'][node.name]['end_ln'] = end_line
+        self.accum['classes'][node.name]['end_ln'] = end_col
 
         self.generic_visit(node)
+
+    def visit_Name(self, node):
+        pass
 
 def parse_py(codelet):
     """
