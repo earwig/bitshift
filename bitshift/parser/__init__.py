@@ -1,7 +1,9 @@
-import os, ast
 import pygments.lexers as pgl
 from ..languages import LANGS
 from .python import parse_py
+from .c import parse_c
+from .java import parse_java
+from .ruby import parse_ruby
 
 _all__ = ["parse"]
 
@@ -24,39 +26,26 @@ def _lang(codelet):
 
 def parse(codelet, pid):
     """
-    Sends codelet code to the Java parsing process via a named pipe. Reads the
-        resulting symbols from the pipe and updates the codelet.
+    Dispatches the codelet to the correct parser based on its language.
 
     :param codelet: The codelet object to parsed.
     :param pid: The id of the current python process.
 
     :type code: Codelet
     :param pid: str.
-
-    .. todo::
-        Identify languages using pygments and change the write file based on
-        that.
     """
 
-    codelet.language = _lang(codelet)
+    lang = _lang(codelet)
 
-    if codelet.language == LANGS.index("Python"):
+    if lang == LANGS.index("Python"):
         parse_py(codelet)
 
-    else:
-        write_f = "../../tmp/%d_parser.proc" % codelet.language
+    elif lang == LANGS.index("C"):
+        parse_c(codelet)
 
-        with open(write_f, 'a') as wf:
-            wf.write('pid:' + str(pid) + '\n')
-            wf.write('body:\n' + codelet.code)
+    elif lang == LANGS.index("Java"):
+        parse_java(codelet)
 
-        read_f = '../../tmp/%s_py.data' % str(pid)
-        data = ''
-
-        while data == '':
-            with open(read_f) as rf:
-                data = rf.read()
-
-        os.remove(read_f)
-        codelet.symbols = ast.literal_eval(data.split(',')[1])
+    elif lang == LANGS.index("Ruby"):
+        parse_ruby(codelet)
 
