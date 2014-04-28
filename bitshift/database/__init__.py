@@ -8,15 +8,16 @@ import os
 import mmh3
 import oursql
 
-# from ..languages import ...
+from .migration import VERSION, MIGRATIONS
 
 __all__ = ["Database"]
 
 class Database(object):
     """Represents the MySQL database."""
 
-    def __init__(self):
+    def __init__(self, migrate=False):
         self._connect()
+        self._check_version(migrate)
 
     def _connect(self):
         """Establish a connection to the database."""
@@ -24,6 +25,33 @@ class Database(object):
         default_file = os.path.join(root, ".my.cnf")
         self._conn = oursql.connect(read_default_file=default_file,
                                     autoping=True, autoreconnect=True)
+
+    def _migrate(self, cursor, current):
+        """Migrate the database to the latest schema version."""
+        for version in xrange(current, VERSION):
+            for query in MIGRATIONS[version - 1]:
+                cursor.execute(query)
+
+    def _check_version(self, migrate):
+        """Check the database schema version and respond accordingly.
+
+        If the schema is out of date, migrate if *migrate* is True, else raise
+        an exception.
+        """
+        with self._conn.cursor() as cursor:
+            cursor.execute("SELECT version FROM version")
+            version = cursor.fetchone()[0]
+            if version < VERSION:
+                if migrate:
+                    self._migrate(cursor, version)
+                else:
+                    err = "Database schema out of date. " \
+                          "Run `python -m bitshift.database.migration`."
+                    raise RuntimeError(err)
+
+    def close(self):
+        """Disconnect from the database."""
+        self._conn.close()
 
     def search(self, query, page=1):
         """
@@ -55,18 +83,13 @@ class Database(object):
         :param codelet: The codelet to insert.
         :type codelet: :py:class:`.Codelet`
         """
-        frag_size = 16384  # 16 kB
-        query_slt1 = """SELECT code_id, LEFT(code_code, {0})
-                        FROM code WHERE code_hash = ?""".format(frag_size)
-        query_ins1 = "INSERT INTO code VALUES (?, ?)"
-        query_ins2 = "INSERT INTO codelets VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        query_ins3 = "INSERT INTO authors VALUES", " (?, ?, ?)"
-        query_ins4 = "INSERT INTO symbols VALUES", " (?, ?, ?, ?, ?)"
+        query1 = """INSERT INTO code VALUES (?, ?)
+                    ON DUPLICATE KEY UPDATE code_id=code_id"""
+        query2 = "INSERT INTO codelets VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        query3 = "INSERT INTO authors VALUES", " (?, ?, ?)"
+        query4 = "INSERT INTO symbols VALUES", " (?, ?, ?, ?, ?)"
 
         # LAST_INSERT_ID()
-
-        code_id = None
-        code_hash = mmh3.hash64(codelet.code.encode("utf8"))[0]
 
         # codelet_id -- auto_increment used here
         codelet_name
@@ -88,14 +111,9 @@ class Database(object):
         codelet.date_created
         codelet.date_modified
 
-        with self._conn.cursor() as cursor:
-            # Retrieve the ID of the source code if it's already in the DB:
-            cursor.execute(query_slt1, (code_hash,))
-            for c_id, c_code_frag in cursor.fetchall():
-                if c_code_frag == codelet.code[:frag_size]:
-                    code_id = c_id
-                    break
+        #######################################################################
 
-            # If the source code isn't already in the DB, add it:
-            if not code_id:
-                cursor.execute()
+        code_id = mmh3.hash64(codelet.code.encode("utf8"))[0]
+
+        with self._conn.cursor() as cursor:
+            cursor.execute(query1, (code_id, codelet.code))

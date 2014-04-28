@@ -1,5 +1,11 @@
+-- Schema version 2
+
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
+
+CREATE TABLE `version` (
+    `version` INT UNSIGNED NOT NULL
+) ENGINE=InnoDB;
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -11,11 +17,9 @@ CREATE TABLE `origins` (
 ) ENGINE=InnoDB;
 
 CREATE TABLE `code` (
-    `code_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `code_hash` BIGINT NOT NULL,
+    `code_id` BIGINT NOT NULL,
     `code_code` MEDIUMTEXT NOT NULL,
     PRIMARY KEY (`code_id`),
-    KEY (`code_hash`),
     FULLTEXT KEY (`code_code`)
 ) ENGINE=InnoDB;
 
@@ -31,6 +35,7 @@ CREATE TABLE `codelets` (
     `codelet_date_modified` DATETIME DEFAULT NULL,
     PRIMARY KEY (`codelet_id`),
     FULLTEXT KEY (`codelet_name`),
+    KEY (`codelet_lang`),
     KEY (`codelet_rank`),
     KEY (`codelet_date_created`),
     KEY (`codelet_date_modified`),
@@ -61,6 +66,8 @@ CREATE TABLE `symbols` (
     `symbol_name` VARCHAR(512) NOT NULL,
     `symbol_row` INT UNSIGNED NOT NULL,
     `symbol_col` INT UNSIGNED NOT NULL,
+    `symbol_end_row` INT UNSIGNED NOT NULL,
+    `symbol_end_col` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`symbol_id`),
     KEY (`symbol_type`, `symbol_name`(32)),
     FOREIGN KEY (`symbol_codelet`)
