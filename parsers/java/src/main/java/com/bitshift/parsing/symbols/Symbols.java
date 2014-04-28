@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public abstract class Symbols {
 
     public Symbols() {
-    
+
     }
 
     public static ArrayList<Integer> createCoord(Integer startLine, Integer startCol, Integer endLine, Integer endCol) {

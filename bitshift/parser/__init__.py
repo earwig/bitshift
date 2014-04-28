@@ -1,9 +1,6 @@
-import pygments.lexers as pgl
+import ast, pygments.lexers as pgl, sys, socket, struct
 from ..languages import LANGS
 from .python import parse_py
-from .c import parse_c
-from .java import parse_java
-from .ruby import parse_ruby
 
 _all__ = ["parse"]
 
@@ -24,28 +21,63 @@ def _lang(codelet):
 
     return LANGS.index(pgl.guess_lexer(codelet.code))
 
-def parse(codelet, pid):
+def _recv_data(server_socket):
+    """
+    Private function to read string response from a server.  It reads a certain
+        amount of data based on the size it is sent from the server.
+
+    :param server_socket: The server that the client is connected to, and will,
+        read from.
+
+    :type code: socket.ServerSocket
+    """
+
+    recv_size = 8192
+    total_data = []; size_data = cur_data = ''
+    total_size = 0; size = sys.maxint
+
+    while total_size < size:
+        cur_data = server_socket.recv(recv_size)
+
+        if not total_data:
+            if len(size_data) > 4:
+                size_data += cur_data
+                size = struct.unpack('>i', size_data[:4])[0]
+                recv_size = size
+                if recv_size > sys.maxint: recv_size = sys.maxint
+                total_data.append(size_data[4:])
+            else:
+                size_data += cur_data
+
+        else:
+            total_data.append(cur_data)
+
+        total_size = sum([len(s) for s in total_data])
+
+    server_socket.close()
+    return ''.join(total_data);
+
+
+def parse(codelet):
     """
     Dispatches the codelet to the correct parser based on its language.
 
     :param codelet: The codelet object to parsed.
-    :param pid: The id of the current python process.
 
     :type code: Codelet
-    :param pid: str.
     """
 
-    lang = _lang(codelet)
+    lang = _lang(codelet); source = codelet.code
+    server_socket_number = 5000 + lang
 
-    if lang == LANGS.index("Python"):
+    if lang == LANGS.index('Python'):
         parse_py(codelet)
 
-    elif lang == LANGS.index("C"):
-        parse_c(codelet)
+    else:
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.connect(("localhost", server_socket_number))
+        server_socket.send("%d\n%s" % (len(source), source));
 
-    elif lang == LANGS.index("Java"):
-        parse_java(codelet)
-
-    elif lang == LANGS.index("Ruby"):
-        parse_ruby(codelet)
+        symbols = ast.literal_eval(_recv_data(server_socket))
+        codelet.symbols = symbols
 

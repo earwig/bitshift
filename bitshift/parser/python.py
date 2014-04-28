@@ -62,16 +62,22 @@ class _TreeCutter(ast.NodeVisitor):
                     if not self.accum['vars'].has_key(node.name):
                         self.accum['vars'][node.name] = {'declaration': {}, 'uses': []}
 
-                    self.accum['vars'][n.id]['declaration']['start_ln'] = line
-                    self.accum['vars'][n.id]['declaration']['start_col'] = col
-                    self.accum['vars'][n.id]['declaration']['end_ln'] = line
-                    self.accum['vars'][n.id]['declaration']['end_ln'] = col
+                    pos = {'coord': {}}
+                    pos['coord']['start_line'] = line
+                    pos['coord']['start_col'] = col
+                    pos['coord']['end_line'] = line
+                    pos['coord']['end_col'] = col
+                    self.accum['vars'][n.id]['declaration'] = pos
+
             else:
                 line, col = t.lineno, t.col_offset
-                self.accum['vars'][t.id]['declaration']['start_ln'] = line
-                self.accum['vars'][t.id]['declaration']['start_col'] = col
-                self.accum['vars'][t.id]['declaration']['end_ln'] = line
-                self.accum['vars'][t.id]['declaration']['end_ln'] = col
+
+                pos = {'coord': {}}
+                pos['coord']['start_line'] = line
+                pos['coord']['start_col'] = col
+                pos['coord']['end_line'] = line
+                pos['coord']['end_col'] = col
+                self.accum['vars'][t.id]['declaration'] = pos
 
         self.generic_visit(node)
 
@@ -92,10 +98,12 @@ class _TreeCutter(ast.NodeVisitor):
         if not self.accum['functions'].has_key(node.name):
             self.accum['functions'][node.name] = {'declaration': {}, 'calls': []}
 
-        self.accum['functions'][node.name]['declaration']['start_ln'] = start_line
-        self.accum['functions'][node.name]['declaration']['start_col'] = start_col
-        self.accum['functions'][node.name]['declaration']['end_ln'] = end_line
-        self.accum['functions'][node.name]['declaration']['end_ln'] = end_col
+        pos = {'coord': {}}
+        pos['coord']['start_ln']= start_line
+        pos['coord']['start_col'] = start_col
+        pos['coord']['end_ln'] = end_line
+        pos['coord']['end_col'] = end_col
+        self.accum['functions'][node.name]['declaration'] = pos
 
         self.generic_visit(node)
 
@@ -117,11 +125,11 @@ class _TreeCutter(ast.NodeVisitor):
         if not self.accum['functions'].has_key(node.name):
             self.accum['functions'][node.name] = {'declaration': {}, 'calls': []}
 
-        pos = {}
-        pos['start_line'] = line
-        pos['start_col'] = col
-        pos['end_line'] = line
-        pos['end_col'] = col
+        pos = {'coord': {}}
+        pos['coord']['start_line'] = line
+        pos['coord']['start_col'] = col
+        pos['coord']['end_line'] = line
+        pos['coord']['end_col'] = col
         self.accum['functions'][node.name]['calls'].append(pos)
 
         self.generic_visit(node)
@@ -141,10 +149,12 @@ class _TreeCutter(ast.NodeVisitor):
 
         start_line, start_col, end_line, end_col = self.start_n_end(node)
 
-        self.accum['classes'][node.name]['start_ln'] = start_line
-        self.accum['classes'][node.name]['start_col'] = start_col
-        self.accum['classes'][node.name]['end_ln'] = end_line
-        self.accum['classes'][node.name]['end_ln'] = end_col
+        pos = {'coord': {}}
+        pos['coord']['start_ln']= start_line
+        pos['coord']['start_col'] = start_col
+        pos['coord']['end_ln'] = end_line
+        pos['coord']['end_col'] = end_col
+        self.accum['classes'][node.name] = pos
 
         self.generic_visit(node)
 
