@@ -42,8 +42,11 @@ nosetests.xml
 .pydevproject
 
 # Maven
-parsers/java/target/*
+target
+
+# Ruby
+!parsers/ruby/lib
 
 # Ctags
 */tags
-logs/*
+log
