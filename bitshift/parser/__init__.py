@@ -4,6 +4,9 @@ from .python import parse_py
 
 _all__ = ["parse"]
 
+class UnsupportedFileError(Exception):
+    pass
+
 def _lang(codelet):
     """
     Private function to identify the language of a codelet.
@@ -16,10 +19,13 @@ def _lang(codelet):
         Modify function to incorporate tags from stackoverflow.
     """
 
-    if codelet.filename is not None:
-        return pgl.guess_lexer_for_filename(codelet.filename).name
+    try:
+        if codelet.filename is not None:
+            return pgl.guess_lexer_for_filename(codelet.filename, '').name
 
-    return LANGS.index(pgl.guess_lexer(codelet.code))
+        return LANGS.index(pgl.guess_lexer(codelet.code))
+    except:
+        raise UnsupportedFileError('Could not find a lexer for the codelet\'s filename')
 
 def _recv_data(server_socket):
     """
@@ -61,6 +67,9 @@ def _recv_data(server_socket):
 def parse(codelet):
     """
     Dispatches the codelet to the correct parser based on its language.
+        It is the job of the respective parsers to accumulate data about the
+        code and to convert it into a string representing a python dict.
+        The codelet is then given dict as its 'symbols' field.
 
     :param codelet: The codelet object to parsed.
 
@@ -68,6 +77,7 @@ def parse(codelet):
     """
 
     lang = _lang(codelet); source = codelet.code
+    codelet.language = lang
     server_socket_number = 5000 + lang
 
     if lang == LANGS.index('Python'):
