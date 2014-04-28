@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import com.bitshift.parsing.symbols.Symbols;
+import com.bitshift.parsing.utils.PackableMemory;
 
 public abstract class Parser implements Runnable {
 
@@ -48,7 +49,9 @@ public abstract class Parser implements Runnable {
             PrintWriter clientWriter = new PrintWriter(
                     this.clientSocket.getOutputStream(), true);
 
-            clientWriter.println(toClient);
+            PackableMemory mem = new PackableMemory(toClient.length());
+            String dataSize = new String(mem.mem);
+            clientWriter.println(dataSize + toClient);
         } catch (IOException ex) {
         }
     }
@@ -56,6 +59,6 @@ public abstract class Parser implements Runnable {
     protected abstract Symbols genSymbols();
 
     public abstract void run();
-    
+
 }
 
