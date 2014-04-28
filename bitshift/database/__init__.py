@@ -20,7 +20,8 @@ class Database(object):
 
     def _connect(self):
         """Establish a connection to the database."""
-        default_file = os.path.join(os.path.dirname(__file__), ".my.cnf")
+        root = os.path.dirname(os.path.abspath(__file__))
+        default_file = os.path.join(root, ".my.cnf")
         self._conn = oursql.connect(read_default_file=default_file,
                                     autoping=True, autoreconnect=True)
 
@@ -54,9 +55,18 @@ class Database(object):
         :param codelet: The codelet to insert.
         :type codelet: :py:class:`.Codelet`
         """
-        query = "INSERT INTO codelets VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        frag_size = 16384  # 16 kB
+        query_slt1 = """SELECT code_id, LEFT(code_code, {0})
+                        FROM code WHERE code_hash = ?""".format(frag_size)
+        query_ins1 = "INSERT INTO code VALUES (?, ?)"
+        query_ins2 = "INSERT INTO codelets VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        query_ins3 = "INSERT INTO authors VALUES", " (?, ?, ?)"
+        query_ins4 = "INSERT INTO symbols VALUES", " (?, ?, ?, ?, ?)"
 
-        cursor.execute(query, ())
+        # LAST_INSERT_ID()
+
+        code_id = None
+        code_hash = mmh3.hash64(codelet.code.encode("utf8"))[0]
 
         # codelet_id -- auto_increment used here
         codelet_name
@@ -78,4 +88,14 @@ class Database(object):
         codelet.date_created
         codelet.date_modified
 
-        code_hash = mmh3.hash64(codelet.code.encode("utf8"))[0]
+        with self._conn.cursor() as cursor:
+            # Retrieve the ID of the source code if it's already in the DB:
+            cursor.execute(query_slt1, (code_hash,))
+            for c_id, c_code_frag in cursor.fetchall():
+                if c_code_frag == codelet.code[:frag_size]:
+                    code_id = c_id
+                    break
+
+            # If the source code isn't already in the DB, add it:
+            if not code_id:
+                cursor.execute()
