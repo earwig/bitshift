@@ -6,6 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
+INSERT INTO `version` VALUES (2);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -26,7 +27,7 @@ CREATE TABLE `code` (
 CREATE TABLE `codelets` (
     `codelet_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `codelet_name` VARCHAR(300) NOT NULL,
-    `codelet_code_id` BIGINT UNSIGNED NOT NULL,
+    `codelet_code_id` BIGINT NOT NULL,
     `codelet_lang` SMALLINT UNSIGNED DEFAULT NULL,
     `codelet_origin` TINYINT UNSIGNED NOT NULL,
     `codelet_url` VARCHAR(512) NOT NULL,

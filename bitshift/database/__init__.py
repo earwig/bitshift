@@ -29,8 +29,10 @@ class Database(object):
     def _migrate(self, cursor, current):
         """Migrate the database to the latest schema version."""
         for version in xrange(current, VERSION):
+            print "Migrating to %d..." % version + 1
             for query in MIGRATIONS[version - 1]:
                 cursor.execute(query)
+            cursor.execute("UPDATE version SET version = ?", (version + 1,))
 
     def _check_version(self, migrate):
         """Check the database schema version and respond accordingly.
