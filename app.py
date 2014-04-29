@@ -5,7 +5,9 @@ Module to contain all the project's Flask server plumbing.
 from flask import Flask
 from flask import render_template, session
 
+from bitshift import assets
 from bitshift.query import parse_query
+from bitshift.crawler import crawl
 
 app = Flask(__name__)
 app.config.from_object("bitshift.config")
@@ -25,4 +27,4 @@ def search(query):
     pass
 
 if __name__ == "__main__":
-    app.run()
+    crawl()

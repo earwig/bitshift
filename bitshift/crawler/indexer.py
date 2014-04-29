@@ -3,7 +3,7 @@
     repositories.
 """
 
-import bs4, logging, os, Queue, re, shutil, string, subprocess, time, threading
+import bs4, os, Queue, re, shutil, string, subprocess, time, threading
 
 from ..database import Database
 from ..codelet import Codelet
@@ -63,12 +63,9 @@ class GitIndexer(threading.Thread):
 
         MAX_INDEX_QUEUE_SIZE = 10
 
-        # logging.info("Starting.")
-
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
         self.git_cloner = _GitCloner(clone_queue, self.index_queue)
         self.git_cloner.start()
-        self.codelet_count = 0 #debug
 
         if not os.path.exists(GIT_CLONE_DIR):
             os.makedirs(GIT_CLONE_DIR)
@@ -91,7 +88,10 @@ class GitIndexer(threading.Thread):
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
-            self._index_repository(repo.url, repo.name, repo.framework_name)
+            try:
+                self._index_repository(repo.url, repo.name, repo.framework_name)
+            except Exception as exception:
+                pass
 
     def _index_repository(self, repo_url, repo_name, framework_name):
         """
@@ -109,15 +109,11 @@ class GitIndexer(threading.Thread):
         :type framework_name: str
         """
 
-        # logging.info("Indexing repository %s." % repo_url)
         with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo_name)) as repository_dir:
             try:
                 self._insert_repository_codelets(repo_url, repo_name,
                         framework_name)
             except Exception as exception:
-                # logging.warning(
-                        # "_insert_repository_codelets() failed: %s: %s: %s" %
-                        # (exception.__class__.__name__, exception, repo_url))
                 pass
 
         if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
@@ -141,17 +137,18 @@ class GitIndexer(threading.Thread):
         """
 
         commits_meta = _get_commits_metadata()
+        if commits_meta is None:
+            return
+
         for filename in commits_meta.keys():
             try:
-                with open(filename, "r") as source_file:
+                source = ""
+                with open(filename) as source_file:
                     source = _decode(source_file.read())
                     if source is None:
-                        return
+                        continue
             except IOError as exception:
-                # logging.warning(
-                        # "_insert_repository_codelets() failed: %s: %s: %s" %
-                        # (exception.__class__.__name__, exception, repo_url))
-                pass
+                continue
 
             authors = [(_decode(author),) for author in \
                     commits_meta[filename]["authors"]]
@@ -160,10 +157,6 @@ class GitIndexer(threading.Thread):
                                     framework_name),
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"])
-
-            self.codelet_count += 1 #debug
-            if self.codelet_count % 500 == 0: #debug
-                logging.info("Number of codelets indexed: %d.", self.codelet_count) #debug
 
             # Database.insert(codelet)
 
@@ -191,8 +184,6 @@ class _GitCloner(threading.Thread):
         :type index_queue: see :attr:`self.index_queue`
         """
 
-        # logging.info("Starting.")
-
         self.clone_queue = clone_queue
         self.index_queue = index_queue
         super(_GitCloner, self).__init__(name=self.__class__.__name__)
@@ -212,7 +203,11 @@ class _GitCloner(threading.Thread):
                 time.sleep(THREAD_QUEUE_SLEEP)
             repo = self.clone_queue.get()
             self.clone_queue.task_done()
-            self._clone_repository(repo)
+
+            try:
+                self._clone_repository(repo)
+            except Exception as exception:
+                pass
 
     def _clone_repository(self, repo):
         """
@@ -227,29 +222,27 @@ class _GitCloner(threading.Thread):
 
         queue_percent_full = (float(self.index_queue.qsize()) /
                 self.index_queue.maxsize) * 100
-        # logging.info("Cloning %s. Queue-size: (%d%%) %d/%d" % (repo.url,
-                # queue_percent_full, self.index_queue.qsize(),
-                # self.index_queue.maxsize))
 
         exit_code = None
         command = ("perl -e 'alarm shift @ARGV; exec @ARGV' %d git clone"
         " --single-branch %s %s/%s || pkill -f git")
 
+        command_attempt = 0
         while exit_code is None:
             try:
                 exit_code = subprocess.call(command % (GIT_CLONE_TIMEOUT,
                         repo.url, GIT_CLONE_DIR, repo.name), shell=True)
-            except:
-                # logging.warning("_clone_repository() failed: %s: %s",
-                        # exception.__class__.__name__, exception)
+            except Exception as exception:
                 time.sleep(1)
-                continue
+                command_attempt += 1
+                if command_attempt == 20:
+                    break
+                else:
+                    continue
             else:
                 break
 
         if exit_code != 0:
-            # logging.warning("_clone_repository(): Cloning %s failed." %
-                    # repo.url)
             if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
                 shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
             return
@@ -331,7 +324,6 @@ def _generate_file_url(filename, repo_url, framework_name):
                 return ("%s/src/%s/%s" % (repo_url, commit_hash,
                         filename)).replace("//", "/")
     except subprocess.CalledProcessError as exception:
-        # logging.warning("_generate_file_url() failed: %s", exception)
         return None
 
 def _get_git_commits():
@@ -467,8 +459,6 @@ def _decode(raw):
         return raw.decode(encoding) if encoding is not None else None
 
     except (LookupError, UnicodeDecodeError, UserWarning) as exception:
-        # logging.warning("_decode() failed: %s: %s",
-                # exception.__class__.__name__, exception)
         return None
 
 def _is_ascii(filename):
@@ -507,6 +497,4 @@ def _is_ascii(filename):
             return not float(len(non_ascii)) / len(file_snippet) > 0.30
 
     except IOError as exception:
-        # logging.warning("_is_ascii() failed: %s: %s",
-                # exception.__class__.__name__, exception)
         return False

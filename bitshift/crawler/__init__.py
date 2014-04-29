@@ -4,7 +4,7 @@
 Contains functions for initializing all subsidiary, threaded crawlers.
 """
 
-import logging, Queue
+import os, Queue
 
 from bitshift.crawler import crawler, indexer
 
@@ -21,11 +21,6 @@ def crawl():
     """
 
     MAX_URL_QUEUE_SIZE = 5e3
-    DEBUG_FILE = "crawler.log"
-
-    logging.basicConfig(filename=DEBUG_FILE,
-            format="%(levelname)s %(asctime)s:\t%(threadName)s:\t%(message)s",
-            level=logging.DEBUG)
 
     repo_clone_queue = Queue.Queue(maxsize=MAX_URL_QUEUE_SIZE)
     threads = [crawler.GitHubCrawler(repo_clone_queue),

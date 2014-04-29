@@ -4,7 +4,7 @@
 Contains all website/framework-specific Class crawlers.
 """
 
-import logging, requests, time, threading
+import requests, time, threading
 
 from bitshift.crawler import indexer
 
@@ -34,7 +34,6 @@ class GitHubCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
-        # logging.info("Starting %s." % self.__class__.__name__)
         super(GitHubCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -57,14 +56,15 @@ class GitHubCrawler(threading.Thread):
 
         while len(next_api_url) > 0:
             start_time = time.time()
-            response = requests.get(next_api_url, params=authentication_params)
+
+            try:
+                response = requests.get(next_api_url,
+                        params=authentication_params)
+            except ConnectionError as exception:
+                continue
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
                     self.clone_queue.maxsize) * 100
-            # logging.info("API call made. Limit remaining: %s. Queue-size: (%d"
-                    # "%%) %d/%d" % (response.headers["x-ratelimit-remaining"],
-                    # queue_percent_full, self.clone_queue.qsize(),
-                    # self.clone_queue.maxsize))
 
             for repo in response.json():
                 while self.clone_queue.full():
@@ -107,7 +107,6 @@ class BitbucketCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
-        # logging.info("Starting %s." % self.__class__.__name__)
         super(BitbucketCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -123,13 +122,14 @@ class BitbucketCrawler(threading.Thread):
         next_api_url = "https://api.bitbucket.org/2.0/repositories"
 
         while True:
-            response = requests.get(next_api_url).json()
+            try:
+                response = requests.get(next_api_url).json()
+            except ConnectionError as exception:
+                time.sleep(0.5)
+                continue
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
                     self.clone_queue.maxsize) * 100
-            # logging.info("API call made. Queue-size: (%d%%) %d/%d" % (
-                # queue_percent_full, self.clone_queue.qsize(),
-                # self.clone_queue.maxsize))
 
             for repo in response["values"]:
                 if repo["scm"] == "git":
@@ -137,10 +137,12 @@ class BitbucketCrawler(threading.Thread):
                         time.sleep(1)
 
                     clone_links = repo["links"]["clone"]
-                    clone_url = (clone[0]["href"] if clone[0]["name"] == "https"
-                             else clone[1]["href"])
+                    clone_url = (clone_links[0]["href"] if
+                            clone_links[0]["name"] == "https" else
+                            clone_links[1]["href"])
                     links.append("clone_url")
                     self.clone_queue.put(indexer.GitRepository(
                         clone_url, repo["full_name"], "Bitbucket"))
 
             next_api_url = response["next"]
+            time.sleep(0.2)
