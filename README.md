@@ -1,7 +1,8 @@
 bitshift
 ========
 
-bitshift is a semantic search engine for source code.
+bitshift is a semantic search engine for source code developed by Benjamin
+Attal, Ben Kurtovic, and Severyn Kozak.
 
 Branches
 --------
