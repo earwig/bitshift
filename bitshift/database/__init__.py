@@ -87,35 +87,25 @@ class Database(object):
         """
         query1 = """INSERT INTO code VALUES (?, ?)
                     ON DUPLICATE KEY UPDATE code_id=code_id"""
-        query2 = "INSERT INTO codelets VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        query3 = "INSERT INTO authors VALUES", " (?, ?, ?)"
-        query4 = "INSERT INTO symbols VALUES", " (?, ?, ?, ?, ?)"
-
-        # LAST_INSERT_ID()
-
-        # codelet_id -- auto_increment used here
-        codelet_name
-        codelet_code_id
-        codelet_lang
-        codelet_origin
-        codelet_url
-        codelet_rank
-        codelet_date_created
-        codelet_date_modified
-
-        # codelet fields
-        codelet.name
-        codelet.code
-        codelet.filename
-        codelet.language
-        codelet.authors
-        codelet.code_url
-        codelet.date_created
-        codelet.date_modified
-
-        #######################################################################
+        query2 = """INSERT INTO codelets VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?)"""
+        query3 = "SELECT LAST_INSERT_ID()"
+        query4 = "INSERT INTO authors VALUES (?, ?, ?)"
+        query5 = "INSERT INTO symbols VALUES (?, ?, ?, ?, ?, ?, ?)"
 
         code_id = mmh3.hash64(codelet.code.encode("utf8"))[0]
+        origin, url = decompose(codelet.url)  ## TODO: create decompose() function
 
         with self._conn.cursor() as cursor:
             cursor.execute(query1, (code_id, codelet.code))
+            cursor.execute(query2, (codelet.name, code_id, codelet.language,
+                                    origin, url, codelet.rank,
+                                    codelet.date_created,
+                                    codelet.date_modified))
+            cursor.execute(query3)
+            codelet_id = cursor.fetchone()[0]
+            authors = [(codelet_id, a.name, a.url) for a in codelet.authors]  ## TODO: check author fields (is it a tuple?)
+            cursor.executemany(query4, authors)
+            if code_id is new:  ## TODO: check for this properly
+                symbols = [(code_id, sym.type, sym.name, sym.row, sym.col, sym.end_row, sym.end_col) for sym in codelet.symbols]  # TODO: check symbol fields (dict?)
+                cursor.executemany(query5, symbols)
