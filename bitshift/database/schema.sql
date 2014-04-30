@@ -1,4 +1,4 @@
--- Schema version 2
+-- Schema version 3
 
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
@@ -6,7 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (2);
+INSERT INTO `version` VALUES (3);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -62,7 +62,7 @@ CREATE TABLE `authors` (
 
 CREATE TABLE `symbols` (
     `symbol_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `symbol_codelet` BIGINT UNSIGNED NOT NULL,
+    `symbol_code` BIGINT NOT NULL,
     `symbol_type` TINYINT UNSIGNED NOT NULL,
     `symbol_name` VARCHAR(512) NOT NULL,
     `symbol_row` INT UNSIGNED NOT NULL,
@@ -71,8 +71,8 @@ CREATE TABLE `symbols` (
     `symbol_end_col` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`symbol_id`),
     KEY (`symbol_type`, `symbol_name`(32)),
-    FOREIGN KEY (`symbol_codelet`)
-        REFERENCES `codelets` (`codelet_id`)
+    FOREIGN KEY (`symbol_code`)
+        REFERENCES `code` (`code_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
