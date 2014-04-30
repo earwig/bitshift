@@ -24,6 +24,11 @@ class GitHubCrawler(threading.Thread):
     crawlers, to be processed by :class:`indexer.GitIndexer`.
     """
 
+    AUTHENTICATION = {
+        "client_id" : "436cb884ae09be7f2a4e",
+        "client_secret" : "8deeefbc2439409c5b7a092fd086772fe8b1f24e"
+    }
+
     def __init__(self, clone_queue):
         """
         Create an instance of the singleton `GitHubCrawler`.
@@ -48,10 +53,6 @@ class GitHubCrawler(threading.Thread):
         """
 
         next_api_url = "https://api.github.com/repositories"
-        authentication_params = {
-            "client_id" : "436cb884ae09be7f2a4e",
-            "client_secret" : "8deeefbc2439409c5b7a092fd086772fe8b1f24e"
-        }
         api_request_interval = 5e3 / 60 ** 2
 
         while len(next_api_url) > 0:
@@ -59,7 +60,7 @@ class GitHubCrawler(threading.Thread):
 
             try:
                 response = requests.get(next_api_url,
-                        params=authentication_params)
+                        params=self.AUTHENTICATION)
             except ConnectionError as exception:
                 continue
 
@@ -76,13 +77,48 @@ class GitHubCrawler(threading.Thread):
 
             if int(response.headers["x-ratelimit-remaining"]) == 0:
                 time.sleep(int(response.headers["x-ratelimit-reset"]) -
-                           time.time())
+                        time.time())
 
             next_api_url = response.headers["link"].split(">")[0][1:]
+            with open(".github_api.log", "w") as log_file:
+                log_file.write("%s\n" % next_api_url)
 
             sleep_time = api_request_interval - (time.time() - start_time)
             if sleep_time > 0:
                 time.sleep(sleep_time)
+
+    def _get_repo_stars(self, repo_name):
+        """
+        Return the number of stargazers for a repository.
+
+        Queries the GitHub API for the number of stargazers for a given
+        repository, and blocks if the query limit is exceeded.
+
+        :param repo_name: The name of the repository, in
+            `username/repository_name` format.
+
+        :type repo_name: str
+
+        :return: The number of stargazers for the repository.
+        :rtype: int
+        """
+
+        API_URL = "https://api.github.com/search/repositories"
+
+
+        params = self.AUTHENTICATION
+        params["q"] = "repo:%s" % repo_name
+
+        resp = requests.get(API_URL,
+                params=params,
+                headers={
+                    "Accept" : "application/vnd.github.preview"
+                })
+
+        if int(resp.headers["x-ratelimit-remaining"]) == 0:
+            time.sleep(int(resp.headers["x-ratelimit-reset"]) - time.time())
+
+        return int(resp.json()["items"][0]["stargazers_count"])
 
 class BitbucketCrawler(threading.Thread):
     """
@@ -145,4 +181,7 @@ class BitbucketCrawler(threading.Thread):
                         clone_url, repo["full_name"], "Bitbucket"))
 
             next_api_url = response["next"]
+            with open(".bitbucket_api.log", "w") as log_file:
+                log_file.write("%s\n" % next_api_url)
+
             time.sleep(0.2)
