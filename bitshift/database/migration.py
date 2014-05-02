@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 3
+VERSION = 4
 
 MIGRATIONS = [
     # 1 -> 2
@@ -32,6 +32,27 @@ MIGRATIONS = [
            ADD CONSTRAINT `symbols_ibfk_1` FOREIGN KEY (`symbol_code`)
                REFERENCES `code` (`code_id`)
                ON DELETE CASCADE ON UPDATE CASCADE"""
+    ],
+    # 3 -> 4
+    [
+        """ALTER TABLE `symbols`
+           DROP COLUMN `symbol_row`,
+           DROP COLUMN `symbol_col`,
+           DROP COLUMN `symbol_end_row`,
+           DROP COLUMN `symbol_end_col`""",
+        """CREATE TABLE `symbol_locations` (
+           `sloc_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+           `sloc_symbol` BIGINT UNSIGNED NOT NULL,
+           `sloc_type` TINYINT UNSIGNED NOT NULL,
+           `sloc_row` INT UNSIGNED NOT NULL,
+           `sloc_col` INT UNSIGNED NOT NULL,
+           `sloc_end_row` INT UNSIGNED NOT NULL,
+           `sloc_end_col` INT UNSIGNED NOT NULL,
+           PRIMARY KEY (`sloc_id`),
+           FOREIGN KEY (`sloc_symbol`)
+               REFERENCES `symbols` (`symbol_id`)
+               ON DELETE CASCADE ON UPDATE CASCADE
+           ) ENGINE=InnoDB"""
     ]
 ]
 

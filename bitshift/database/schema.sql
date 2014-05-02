@@ -1,4 +1,4 @@
--- Schema version 3
+-- Schema version 4
 
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
@@ -6,7 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (3);
+INSERT INTO `version` VALUES (4);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -65,14 +65,24 @@ CREATE TABLE `symbols` (
     `symbol_code` BIGINT NOT NULL,
     `symbol_type` TINYINT UNSIGNED NOT NULL,
     `symbol_name` VARCHAR(512) NOT NULL,
-    `symbol_row` INT UNSIGNED NOT NULL,
-    `symbol_col` INT UNSIGNED NOT NULL,
-    `symbol_end_row` INT UNSIGNED NOT NULL,
-    `symbol_end_col` INT UNSIGNED NOT NULL,
     PRIMARY KEY (`symbol_id`),
     KEY (`symbol_type`, `symbol_name`(32)),
     FOREIGN KEY (`symbol_code`)
         REFERENCES `code` (`code_id`)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE `symbol_locations` (
+    `sloc_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `sloc_symbol` BIGINT UNSIGNED NOT NULL,
+    `sloc_type` TINYINT UNSIGNED NOT NULL,
+    `sloc_row` INT UNSIGNED NOT NULL,
+    `sloc_col` INT UNSIGNED NOT NULL,
+    `sloc_end_row` INT UNSIGNED NOT NULL,
+    `sloc_end_col` INT UNSIGNED NOT NULL,
+    PRIMARY KEY (`sloc_id`),
+    FOREIGN KEY (`sloc_symbol`)
+        REFERENCES `symbols` (`symbol_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
