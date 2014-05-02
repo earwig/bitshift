@@ -51,6 +51,23 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
+    def _decompose_url(self, url):
+        """Break up a URL into an origin (with a URL base) and a suffix."""
+        pass  ## TODO
+
+    def _insert_symbols(self, cursor, code_id, sym_type, symbols):
+        """Insert a list of symbols of a given type into the database."""
+        sym_types = ["functions", "classes", "variables"]
+        query1 = "INSERT INTO symbols VALUES (?, ?, ?)"
+        query2 = "INSERT INTO symbol_locations VALUES (?, ?, ?, ?, ?, ?)"
+
+        for (name, decls, uses) in symbols:
+            cursor.execute(query1, (code_id, sym_types.index(sym_type), name))
+            sym_id = cursor.lastrowid
+            params = ([tuple([sym_id, 0] + list(loc)) for loc in decls] +
+                      [tuple([sym_id, 1] + list(loc)) for loc in uses])
+            cursor.executemany(query2, params)
+
     def close(self):
         """Disconnect from the database."""
         self._conn.close()
@@ -89,23 +106,21 @@ class Database(object):
                     ON DUPLICATE KEY UPDATE code_id=code_id"""
         query2 = """INSERT INTO codelets VALUES
                     (?, ?, ?, ?, ?, ?, ?, ?)"""
-        query3 = "SELECT LAST_INSERT_ID()"
-        query4 = "INSERT INTO authors VALUES (?, ?, ?)"
-        query5 = "INSERT INTO symbols VALUES (?, ?, ?, ?, ?, ?, ?)"
+        query3 = "INSERT INTO authors VALUES (?, ?, ?)"
 
         code_id = mmh3.hash64(codelet.code.encode("utf8"))[0]
-        origin, url = decompose(codelet.url)  ## TODO: create decompose() function
+        origin, url = self._decompose_url(codelet.url)
 
         with self._conn.cursor() as cursor:
             cursor.execute(query1, (code_id, codelet.code))
+            new_code = cursor.rowcount == 1
             cursor.execute(query2, (codelet.name, code_id, codelet.language,
                                     origin, url, codelet.rank,
                                     codelet.date_created,
                                     codelet.date_modified))
-            cursor.execute(query3)
-            codelet_id = cursor.fetchone()[0]
-            authors = [(codelet_id, a.name, a.url) for a in codelet.authors]  ## TODO: check author fields (is it a tuple?)
-            cursor.executemany(query4, authors)
-            if code_id is new:  ## TODO: check for this properly
-                symbols = [(code_id, sym.type, sym.name, sym.row, sym.col, sym.end_row, sym.end_col) for sym in codelet.symbols]  # TODO: check symbol fields (dict?)
-                cursor.executemany(query5, symbols)
+            codelet_id = cursor.lastrowid
+            authors = [(codelet_id, a[0], a[1]) for a in codelet.authors]
+            cursor.executemany(query3, authors)
+            if new_code:
+                for sym_type, symbols in codelet.symbols.iteritems():
+                    self._insert_symbols(cursor, code_id, sym_type, symbols)
