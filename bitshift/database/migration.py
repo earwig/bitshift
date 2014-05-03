@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 4
+VERSION = 5
 
 MIGRATIONS = [
     # 1 -> 2
@@ -53,6 +53,13 @@ MIGRATIONS = [
                REFERENCES `symbols` (`symbol_id`)
                ON DELETE CASCADE ON UPDATE CASCADE
            ) ENGINE=InnoDB"""
+    ],
+    # 4 -> 5
+    [
+        """ALTER TABLE `origins`
+           MODIFY COLUMN `origin_name` VARCHAR(64) DEFAULT NULL,
+           MODIFY COLUMN `origin_url` VARCHAR(512) DEFAULT NULL,
+           MODIFY COLUMN `origin_url_base` VARCHAR(512) DEFAULT NULL"""
     ]
 ]
 

@@ -51,9 +51,15 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
-    def _decompose_url(self, url):
+    def _decompose_url(self, cursor, url):
         """Break up a URL into an origin (with a URL base) and a suffix."""
-        pass  ## TODO
+        query = """SELECT origin_id, SUBSTR(?, LENGTH(origin_url_base))
+                   FROM origins WHERE origin_url_base IS NOT NULL
+                   AND ? LIKE CONCAT(origin_url_base, "%")"""
+
+        cursor.execute(query, (url, url))
+        result = cursor.fetchone()
+        return result if result else (1, url)
 
     def _insert_symbols(self, cursor, code_id, sym_type, symbols):
         """Insert a list of symbols of a given type into the database."""
@@ -109,12 +115,14 @@ class Database(object):
                     (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?)"""
         query3 = "INSERT INTO authors VALUES (DEFAULT, ?, ?, ?)"
 
-        code_id = mmh3.hash64(codelet.code.encode("utf8"))[0]
-        origin, url = self._decompose_url(codelet.url)
-
         with self._conn.cursor() as cursor:
+            code_id = mmh3.hash64(codelet.code.encode("utf8"))[0]
+            origin, url = self._decompose_url(cursor, codelet.url)
+
             cursor.execute(query1, (code_id, codelet.code))
-            new_code = cursor.rowcount == 1
+            if cursor.rowcount == 1:
+                for sym_type, symbols in codelet.symbols.iteritems():
+                    self._insert_symbols(cursor, code_id, sym_type, symbols)
             cursor.execute(query2, (codelet.name, code_id, codelet.language,
                                     origin, url, codelet.rank,
                                     codelet.date_created,
@@ -122,6 +130,3 @@ class Database(object):
             codelet_id = cursor.lastrowid
             authors = [(codelet_id, a[0], a[1]) for a in codelet.authors]
             cursor.executemany(query3, authors)
-            if new_code:
-                for sym_type, symbols in codelet.symbols.iteritems():
-                    self._insert_symbols(cursor, code_id, sym_type, symbols)
