@@ -12,9 +12,6 @@ from ..codelet import Codelet
 GIT_CLONE_DIR = "/tmp/bitshift"
 THREAD_QUEUE_SLEEP = 0.5
 
-import pymongo #debug
-db = pymongo.MongoClient().bitshift #debug
-
 class GitRepository(object):
     """
     A representation of a Git repository's metadata.
@@ -101,10 +98,10 @@ class GitIndexer(threading.Thread):
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
-            # try:
-            self._index_repository(repo)
-            # except Exception as excep:
-                # self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
+            try:
+                self._index_repository(repo)
+            except Exception as excep:
+                self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
 
     def _index_repository(self, repo):
         """
@@ -119,10 +116,10 @@ class GitIndexer(threading.Thread):
         """
 
         with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.name)) as repository_dir:
-            # try:
-            self._insert_repository_codelets(repo)
-            # except Exception as excep:
-                # self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
+            try:
+                self._insert_repository_codelets(repo)
+            except Exception as excep:
+                self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
 
         if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
             shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
@@ -140,29 +137,222 @@ class GitIndexer(threading.Thread):
         :type repo_url: :class:`GitRepository`
         """
 
-        commits_meta = _get_commits_metadata()
+        commits_meta = self._get_commits_metadata()
         if commits_meta is None:
             return
 
         for filename in commits_meta.keys():
             try:
                 with open(filename) as source_file:
-                    source = _decode(source_file.read())
+                    source = self._decode(source_file.read())
                     if source is None:
                         continue
             except IOError as exception:
                 continue
 
-            authors = [(_decode(author),) for author in \
+            authors = [(self._decode(author), None) for author in \
                     commits_meta[filename]["authors"]]
             codelet = Codelet("%s:%s" % (repo.name, filename), source, filename,
-                            None, authors, _generate_file_url(filename,
+                            None, authors, self._generate_file_url(filename,
                                     repo.url, repo.framework_name),
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"],
                             repo.rank)
 
-            db.codelets.insert(codelet.__dict__) #debug
+    def _generate_file_url(self, filename, repo_url, framework_name):
+        """
+        Return a url for a filename from a Git wrapper framework.
+
+        :param filename: The path of the file.
+        :param repo_url: The url of the file's parent repository.
+        :param framework_name: The name of the framework the repository is from.
+
+        :type filename: str
+        :type repo_url: str
+        :type framework_name: str
+
+        :return: The file's full url on the given framework, if successfully
+            derived.
+        :rtype: str, or None
+
+        .. warning::
+            Various Git subprocesses will occasionally fail, and, seeing as the
+            information they provide is a crucial component of some repository file
+            urls, None may be returned.
+        """
+
+        try:
+            if framework_name == "GitHub":
+                    default_branch = subprocess.check_output("git branch"
+                            " --no-color", shell=True)[2:-1]
+                    return ("%s/blob/%s/%s" % (repo_url, default_branch,
+                            filename)).replace("//", "/")
+            elif framework_name == "Bitbucket":
+                    commit_hash = subprocess.check_output("git rev-parse HEAD",
+                            shell=True).replace("\n", "")
+                    return ("%s/src/%s/%s" % (repo_url, commit_hash,
+                            filename)).replace("//", "/")
+        except subprocess.CalledProcessError as exception:
+            return None
+
+    def _get_git_commits(self):
+        """
+        Return the current working directory's formatted commit data.
+
+        Uses `git log` to generate metadata about every single file in the
+        repository's commit history.
+
+        :return: The author, timestamp, and names of all modified files of every
+            commit.
+            .. code-block:: python
+               sample_returned_array = [
+                   {
+                       "author" : (str) "author"
+                       "timestamp" : (`datetime.datetime`) <object>,
+                       "filenames" : (str array) ["file1", "file2"]
+                   }
+               ]
+        :rtype: array of dictionaries
+        """
+
+        git_log = subprocess.check_output(("git --no-pager log --name-only"
+                " --pretty=format:'%n%n%an%n%at' -z"), shell=True)
+
+        commits = []
+        for commit in git_log.split("\n\n"):
+            fields = commit.split("\n")
+            if len(fields) > 2:
+                commits.append({
+                    "author" : fields[0],
+                    "timestamp" : datetime.datetime.fromtimestamp(int(fields[1])),
+                    "filenames" : fields[2].split("\x00")[:-2]
+                })
+
+        return commits
+
+    def _get_tracked_files(self):
+        """
+        Return a list of the filenames of all valuable files in the Git repository.
+
+        Get a list of the filenames of the non-binary (Perl heuristics used for
+        filetype identification) files currently inside the current working
+        directory's Git repository. Then, weed out any boilerplate/non-code files
+        that match the regex rules in GIT_IGNORE_FILES.
+
+        :return: The filenames of all index-worthy non-binary files.
+        :rtype: str array
+        """
+
+        files = []
+        for dirname, subdir_names, filenames in os.walk("."):
+            for filename in filenames:
+                path = os.path.join(dirname, filename)
+                if self._is_ascii(path):
+                    files.append(path[2:])
+
+        return files
+
+    def _get_commits_metadata(self):
+        """
+        Return a dictionary containing every valuable tracked file's metadata.
+
+        :return: A dictionary with author names, time of creation, and time of last
+            modification for every filename key.
+            .. code-block:: python
+                   sample_returned_dict = {
+                       "my_file" : {
+                           "authors" : (str array) ["author1", "author2"],
+                           "time_created" : (`datetime.datetime`) <object>,
+                           "time_last_modified" : (`datetime.datetime`) <object>
+                       }
+                   }
+        :rtype: dictionary of dictionaries
+        """
+
+        commits = self._get_git_commits()
+        tracked_files = self._get_tracked_files()
+
+        files_meta = {}
+        for commit in commits:
+            for filename in commit["filenames"]:
+                if filename not in tracked_files:
+                    continue
+
+                if filename not in files_meta.keys():
+                    files_meta[filename] = {
+                        "authors" : [commit["author"]],
+                        "time_last_modified" : commit["timestamp"],
+                        "time_created" : commit["timestamp"]
+                    }
+                else:
+                    if commit["author"] not in files_meta[filename]["authors"]:
+                        files_meta[filename]["authors"].append(commit["author"])
+                    files_meta[filename]["time_created"] = commit["timestamp"]
+
+        return files_meta
+
+    def _decode(self, raw):
+        """
+        Return a decoded a raw string.
+
+        :param raw: The string to string.
+
+        :type raw: (str)
+
+        :return: If the original encoding is successfully inferenced, return the
+            decoded string.
+        :rtype: str, or None
+
+        .. warning::
+            The raw string's original encoding is identified by heuristics which
+            can, and occasionally will, fail. Decoding will then fail, and None
+            will be returned.
+        """
+
+        try:
+            encoding = bs4.BeautifulSoup(raw).original_encoding
+            return raw.decode(encoding) if encoding is not None else None
+
+        except (LookupError, UnicodeDecodeError, UserWarning) as exception:
+            return None
+
+    def _is_ascii(self, filename):
+        """
+        Heuristically determine whether a file is ASCII text or binary.
+
+        If a portion of the file contains null bytes, or the percentage of bytes
+        that aren't ASCII is greater than 30%, then the file is concluded to be
+        binary. This heuristic is used by the `file` utility, Perl's inbuilt `-T`
+        operator, and is the de-facto method for in : passdetermining whether a
+        file is ASCII.
+
+        :param filename: The path of the file to test.
+
+        :type filename: str
+
+        :return: Whether the file is probably ASCII.
+        :rtype: Boolean
+        """
+
+        try:
+            with open(filename) as source:
+                file_snippet = source.read(512)
+
+                if not file_snippet:
+                    return True
+
+                ascii_characters = "".join(map(chr, range(32, 127)) +
+                        list("\n\r\t\b"))
+                null_trans = string.maketrans("", "")
+
+                if "\0" in file_snippet:
+                    return False
+
+                non_ascii = file_snippet.translate(null_trans, ascii_characters)
+                return not float(len(non_ascii)) / len(file_snippet) > 0.30
+
+        except IOError as exception:
+            return False
 
 class _GitCloner(threading.Thread):
     """
@@ -297,198 +487,3 @@ class _ChangeDir(object):
         """
 
         os.chdir(self.old_path)
-
-def _generate_file_url(filename, repo_url, framework_name):
-    """
-    Return a url for a filename from a Git wrapper framework.
-
-    :param filename: The path of the file.
-    :param repo_url: The url of the file's parent repository.
-    :param framework_name: The name of the framework the repository is from.
-
-    :type filename: str
-    :type repo_url: str
-    :type framework_name: str
-
-    :return: The file's full url on the given framework, if successfully
-        derived.
-    :rtype: str, or None
-
-    .. warning::
-        Various Git subprocesses will occasionally fail, and, seeing as the
-        information they provide is a crucial component of some repository file
-        urls, None may be returned.
-    """
-
-    try:
-        if framework_name == "GitHub":
-                default_branch = subprocess.check_output("git branch"
-                        " --no-color", shell=True)[2:-1]
-                return ("%s/blob/%s/%s" % (repo_url, default_branch,
-                        filename)).replace("//", "/")
-        elif framework_name == "Bitbucket":
-                commit_hash = subprocess.check_output("git rev-parse HEAD",
-                        shell=True).replace("\n", "")
-                return ("%s/src/%s/%s" % (repo_url, commit_hash,
-                        filename)).replace("//", "/")
-    except subprocess.CalledProcessError as exception:
-        return None
-
-def _get_git_commits():
-    """
-    Return the current working directory's formatted commit data.
-
-    Uses `git log` to generate metadata about every single file in the
-    repository's commit history.
-
-    :return: The author, timestamp, and names of all modified files of every
-        commit.
-        .. code-block:: python
-           sample_returned_array = [
-               {
-                   "author" : (str) "author"
-                   "timestamp" : (`datetime.datetime`) <object>,
-                   "filenames" : (str array) ["file1", "file2"]
-               }
-           ]
-    :rtype: array of dictionaries
-    """
-
-    git_log = subprocess.check_output(("git --no-pager log --name-only"
-            " --pretty=format:'%n%n%an%n%at' -z"), shell=True)
-
-    commits = []
-    for commit in git_log.split("\n\n"):
-        fields = commit.split("\n")
-        if len(fields) > 2:
-            commits.append({
-                "author" : fields[0],
-                "timestamp" : datetime.datetime.fromtimestamp(int(fields[1])),
-                "filenames" : fields[2].split("\x00")[:-2]
-            })
-
-    return commits
-
-def _get_tracked_files():
-    """
-    Return a list of the filenames of all valuable files in the Git repository.
-
-    Get a list of the filenames of the non-binary (Perl heuristics used for
-    filetype identification) files currently inside the current working
-    directory's Git repository. Then, weed out any boilerplate/non-code files
-    that match the regex rules in GIT_IGNORE_FILES.
-
-    :return: The filenames of all index-worthy non-binary files.
-    :rtype: str array
-    """
-
-    files = []
-    for dirname, subdir_names, filenames in os.walk("."):
-        for filename in filenames:
-            path = os.path.join(dirname, filename)
-            if _is_ascii(path):
-                files.append(path[2:])
-
-    return files
-
-def _get_commits_metadata():
-    """
-    Return a dictionary containing every valuable tracked file's metadata.
-
-    :return: A dictionary with author names, time of creation, and time of last
-        modification for every filename key.
-        .. code-block:: python
-               sample_returned_dict = {
-                   "my_file" : {
-                       "authors" : (str array) ["author1", "author2"],
-                       "time_created" : (`datetime.datetime`) <object>,
-                       "time_last_modified" : (`datetime.datetime`) <object>
-                   }
-               }
-    :rtype: dictionary of dictionaries
-    """
-
-    commits = _get_git_commits()
-    tracked_files  = _get_tracked_files()
-
-    files_meta = {}
-    for commit in commits:
-        for filename in commit["filenames"]:
-            if filename not in tracked_files:
-                continue
-
-            if filename not in files_meta.keys():
-                files_meta[filename] = {
-                    "authors" : [commit["author"]],
-                    "time_last_modified" : commit["timestamp"],
-                    "time_created" : commit["timestamp"]
-                }
-            else:
-                if commit["author"] not in files_meta[filename]["authors"]:
-                    files_meta[filename]["authors"].append(commit["author"])
-                files_meta[filename]["time_created"] = commit["timestamp"]
-
-    return files_meta
-
-def _decode(raw):
-    """
-    Return a decoded a raw string.
-
-    :param raw: The string to string.
-
-    :type raw: (str)
-
-    :return: If the original encoding is successfully inferenced, return the
-        decoded string.
-    :rtype: str, or None
-
-    .. warning::
-        The raw string's original encoding is identified by heuristics which
-        can, and occasionally will, fail. Decoding will then fail, and None
-        will be returned.
-    """
-
-    try:
-        encoding = bs4.BeautifulSoup(raw).original_encoding
-        return raw.decode(encoding) if encoding is not None else None
-
-    except (LookupError, UnicodeDecodeError, UserWarning) as exception:
-        return None
-
-def _is_ascii(filename):
-    """
-    Heuristically determine whether a file is ASCII text or binary.
-
-    If a portion of the file contains null bytes, or the percentage of bytes
-    that aren't ASCII is greater than 30%, then the file is concluded to be
-    binary. This heuristic is used by the `file` utility, Perl's inbuilt `-T`
-    operator, and is the de-facto method for in : passdetermining whether a
-    file is ASCII.
-
-    :param filename: The path of the file to test.
-
-    :type filename: str
-
-    :return: Whether the file is probably ASCII.
-    :rtype: Boolean
-    """
-
-    try:
-        with open(filename) as source:
-            file_snippet = source.read(512)
-
-            if not file_snippet:
-                return True
-
-            ascii_characters = "".join(map(chr, range(32, 127)) +
-                    list("\n\r\t\b"))
-            null_trans = string.maketrans("", "")
-
-            if "\0" in file_snippet:
-                return False
-
-            non_ascii = file_snippet.translate(null_trans, ascii_characters)
-            return not float(len(non_ascii)) / len(file_snippet) > 0.30
-
-    except IOError as exception:
-        return False
