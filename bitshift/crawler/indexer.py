@@ -3,13 +3,17 @@
     repositories.
 """
 
-import bs4, os, Queue, re, shutil, string, subprocess, time, threading
+import bs4, datetime, logging, os, Queue, re, shutil, string, subprocess, time,\
+        threading
 
 from ..database import Database
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp/bitshift"
 THREAD_QUEUE_SLEEP = 0.5
+
+import pymongo #debug
+db = pymongo.MongoClient().bitshift #debug
 
 class GitRepository(object):
     """
@@ -19,24 +23,29 @@ class GitRepository(object):
     :ivar name: (str) The name of the repository.
     :ivar framework_name: (str) The name of the online Git framework that the
         repository belongs to (eg, GitHub, BitBucket).
+    :ivar rank: (float) The rank of the repository, as assigned by
+        :class:`crawler.GitHubCrawler`.
     """
 
-    def __init__(self, url, name, framework_name):
+    def __init__(self, url, name, framework_name, rank):
         """
         Create a GitRepository instance.
 
         :param url: see :attr:`GitRepository.url`
         :param name: see :attr:`GitRepository.name`
         :param framework_name: see :attr:`GitRepository.framework_name`
+        :param rank: see :attr:`GitRepository.rank`
 
         :type url: str
         :type name: str
         :type framework_name: str
+        :type rank: float
         """
 
         self.url = url
         self.name = name
         self.framework_name = framework_name
+        self.rank = rank
 
 class GitIndexer(threading.Thread):
     """
@@ -50,6 +59,7 @@ class GitIndexer(threading.Thread):
         cloned by :class:`_GitCloner`, which are to be indexed.
     :ivar git_cloner: (:class:`_GitCloner`) The corresponding repository cloner,
         which feeds :class:`GitIndexer`.
+    :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
     def __init__(self, clone_queue):
@@ -66,6 +76,9 @@ class GitIndexer(threading.Thread):
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
         self.git_cloner = _GitCloner(clone_queue, self.index_queue)
         self.git_cloner.start()
+        self._logger = logging.getLogger("%s.%s" %
+                (__name__, self.__class__.__name__))
+        self._logger.info("Starting.")
 
         if not os.path.exists(GIT_CLONE_DIR):
             os.makedirs(GIT_CLONE_DIR)
@@ -88,52 +101,43 @@ class GitIndexer(threading.Thread):
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
-            try:
-                self._index_repository(repo.url, repo.name, repo.framework_name)
-            except Exception as exception:
-                pass
+            # try:
+            self._index_repository(repo)
+            # except Exception as excep:
+                # self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
 
-    def _index_repository(self, repo_url, repo_name, framework_name):
+    def _index_repository(self, repo):
         """
         Clone and index (create and insert Codeletes for) a Git repository.
 
-        `git clone` the Git repository located at **repo_url**, call
-        _insert_repository_codelets, then remove said repository.
+        `git clone` the Git repository located at **repo.url**, call
+        `_insert_repository_codelets()`, then remove said repository.
 
-        :param repo_url: The url the Git repository was cloned from.
-        :param repo_name: The name of the repository.
-        :param framework_name: The name of the framework the repository is from.
+        :param repo_url: The metadata of the repository to be indexed.
 
-        :type repo_url: str
-        :type repo_name: str
-        :type framework_name: str
+        :type repo_url: :class:`GitRepository`
         """
 
-        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo_name)) as repository_dir:
-            try:
-                self._insert_repository_codelets(repo_url, repo_name,
-                        framework_name)
-            except Exception as exception:
-                pass
+        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.name)) as repository_dir:
+            # try:
+            self._insert_repository_codelets(repo)
+            # except Exception as excep:
+                # self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
 
-        if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo_name)):
-            shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo_name))
+        if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
+            shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
 
-    def _insert_repository_codelets(self, repo_url, repo_name, framework_name):
+    def _insert_repository_codelets(self, repo):
         """
         Create and insert a Codelet for the files inside a Git repository.
 
-        Create a new Codelet, and insert it into the Database singleton, for every
-        file inside the current working directory's default branch (usually
-        *master*).
+        Create a new Codelet, and insert it into the Database singleton, for
+        every file inside the current working directory's default branch
+        (usually *master*).
 
-        :param repo_url: The url the Git repository was cloned from.
-        :param repo_name: The name of the repository.
-        :param framework_name: The name of the framework the repository is from.
+        :param repo_url: The metadata of the repository to be indexed.
 
-        :type repo_url: str
-        :type repo_name: str
-        :type framework_name: str
+        :type repo_url: :class:`GitRepository`
         """
 
         commits_meta = _get_commits_metadata()
@@ -142,7 +146,6 @@ class GitIndexer(threading.Thread):
 
         for filename in commits_meta.keys():
             try:
-                source = ""
                 with open(filename) as source_file:
                     source = _decode(source_file.read())
                     if source is None:
@@ -152,13 +155,14 @@ class GitIndexer(threading.Thread):
 
             authors = [(_decode(author),) for author in \
                     commits_meta[filename]["authors"]]
-            codelet = Codelet("%s:%s" % (repo_name, filename), source, filename,
-                            None, authors, _generate_file_url(filename, repo_url,
-                                    framework_name),
+            codelet = Codelet("%s:%s" % (repo.name, filename), source, filename,
+                            None, authors, _generate_file_url(filename,
+                                    repo.url, repo.framework_name),
                             commits_meta[filename]["time_created"],
-                            commits_meta[filename]["time_last_modified"])
+                            commits_meta[filename]["time_last_modified"],
+                            repo.rank)
 
-            # Database.insert(codelet)
+            db.codelets.insert(codelet.__dict__) #debug
 
 class _GitCloner(threading.Thread):
     """
@@ -171,6 +175,7 @@ class _GitCloner(threading.Thread):
         :attr:`crawler.GitHubCrawler.clone_queue`.
     :ivar index_queue: (:class:`Queue.Queue`) see
         :attr:`GitIndexer.index_queue`.
+    :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
     def __init__(self, clone_queue, index_queue):
@@ -186,6 +191,9 @@ class _GitCloner(threading.Thread):
 
         self.clone_queue = clone_queue
         self.index_queue = index_queue
+        self._logger = logging.getLogger("%s.%s" %
+                (__name__, self.__class__.__name__))
+        self._logger.info("Starting.")
         super(_GitCloner, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -339,11 +347,11 @@ def _get_git_commits():
            sample_returned_array = [
                {
                    "author" : (str) "author"
-                   "timestamp" : (int) 1396919293,
+                   "timestamp" : (`datetime.datetime`) <object>,
                    "filenames" : (str array) ["file1", "file2"]
                }
            ]
-    :rtype: dictionary
+    :rtype: array of dictionaries
     """
 
     git_log = subprocess.check_output(("git --no-pager log --name-only"
@@ -355,7 +363,7 @@ def _get_git_commits():
         if len(fields) > 2:
             commits.append({
                 "author" : fields[0],
-                "timestamp" : int(fields[1]),
+                "timestamp" : datetime.datetime.fromtimestamp(int(fields[1])),
                 "filenames" : fields[2].split("\x00")[:-2]
             })
 
@@ -374,28 +382,14 @@ def _get_tracked_files():
     :rtype: str array
     """
 
-    GIT_IGNORE_FILES = [".*licen[cs]e.*", ".*readme.*"]
-    GIT_IGNORE_EXTENSIONS = ["t[e]?xt(ile)?", "m(ark)?down", "mkd[n]?",
-            "md(wn|t[e]?xt)?", "rst"]
-
     files = []
     for dirname, subdir_names, filenames in os.walk("."):
         for filename in filenames:
             path = os.path.join(dirname, filename)
             if _is_ascii(path):
-                files.append(path)
+                files.append(path[2:])
 
-    valuable_files = []
-    for filename in files:
-        filename_match = any([re.match(pattern, filename, flags=re.IGNORECASE)
-                for pattern in GIT_IGNORE_FILES])
-        extension = filename.split(".")[-1]
-        extension_match = any([re.match(pattern, filename, flags=re.IGNORECASE)
-                for pattern in GIT_IGNORE_EXTENSIONS])
-
-        if not (filename_match or extension_match):
-            valuable_files.append(filename[2:])
-    return valuable_files
+    return files
 
 def _get_commits_metadata():
     """
@@ -407,11 +401,11 @@ def _get_commits_metadata():
                sample_returned_dict = {
                    "my_file" : {
                        "authors" : (str array) ["author1", "author2"],
-                       "time_created" : (int) 1395939566,
-                       "time_last_modified" : (int) 1396920409
+                       "time_created" : (`datetime.datetime`) <object>,
+                       "time_last_modified" : (`datetime.datetime`) <object>
                    }
                }
-    :rtype: dictionary
+    :rtype: dictionary of dictionaries
     """
 
     commits = _get_git_commits()

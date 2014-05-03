@@ -4,7 +4,7 @@
 Contains all website/framework-specific Class crawlers.
 """
 
-import requests, time, threading
+import logging, requests, time, threading
 
 from bitshift.crawler import indexer
 
@@ -22,6 +22,7 @@ class GitHubCrawler(threading.Thread):
     :ivar clone_queue: (:class:`Queue.Queue`) Contains :class:`GitRepository`
     with repository metadata retrieved by :class:`GitHubCrawler`, and other Git
     crawlers, to be processed by :class:`indexer.GitIndexer`.
+    :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
     AUTHENTICATION = {
@@ -39,6 +40,9 @@ class GitHubCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
+        self._logger = logging.getLogger("%s.%s" %
+                (__name__, self.__class__.__name__))
+        self._logger.info("Starting.")
         super(GitHubCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -61,11 +65,17 @@ class GitHubCrawler(threading.Thread):
             try:
                 response = requests.get(next_api_url,
                         params=self.AUTHENTICATION)
-            except ConnectionError as exception:
+            except ConnectionError as excep:
+                self._logger.warning("API %s call failed: %s: %s",
+                        next_api_url, excep.__class__.__name__, excep)
+                time.sleep(0.5)
                 continue
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
                     self.clone_queue.maxsize) * 100
+            self._logger.info("API call made. Queue size: %d/%d, %d%%." %
+                    ((self.clone_queue.qsize(), self.clone_queue.maxsize,
+                    queue_percent_full)))
 
             for repo in response.json():
                 while self.clone_queue.full():
@@ -73,15 +83,15 @@ class GitHubCrawler(threading.Thread):
 
                 self.clone_queue.put(indexer.GitRepository(
                         repo["html_url"], repo["full_name"].replace("/", ""),
-                        "GitHub"))
+                        "GitHub",
+                        #self._get_repo_stars(repo["full_name"]))
+                        0))
 
             if int(response.headers["x-ratelimit-remaining"]) == 0:
                 time.sleep(int(response.headers["x-ratelimit-reset"]) -
                         time.time())
 
             next_api_url = response.headers["link"].split(">")[0][1:]
-            with open(".github_api.log", "w") as log_file:
-                log_file.write("%s\n" % next_api_url)
 
             sleep_time = api_request_interval - (time.time() - start_time)
             if sleep_time > 0:
@@ -105,7 +115,6 @@ class GitHubCrawler(threading.Thread):
 
         API_URL = "https://api.github.com/search/repositories"
 
-
         params = self.AUTHENTICATION
         params["q"] = "repo:%s" % repo_name
 
@@ -116,9 +125,18 @@ class GitHubCrawler(threading.Thread):
                 })
 
         if int(resp.headers["x-ratelimit-remaining"]) == 0:
-            time.sleep(int(resp.headers["x-ratelimit-reset"]) - time.time())
+            sleep_time = int(resp.headers["x-ratelimit-reset"]) - time.time()
+            if sleep_time > 0:
+                logging.info("API quota exceeded. Sleep time: %d." % sleep_time)
+                time.sleep(sleep_time)
 
-        return int(resp.json()["items"][0]["stargazers_count"])
+        if "items" not in resp.json() or len(resp.json()["items"]) == 0:
+            self._logger.critical("No API result: %s. Result: %s" % (resp.url,
+                    str(resp.json())))
+            return 0
+        else:
+            rank = float(resp.json()["items"][0]["stargazers_count"]) / 1000
+            return rank if rank < 1.0 else 1.0
 
 class BitbucketCrawler(threading.Thread):
     """
@@ -131,6 +149,7 @@ class BitbucketCrawler(threading.Thread):
 
     :ivar clone_queue: (:class:`Queue.Queue`) The shared queue to insert
         :class:`indexer.GitRepository` repository urls into.
+    :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
     def __init__(self, clone_queue):
@@ -143,6 +162,9 @@ class BitbucketCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
+        self._logger = logging.getLogger("%s.%s" %
+                (__name__, self.__class__.__name__))
+        self._logger.info("Starting.")
         super(BitbucketCrawler, self).__init__(name=self.__class__.__name__)
 
     def run(self):
@@ -162,10 +184,15 @@ class BitbucketCrawler(threading.Thread):
                 response = requests.get(next_api_url).json()
             except ConnectionError as exception:
                 time.sleep(0.5)
+                self._logger.warning("API %s call failed: %s: %s",
+                        next_api_url, excep.__class__.__name__, excep)
                 continue
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
                     self.clone_queue.maxsize) * 100
+            self._logger.info("API call made. Queue size: %d/%d, %d%%." %
+                    ((self.clone_queue.qsize(), self.clone_queue.maxsize,
+                    queue_percent_full)))
 
             for repo in response["values"]:
                 if repo["scm"] == "git":
@@ -181,7 +208,4 @@ class BitbucketCrawler(threading.Thread):
                         clone_url, repo["full_name"], "Bitbucket"))
 
             next_api_url = response["next"]
-            with open(".bitbucket_api.log", "w") as log_file:
-                log_file.write("%s\n" % next_api_url)
-
             time.sleep(0.2)
