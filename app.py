@@ -5,6 +5,7 @@ Module to contain all the project's Flask server plumbing.
 from flask import Flask
 from flask import render_template, session
 
+from bitshift import assets
 from bitshift.database import Database
 from bitshift.query import parse_query
 
