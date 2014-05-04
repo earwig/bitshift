@@ -63,8 +63,7 @@ class GitHubCrawler(threading.Thread):
             start_time = time.time()
 
             try:
-                response = requests.get(next_api_url,
-                        params=self.AUTHENTICATION)
+                resp = requests.get(next_api_url, params=self.AUTHENTICATION)
             except ConnectionError as excep:
                 self._logger.warning("API %s call failed: %s: %s",
                         next_api_url, excep.__class__.__name__, excep)
@@ -77,66 +76,84 @@ class GitHubCrawler(threading.Thread):
                     ((self.clone_queue.qsize(), self.clone_queue.maxsize,
                     queue_percent_full)))
 
-            for repo in response.json():
+            repo_names = [repo["full_name"] for repo in resp.json()]
+            repo_stars = self._get_repositories_stars(repo_names)
+
+            for repo in resp.json():
                 while self.clone_queue.full():
                     time.sleep(1)
 
                 self.clone_queue.put(indexer.GitRepository(
                         repo["html_url"], repo["full_name"].replace("/", ""),
-                        "GitHub",
-                        #self._get_repo_stars(repo["full_name"]))
-                        0))
+                        "GitHub", repo_stars[repo["full_name"]]))
 
-            if int(response.headers["x-ratelimit-remaining"]) == 0:
-                time.sleep(int(response.headers["x-ratelimit-reset"]) -
+            if int(resp.headers["x-ratelimit-remaining"]) == 0:
+                time.sleep(int(resp.headers["x-ratelimit-reset"]) -
                         time.time())
 
-            next_api_url = response.headers["link"].split(">")[0][1:]
+            next_api_url = resp.headers["link"].split(">")[0][1:]
 
             sleep_time = api_request_interval - (time.time() - start_time)
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
-    def _get_repo_stars(self, repo_name):
+    def _get_repositories_stars(self, repo_names):
         """
-        Return the number of stargazers for a repository.
+        Return the number of stargazers for several repositories.
 
-        Queries the GitHub API for the number of stargazers for a given
-        repository, and blocks if the query limit is exceeded.
+        Queries the GitHub API for the number of stargazers for any given
+        repositories, and blocks if the query limit is exceeded.
 
-        :param repo_name: The name of the repository, in
+        :param repo_names: An array of repository names, in
             `username/repository_name` format.
 
-        :type repo_name: str
+        :type repo_names: str
 
-        :return: The number of stargazers for the repository.
-        :rtype: int
+        :return: A dictionary with repository name keys, and corresponding
+            stargazer count values.
+
+            Example dictionary:
+            .. code-block:: python
+                {
+                    "user/repository" : 100
+                }
+
+        :rtype: dictionary
         """
 
         API_URL = "https://api.github.com/search/repositories"
+        REPOS_PER_QUERY = 25
 
-        params = self.AUTHENTICATION
-        params["q"] = "repo:%s" % repo_name
+        repo_stars = {}
+        for names in [repo_names[ind:ind + REPOS_PER_QUERY] for ind in
+                xrange(0, len(repo_names), REPOS_PER_QUERY)]:
+            query_url = "%s?q=%s" % (API_URL,
+                "+".join("repo:%s" % name for name in names))
 
-        resp = requests.get(API_URL,
-                params=params,
-                headers={
-                    "Accept" : "application/vnd.github.preview"
-                })
+            params = self.AUTHENTICATION
+            resp = requests.get(query_url,
+                    params=params,
+                    headers={
+                        "Accept" : "application/vnd.github.preview"
+                    })
 
-        if int(resp.headers["x-ratelimit-remaining"]) == 0:
-            sleep_time = int(resp.headers["x-ratelimit-reset"]) - time.time()
-            if sleep_time > 0:
-                logging.info("API quota exceeded. Sleep time: %d." % sleep_time)
-                time.sleep(sleep_time)
+            if int(resp.headers["x-ratelimit-remaining"]) == 0:
+                sleep_time = int(resp.headers["x-ratelimit-reset"]) - \
+                        time.time() + 1
+                if sleep_time > 0:
+                    logging.info("API quota exceeded. Sleep time: %d." %
+                            sleep_time)
+                    time.sleep(sleep_time)
 
-        if "items" not in resp.json() or len(resp.json()["items"]) == 0:
-            self._logger.critical("No API result: %s. Result: %s" % (resp.url,
-                    str(resp.json())))
-            return 0
-        else:
-            rank = float(resp.json()["items"][0]["stargazers_count"]) / 1000
-            return rank if rank < 1.0 else 1.0
+            for repo in resp.json()["items"]:
+                rank = float(repo["stargazers_count"]) / 1000
+                repo_stars[repo["full_name"]] = rank if rank < 1.0 else 1.0
+
+        for name in repo_names:
+            if name not in repo_stars:
+                repo_stars[name] = 0.5
+
+        return repo_stars
 
 class BitbucketCrawler(threading.Thread):
     """
@@ -204,8 +221,20 @@ class BitbucketCrawler(threading.Thread):
                             clone_links[0]["name"] == "https" else
                             clone_links[1]["href"])
                     links.append("clone_url")
+
+                    try:
+                        watchers = requests.get(
+                                repo["links"]["watchers"]["href"])
+                        rank = len(watchers.json()["values"]) / 100
+                    except ConnectionError as exception:
+                        time.sleep(0.5)
+                        self._logger.warning("API %s call failed: %s: %s",
+                                next_api_url, excep.__class__.__name__, excep)
+                        continue
+
                     self.clone_queue.put(indexer.GitRepository(
-                        clone_url, repo["full_name"], "Bitbucket"))
+                        clone_url, repo["full_name"], "Bitbucket"),
+                        rank if rank < 1.0 else 1.0)
 
             next_api_url = response["next"]
             time.sleep(0.2)

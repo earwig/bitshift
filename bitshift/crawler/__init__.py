@@ -39,6 +39,7 @@ def _configure_logging():
         os.mkdir(LOG_FILE_DIR)
 
     logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
 
     formatter = logging.Formatter(
             fmt=("%(asctime)s %(levelname)s %(name)s %(funcName)s"
