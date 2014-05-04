@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 5
+VERSION = 6
 
 MIGRATIONS = [
     # 1 -> 2
@@ -60,6 +60,34 @@ MIGRATIONS = [
            MODIFY COLUMN `origin_name` VARCHAR(64) DEFAULT NULL,
            MODIFY COLUMN `origin_url` VARCHAR(512) DEFAULT NULL,
            MODIFY COLUMN `origin_url_base` VARCHAR(512) DEFAULT NULL"""
+    ],
+    # 5 -> 6
+    [
+        """ALTER TABLE `code`
+           ADD COLUMN `code_lang` SMALLINT UNSIGNED DEFAULT NULL
+               AFTER `code_id`,
+           ADD KEY (`code_lang`)""",
+        """ALTER TABLE `codelets`
+           DROP KEY `codelet_lang`,
+           DROP COLUMN `codelet_lang`""",
+        """ALTER TABLE `cache_data`
+           DROP FOREIGN KEY `cache_data_ibfk_1`""",
+        """ALTER TABLE `cache`
+           MODIFY COLUMN `cache_id` BIGINT NOT NULL,
+           DROP COLUMN `cache_hash`,
+           DROP COLUMN `cache_last_used`,
+           MODIFY COLUMN `cache_count_mnt` SMALLINT UNSIGNED NOT NULL""",
+        """ALTER TABLE `cache_data`
+           MODIFY COLUMN `cdata_cache` BIGINT NOT NULL,
+           ADD PRIMARY KEY (`cdata_cache`, `cdata_codelet`),
+           ADD CONSTRAINT `cache_data_ibfk_1` FOREIGN KEY (`cdata_codelet`)
+               REFERENCES `codelets` (`codelet_id`)
+               ON DELETE CASCADE ON UPDATE CASCADE""",
+        """CREATE EVENT `flush_cache`
+           ON SCHEDULE EVERY 1 HOUR
+           DO
+               DELETE FROM `cache`
+                   WHERE `cache_created` < DATE_SUB(NOW(), INTERVAL 1 DAY);"""
     ]
 ]
 

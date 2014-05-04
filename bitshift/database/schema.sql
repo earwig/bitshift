@@ -1,4 +1,4 @@
--- Schema version 5
+-- Schema version 6
 
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
@@ -6,7 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (5);
+INSERT INTO `version` VALUES (6);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -20,8 +20,10 @@ INSERT INTO `origins` VALUES (1, NULL, NULL, NULL, NULL);
 
 CREATE TABLE `code` (
     `code_id` BIGINT NOT NULL,
+    `code_lang` SMALLINT UNSIGNED DEFAULT NULL,
     `code_code` MEDIUMTEXT NOT NULL,
     PRIMARY KEY (`code_id`),
+    KEY (`code_lang`),
     FULLTEXT KEY (`code_code`)
 ) ENGINE=InnoDB;
 
@@ -29,7 +31,6 @@ CREATE TABLE `codelets` (
     `codelet_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     `codelet_name` VARCHAR(300) NOT NULL,
     `codelet_code_id` BIGINT NOT NULL,
-    `codelet_lang` SMALLINT UNSIGNED DEFAULT NULL,
     `codelet_origin` TINYINT UNSIGNED NOT NULL,
     `codelet_url` VARCHAR(512) NOT NULL,
     `codelet_rank` FLOAT NOT NULL,
@@ -37,7 +38,6 @@ CREATE TABLE `codelets` (
     `codelet_date_modified` DATETIME DEFAULT NULL,
     PRIMARY KEY (`codelet_id`),
     FULLTEXT KEY (`codelet_name`),
-    KEY (`codelet_lang`),
     KEY (`codelet_rank`),
     KEY (`codelet_date_created`),
     KEY (`codelet_date_modified`),
@@ -88,18 +88,17 @@ CREATE TABLE `symbol_locations` (
 ) ENGINE=InnoDB;
 
 CREATE TABLE `cache` (
-    `cache_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `cache_hash` BIGINT NOT NULL,
-    `cache_count_mnt` TINYINT UNSIGNED NOT NULL,
+    `cache_id` BIGINT NOT NULL,
+    `cache_count_mnt` SMALLINT UNSIGNED NOT NULL,
     `cache_count_exp` TINYINT UNSIGNED NOT NULL,
     `cache_created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `cache_last_used` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`cache_id`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE `cache_data` (
-    `cdata_cache` INT UNSIGNED NOT NULL,
+    `cdata_cache` BIGINT NOT NULL,
     `cdata_codelet` BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (`cdata_cache`, `cdata_codelet`),
     FOREIGN KEY (`cdata_cache`)
         REFERENCES `cache` (`cache_id`)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -107,3 +106,9 @@ CREATE TABLE `cache_data` (
         REFERENCES `codelets` (`codelet_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
+
+CREATE EVENT `flush_cache`
+    ON SCHEDULE EVERY 1 HOUR
+    DO
+        DELETE FROM `cache`
+            WHERE `cache_created` < DATE_SUB(NOW(), INTERVAL 1 DAY);
