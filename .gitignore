@@ -1,5 +1,6 @@
 .sass-cache
 .DS_Store
+.my.cnf
 
 # github premade rules
 *.py[cod]

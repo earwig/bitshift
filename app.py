@@ -5,6 +5,7 @@ Module to contain all the project's Flask server plumbing.
 from flask import Flask
 from flask import render_template, session
 
+from bitshift.database import Database
 from bitshift.query import parse_query
 
 app = Flask(__name__)
@@ -12,7 +13,9 @@ app.config.from_object("bitshift.config")
 
 app_env = app.jinja_env
 app_env.line_statement_prefix = "="
-app_env.globals.update(assets = assets)
+app_env.globals.update(assets=assets)
+
+database = Database()
 
 @app.route("/")
 def index():
@@ -20,8 +23,8 @@ def index():
 
 @app.route("/search/<query>")
 def search(query):
-    ## tree = parse_query(query)
-    ## database.search(tree)
+    tree = parse_query(query)
+    database.search(tree)
     pass
 
 if __name__ == "__main__":
