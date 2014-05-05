@@ -1,6 +1,5 @@
 """
-.. module:: assets
-   :synopsis: Helper functions for use inside the project's Jinja templates.
+:synopsis: Helper functions for use inside the project's Jinja templates.
 """
 
 from flask import Markup
@@ -16,8 +15,11 @@ def tag(filename):
 
     :param filename: The filename of the asset to create a tag for.
 
+    :type filename: str
+
     :return: A string containing a `<source>` tag for JS files, and a `<link>`
         for CSS files.
+    :rtype: str
     """
 
     file_ext = filename.split(".")[-1]

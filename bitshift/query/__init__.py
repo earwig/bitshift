@@ -22,4 +22,6 @@ def parse_query(query):
 
 
     # gets a string, returns a Tree
+    # TODO: note: resultant Trees should be normalized so that "foo OR bar"
+    # and "bar OR foo" result in equivalent trees
     pass
