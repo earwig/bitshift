@@ -42,9 +42,17 @@ public class JavaSymbols extends Symbols {
         HashMap<String, Object> method = this._methods.get(name);
         if (method == null) {
             method = new HashMap<String, Object>();
-            method.put("declaration", data);
+            ArrayList<Object> assignments = new ArrayList<Object>(10);
+            ArrayList<Object> uses = new ArrayList<Object>(10);
+
+            assignments.add(data.get("coord"));
+            method.put("assignments", assignments);
+            method.put("uses", uses);
         } else {
-            method.put("declaration", data);
+            ArrayList<Object> assignments = (ArrayList<Object>)method.get("assignments");
+
+            assignments.add(data.get("coord"));
+            method.put("assignments", assignments);
         }
 
         this._methods.put(name, method);
@@ -54,14 +62,17 @@ public class JavaSymbols extends Symbols {
         HashMap<String, Object> method = this._methods.get(name);
         if (method == null) {
             method = new HashMap<String, Object>();
-            ArrayList<Object> calls = new ArrayList<Object>(10);
-            calls.add(data);
-            method.put("calls", calls);
+            ArrayList<Object> assignments = new ArrayList<Object>(10);
+            ArrayList<Object> uses = new ArrayList<Object>(10);
+
+            uses.add(data.get("coord"));
+            method.put("assignments", assignments);
+            method.put("uses", uses);
         } else {
-            ArrayList<Object> calls = (ArrayList<Object>)method.get("calls");
-            calls = (calls == null) ? new ArrayList<Object>(10) : calls;
-            calls.add(data);
-            method.put("calls", calls);
+            ArrayList<Object> uses = (ArrayList<Object>)method.get("uses");
+
+            uses.add(data.get("coord"));
+            method.put("uses", uses);
         }
 
         this._methods.put(name, method);
@@ -77,9 +88,17 @@ public class JavaSymbols extends Symbols {
         HashMap<String, Object> var = this._vars.get(name);
         if (var == null) {
             var = new HashMap<String, Object>();
-            var.put("declaration", data);
+            ArrayList<Object> assignments = new ArrayList<Object>(10);
+            ArrayList<Object> uses = new ArrayList<Object>(10);
+
+            assignments.add(data.get("coord"));
+            var.put("assignments", assignments);
+            var.put("uses", uses);
         } else {
-            var.put("declaration", data);
+            ArrayList<Object> assignments = (ArrayList<Object>)var.get("assignments");
+
+            assignments.add(data.get("coord"));
+            var.put("assignments", assignments);
         }
 
         this._vars.put(name, var);
@@ -89,13 +108,16 @@ public class JavaSymbols extends Symbols {
         HashMap<String, Object> var = this._vars.get(name);
         if (var == null) {
             var = new HashMap<String, Object>();
+            ArrayList<Object> assignments = new ArrayList<Object>(10);
             ArrayList<Object> uses = new ArrayList<Object>(10);
-            uses.add(data);
+
+            uses.add(data.get("coord"));
+            var.put("assignments", assignments);
             var.put("uses", uses);
         } else {
             ArrayList<Object> uses = (ArrayList<Object>)var.get("uses");
-            uses = (uses == null) ? new ArrayList<Object>(10) : uses;
-            uses.add(data);
+
+            uses.add(data.get("coord"));
             var.put("uses", uses);
         }
 

@@ -1,4 +1,4 @@
-import ast, pygments.lexers as pgl, sys, socket, struct
+import json, pygments.lexers as pgl, sys, socket, struct
 from ..languages import LANGS
 from .python import parse_py
 
@@ -19,13 +19,13 @@ def _lang(codelet):
         Modify function to incorporate tags from stackoverflow.
     """
 
-    try:
-        if codelet.filename is not None:
+    if codelet.filename is not None:
+        try:
             return pgl.guess_lexer_for_filename(codelet.filename, '').name
+        except:
+            raise UnsupportedFileError('Could not find a lexer for the codelet\'s filename')
 
-        return LANGS.index(pgl.guess_lexer(codelet.code))
-    except:
-        raise UnsupportedFileError('Could not find a lexer for the codelet\'s filename')
+    return LANGS.index(pgl.guess_lexer(codelet.code))
 
 def _recv_data(server_socket):
     """
@@ -88,6 +88,6 @@ def parse(codelet):
         server_socket.connect(("localhost", server_socket_number))
         server_socket.send("%d\n%s" % (len(source), source));
 
-        symbols = ast.literal_eval(_recv_data(server_socket))
+        symbols = json.loads(_recv_data(server_socket))
         codelet.symbols = symbols
 

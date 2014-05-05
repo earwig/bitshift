@@ -16,8 +16,7 @@
             <version>3.8.1</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
+            <dependency>
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>core</artifactId>
             <version>3.3.0-v_771</version>

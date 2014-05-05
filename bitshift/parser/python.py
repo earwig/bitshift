@@ -1,6 +1,6 @@
 import ast
 
-class _TreeCutter(ast.NodeVisitor):
+class _CachedWalker(ast.NodeVisitor):
     """
     Local node visitor for python abstract syntax trees.
 
@@ -22,9 +22,9 @@ class _TreeCutter(ast.NodeVisitor):
         """
 
         self.accum = {'vars': {}, 'functions': {}, 'classes': {}}
-        self.cache = None
+        self.cache = []
 
-    def start_n_end(self, node):
+    def block_position(self, node):
         """
         Helper function to get the start and end lines of an AST node.
 
@@ -54,32 +54,19 @@ class _TreeCutter(ast.NodeVisitor):
             Add value and type metadata to accum.
         """
 
-        for t in node.targets:
-            if isinstance(t, ast.Tuple):
-                for n in t.elts:
-                    line, col = n.lineno, n.col_offset
+        line, col = node.lineno, node.col_offset
+        pos = (line, col, line, col)
 
-                    if not self.accum['vars'].has_key(node.name):
-                        self.accum['vars'][node.name] = {'declaration': {}, 'uses': []}
-
-                    pos = {'coord': {}}
-                    pos['coord']['start_line'] = line
-                    pos['coord']['start_col'] = col
-                    pos['coord']['end_line'] = line
-                    pos['coord']['end_col'] = col
-                    self.accum['vars'][n.id]['declaration'] = pos
-
-            else:
-                line, col = t.lineno, t.col_offset
-
-                pos = {'coord': {}}
-                pos['coord']['start_line'] = line
-                pos['coord']['start_col'] = col
-                pos['coord']['end_line'] = line
-                pos['coord']['end_col'] = col
-                self.accum['vars'][t.id]['declaration'] = pos
-
+        self.cache.append({'nodes': []})
         self.generic_visit(node)
+        last = self.cache.pop()
+
+        for name in last['nodes']:
+            if not self.accum['vars'].has_key(name):
+                self.accum['vars'][name] = {'assignments': [], 'uses': []}
+
+            self.accum['vars'][name]['assignments'].append(pos)
+
 
     def visit_FunctionDef(self, node):
         """
@@ -93,17 +80,13 @@ class _TreeCutter(ast.NodeVisitor):
             Add arguments and decorators metadata to accum.
         """
 
-        start_line, start_col, end_line, end_col = self.start_n_end(node)
+        start_line, start_col, end_line, end_col = self.block_position(node)
 
         if not self.accum['functions'].has_key(node.name):
-            self.accum['functions'][node.name] = {'declaration': {}, 'calls': []}
+            self.accum['functions'][node.name] = {'assignments': [], 'uses': []}
 
-        pos = {'coord': {}}
-        pos['coord']['start_ln']= start_line
-        pos['coord']['start_col'] = start_col
-        pos['coord']['end_ln'] = end_line
-        pos['coord']['end_col'] = end_col
-        self.accum['functions'][node.name]['declaration'] = pos
+        pos = (start_line, start_col, end_line, end_col)
+        self.accum['functions'][node.name]['assignments'].append(pos)
 
         self.generic_visit(node)
 
@@ -120,20 +103,18 @@ class _TreeCutter(ast.NodeVisitor):
             Add arguments and decorators metadata to accum.
         """
 
-        line, col = node.line_no, node.col_offset
+        line, col = node.lineno, node.col_offset
+        pos = (line, col, line, col)
 
-        if not self.accum['functions'].has_key(node.name):
-            self.accum['functions'][node.name] = {'declaration': {}, 'calls': []}
+        if isinstance(node.func, ast.Name):
+            name = node.func.id
+        else:
+            name = node.func.attr
 
-        pos = {'coord': {}}
-        pos['coord']['start_line'] = line
-        pos['coord']['start_col'] = col
-        pos['coord']['end_line'] = line
-        pos['coord']['end_col'] = col
-        self.accum['functions'][node.name]['calls'].append(pos)
+        if not self.accum['functions'].has_key(name):
+            self.accum['functions'][name] = {'assignments': [], 'uses': []}
 
-        self.generic_visit(node)
-
+        self.accum['functions'][name]['uses'].append(pos)
 
     def visit_ClassDef(self, node):
         """
@@ -147,19 +128,22 @@ class _TreeCutter(ast.NodeVisitor):
             Add arguments, inherits, and decorators metadata to accum.
         """
 
-        start_line, start_col, end_line, end_col = self.start_n_end(node)
+        start_line, start_col, end_line, end_col = self.block_position(node)
 
-        pos = {'coord': {}}
-        pos['coord']['start_ln']= start_line
-        pos['coord']['start_col'] = start_col
-        pos['coord']['end_ln'] = end_line
-        pos['coord']['end_col'] = end_col
+        pos = (start_line, start_col, end_line, end_col)
         self.accum['classes'][node.name] = pos
 
         self.generic_visit(node)
 
     def visit_Name(self, node):
-        pass
+        if self.cache:
+            last = self.cache[-1]
+            last['nodes'].append(node.id)
+
+    def visit_Attribute(self, node):
+        if self.cache:
+            last = self.cache[-1]
+            last['nodes'].append(node.attr)
 
 def parse_py(codelet):
     """
@@ -171,6 +155,6 @@ def parse_py(codelet):
     """
 
     tree = ast.parse(codelet.code)
-    cutter = _TreeCutter()
+    cutter = _CachedWalker()
     cutter.visit(tree)
     codelet.symbols = cutter.accum

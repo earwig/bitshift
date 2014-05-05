@@ -12,23 +12,23 @@ module Bitshift
             parser = RubyParser.new
             tree = parser.parse(@source)
             offset = tree.line - 1
-            processor = NodeVisitor.new offset, tree
+            processor = CachedWalker.new offset, tree
             processor.process(tree)
             return processor.to_s
         end
     end
 
-    class NodeVisitor < SexpProcessor
+    class CachedWalker < SexpProcessor
         attr_accessor :symbols
         attr_accessor :offset
 
         def initialize(offset, tree)
             super()
 
-            module_hash = Hash.new {|hash, key| hash[key] = Hash.new}
+            module_hash = Hash.new {|hash, key| hash[key] = { assignments: [], uses: [] }}
             class_hash = module_hash.clone
-            function_hash = Hash.new {|hash, key| hash[key] = { calls: [] } }
-            var_hash = Hash.new {|hash, key| hash[key] = [] }
+            function_hash = module_hash.clone
+            var_hash = module_hash.clone
 
             @require_empty = false
             @offset = offset
@@ -41,7 +41,6 @@ module Bitshift
         end
 
         def block_position(exp)
-            pos = Hash.new
             end_ln = (start_ln = exp.line - offset)
             cur_exp = exp
 
@@ -51,9 +50,7 @@ module Bitshift
                 break if cur_exp == nil
             end
 
-            pos[:coord] = {
-                start_ln: start_ln,
-                end_ln: end_ln }
+            pos = [start_ln, -1, end_ln, -1]
             return pos
         end
 
@@ -61,9 +58,7 @@ module Bitshift
             pos = Hash.new
             end_ln = start_ln = exp.line - offset
 
-            pos[:coord] = {
-                start_ln: start_ln,
-                end_ln: end_ln }
+            pos = [start_ln, -1, end_ln, -1]
             return pos
         end
 
@@ -71,7 +66,7 @@ module Bitshift
             pos = block_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:modules][name] = pos
+            symbols[:modules][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -80,7 +75,7 @@ module Bitshift
             pos = block_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:classes][name] = pos
+            symbols[:classes][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -89,7 +84,7 @@ module Bitshift
             pos = block_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:functions][name][:declaration] = pos
+            symbols[:functions][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -99,7 +94,7 @@ module Bitshift
             exp.shift
             exp.shift
             name = exp.shift
-            symbols[:functions][name][:calls] << pos
+            symbols[:functions][name][:uses] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -108,7 +103,7 @@ module Bitshift
             pos = statement_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:vars][name] << pos
+            symbols[:vars][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -117,7 +112,7 @@ module Bitshift
             pos = statement_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:vars][name] << pos
+            symbols[:vars][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
