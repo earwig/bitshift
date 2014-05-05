@@ -29,7 +29,15 @@ public class JavaSymbols extends Symbols {
     }
 
     public boolean insertClassDeclaration(String name, HashMap<String, Object> data) {
-        this._classes.put(name, data);
+        ArrayList<Object> assignments = new ArrayList<Object>(10);
+        ArrayList<Object> uses = new ArrayList<Object>(10);
+        HashMap<String, Object> klass = new HashMap<String, Object>();
+
+        assignments.add(data.get("coord"));
+        klass.put("assignments", assignments);
+        klass.put("uses", uses);
+
+        this._classes.put(name, klass);
         return true;
     }
 

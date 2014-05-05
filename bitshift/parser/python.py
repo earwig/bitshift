@@ -55,7 +55,7 @@ class _CachedWalker(ast.NodeVisitor):
         """
 
         line, col = node.lineno, node.col_offset
-        pos = (line, col, line, col)
+        pos = (line, col, -1, -1)
 
         self.cache.append({'nodes': []})
         self.generic_visit(node)
@@ -104,7 +104,7 @@ class _CachedWalker(ast.NodeVisitor):
         """
 
         line, col = node.lineno, node.col_offset
-        pos = (line, col, line, col)
+        pos = (line, col, -1, -1)
 
         if isinstance(node.func, ast.Name):
             name = node.func.id
