@@ -1,0 +1,5 @@
+require File.expand_path('../lib/parse_server.rb', __FILE__)
+
+task :start_server do |t|
+    start_server
+end
