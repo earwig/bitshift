@@ -32,3 +32,9 @@ root. Note that this will revert any custom changes made to the files in
 `docs/source/api`, so you might want to update them by hand instead.
 
 [SASS]: http://sass-lang.com/guide
+
+Releasing
+---------
+
+- Update `__version__` in `bitshift/__init__.py`, `version` in `setup.py`, and
+  `version` and `release` in `docs/conf.py`.

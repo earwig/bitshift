@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "bitshift",
-    version = "0.1",
+    version = "0.1.dev",
     packages = find_packages(),
     install_requires = [
         "Flask>=0.10.1", "pygments>=1.6", "requests>=2.2.0",

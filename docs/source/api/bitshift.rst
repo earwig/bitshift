@@ -33,19 +33,13 @@ bitshift Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`database` Module
-----------------------
-
-.. automodule:: bitshift.database
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
 .. toctree::
 
+    bitshift.crawler
+    bitshift.database
     bitshift.parser
     bitshift.query
 
