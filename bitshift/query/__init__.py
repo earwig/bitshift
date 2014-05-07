@@ -1,7 +1,12 @@
 from .nodes import *  ## TODO
 from .tree import Tree
 
-__all__ = ["parse_query"]
+__all__ = ["QueryParseException", "parse_query"]
+
+class QueryParseException(Exception):
+    """Raised by parse_query when a query is invalid."""
+    pass
+
 
 def parse_query(query):
     """
@@ -16,8 +21,25 @@ def parse_query(query):
 
     :return: A tree storing the data in the query.
     :rtype: :py:class:`~.query.tree.Tree`
+
+    :raises: :py:class:`.QueryParseException`
     """
-    pass
+    for term in query.split(" "):
+        pass
+
+    language:"Python"
+    lang:
+    l:
+
+    author:"Ben Kurtovic"
+
+    modified:before
+    modified:after
+    created:before
+    created:after:"Jaunary 4, 2014"
+
+    func:"foobar"
+    func:re|gex:"foo?b|car"
 
     # "foo" -> Tree()
     # "foo bar" -> "foo bar" OR ("foo" or "bar")
