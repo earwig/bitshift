@@ -8,6 +8,3 @@ class Tree(object):
 
     def serialize(self):
         pass
-
-    def build_query(self):
-        pass

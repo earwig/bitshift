@@ -51,6 +51,20 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
+    def _search_with_query(self, cursor, query):
+        """Convert a query tree into SQL SELECTs, execute, and return results.
+
+        The returned data is a 2-tuple of (list of codelet IDs, estimated
+        number of total results).
+        """
+        raise NotImplementedError()  ## TODO
+
+        results = cursor.fetchall()
+        ids = NotImplemented  ## TODO: extract ids from results
+        num_results = NotImplemented  ## TODO: num if results else 0
+
+        return ids, num_results
+
     def _get_codelets_from_ids(self, cursor, ids):
         """Return a list of Codelet objects given a list of codelet IDs."""
         raise NotImplementedError()  ## TODO
@@ -112,10 +126,7 @@ class Database(object):
                 num_results = results[0][1] * (10 ** results[0][2])
                 ids = [res[0] for res in results]
             else:  # Cache miss
-                ## TODO: build and execute search query
-                results = cursor.fetchall()
-                ids = NotImplemented  ## TODO: extract ids from results
-                num_results = NotImplemented  ## TODO: num if results else 0
+                ids, num_results = self._search_with_query(cursor, query, page)
                 num_exp = max(len(str(num_results)) - 3, 0)
                 num_results = int(round(num_results, -num_exp))
                 num_mnt = num_results / (10 ** num_exp)
