@@ -2,6 +2,29 @@
  Global project stylesheet.
  */
 
-// placeholder
-p
-    font-size: 1.5em
+@import mixins
+
+body
+    margin: 0px
+
+div#center
+    background-color: red
+    margin-left: auto
+    margin-right: auto
+    margin-top: 0px
+    width: 75%
+
+div#footer
+    @extend .t3
+
+    background-color: yellow
+    bottom: -20px
+    position: fixed
+    width: 100%
+    text-align: center
+
+    a
+        padding-left: 10%
+
+    &:hover
+        bottom: 0px
