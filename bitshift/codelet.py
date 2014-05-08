@@ -18,6 +18,8 @@ class Codelet(object):
         code was last modified.
     :ivar rank: (float) A quanitification of the source code's quality, as
         per available ratings (stars, forks, upvotes, etc.).
+    :ivar symbols: (dict) Dictionary containing dictionaries of functions, classes,
+        variable definitions, etc.
     """
 
     def __init__(self, name, code, filename, language, authors, code_url,

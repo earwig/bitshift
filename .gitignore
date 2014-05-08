@@ -1,3 +1,4 @@
+*.swp
 .sass-cache
 .DS_Store
 .my.cnf
@@ -39,3 +40,13 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Maven
+target
+
+# Ruby
+!parsers/ruby/lib
+
+# Ctags
+*/tags
+log
