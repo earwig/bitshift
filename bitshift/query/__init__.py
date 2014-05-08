@@ -31,7 +31,8 @@ class _QueryParser(object):
         }
 
     def _parse_language(self, term):
-        pass
+        ## TODO: look up language ID
+        return Language(0)
 
     def _parse_author(self, term):
         pass
@@ -85,13 +86,14 @@ class _QueryParser(object):
 
         :raises: :py:class:`.QueryParseException`
         """
-        print "input:", query
-        for term in split(query):
-            print "term: ", term
+        print "  STRING:", query
+        for i, term in enumerate(split(query), 1):
+            ## TODO: remove enumerate when removing debug prints
+            print " in [%02d]:" % i, term
             node = self._parse_term(term)
-            print "parse:", node
+            print "out [%02d]:" % i, node
             tree = Tree(node)
-            print "tree: ", tree
+            print "    TREE:", tree
             return tree
             ## TODO
 
