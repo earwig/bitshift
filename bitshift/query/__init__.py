@@ -19,15 +19,15 @@ class _QueryParser(object):
     """Wrapper class with methods to parse queries. Used as a singleton."""
 
     def __init__(self):
-        prefixes = {
-            "language": _parse_language,
-            "author": _parse_author,
-            "modified": _parse_modified,
-            "created": _parse_created,
-            "symbol": _parse_symbol,
-            "function": _parse_function,
-            "class": _parse_class,
-            "variable": _parse_variable
+        self._prefixes = {
+            self._parse_language: ["l", "lang", "language"],
+            self._parse_author: ["a", "author"],
+            self._parse_modified: ["m", "mod", "modified", "modify"],
+            self._parse_created: ["cr", "create", "created"],
+            self._parse_symbol: ["s", "sym", "symb", "symbol"],
+            self._parse_function: ["f", "fn", "func", "function"],
+            self._parse_class: ["cl", "class", "clss"],
+            self._parse_variable: ["v", "var", "variable"]
         }
 
     def _parse_language(self, term):
@@ -54,6 +54,21 @@ class _QueryParser(object):
     def _parse_variable(self, term):
         pass
 
+    def _parse_literal(self, literal):
+        """Parse part of a search query into a string or regular expression."""
+        if literal.startswith(("r:", "re:", "regex:", "regexp:")):
+            return Regex(literal.split(":", 1)[1])
+        return String(literal)
+
+    def _parse_term(self, term):
+        """Parse a query term into a tree node and return it."""
+        if ":" in term and not term[0] == ":":
+            prefix, arg = term.split(":", 1)
+            for meth, prefixes in self._prefixes.iteritems():
+                if prefix in prefixes:
+                    return meth(arg)
+        return Text(self._parse_literal(term))
+
     def parse(self, query):
         """
         Parse a search query.
@@ -70,11 +85,15 @@ class _QueryParser(object):
 
         :raises: :py:class:`.QueryParseException`
         """
+        print "input:", query
         for term in split(query):
-            if ":" in term and not term[0] == ":":
-                prefix = term.split(":")[0]
-
-
+            print "term: ", term
+            node = self._parse_term(term)
+            print "parse:", node
+            tree = Tree(node)
+            print "tree: ", tree
+            return tree
+            ## TODO
 
         # language:"Python"
         # lang:
