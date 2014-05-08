@@ -1,4 +1,4 @@
-# from ..languages import LANGS
+from ..languages import LANGS
 
 __all__ = ["String", "Regex", "Text", "Language", "Date", "Author", "Symbol",
            "BinaryOp", "UnaryOp"]
