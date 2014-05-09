@@ -3,28 +3,49 @@
  */
 
 @import mixins
+@import variables
 
 body
     margin: 0px
 
-div#center
-    background-color: red
-    margin-left: auto
-    margin-right: auto
-    margin-top: 0px
-    width: 75%
+    *
+        font-family: sans-serif
 
-div#footer
-    @extend .t3
+    div#main
+        padding-top: 4%
 
-    background-color: yellow
-    bottom: -20px
-    position: fixed
-    width: 100%
-    text-align: center
+        div#center
+            margin-left: auto
+            margin-right: auto
+            margin-top: 0px
+            width: 75%
 
-    a
-        padding-left: 10%
+    div#footer
+        @extend .t3
 
-    &:hover
-        bottom: 0px
+        background-color: $lightBlue
+        bottom: -50px
+        padding-top: 12px
+        position: fixed
+        width: 100%
+        text-align: center
+
+        *
+            color: white
+
+        a
+            @extend .t3
+
+            text-decoration: none
+            font-size: 1.2em
+            margin-left: 5%
+            margin-right: 5%
+
+            &:hover
+                text-decoration: underline
+
+        p span
+            font-size: 0.7em
+
+        &:hover
+            bottom: 0px
