@@ -3,9 +3,13 @@ This subpackage contains code to parse search queries received from the
 frontend into trees that can be used by the database backend.
 """
 
+from __future__ import unicode_literals
 from shlex import split
 
-from .nodes import *  ## TODO
+from dateutil.parser import parse as parse_date
+
+from .nodes import (String, Regex, Text, Language, Author, Date, Symbol,
+                    BinaryOp, UnaryOp)
 from .tree import Tree
 from ..languages import LANGS
 
@@ -14,6 +18,7 @@ __all__ = ["QueryParseException", "parse_query"]
 class QueryParseException(Exception):
     """Raised by parse_query() when a query is invalid."""
     pass
+
 
 class _QueryParser(object):
     """Wrapper class with methods to parse queries. Used as a singleton."""
@@ -31,28 +36,52 @@ class _QueryParser(object):
         }
 
     def _parse_language(self, term):
+        """Parse part of a query into a language node and return it."""
         ## TODO: look up language ID
         return Language(0)
 
     def _parse_author(self, term):
-        pass
+        """Parse part of a query into an author node and return it."""
+        return Author(self._parse_literal(term))
+
+    def _parse_date(self, term, type_):
+        """Parse part of a query into a date node and return it."""
+        if term.startswith(("before:", "b:")):
+            relation = Date.BEFORE
+            dtstr = term.split(":", 1)[1]
+        elif term.startswith(("after:", "a:")):
+            relation = Date.AFTER
+            dtstr = term.split(":", 1)[1]
+        else:
+            raise QueryParseException('Bad relation for date: "%s"' % term)
+        try:
+            dt = parse_date(dtstr)
+        except (TypeError, ValueError):
+            raise QueryParseException('Bad datetime for date: "%s"' % dtstr)
+        return Date(type_, relation, dt)
 
     def _parse_modified(self, term):
-        pass
+        """Parse part of a query into a date modified node and return it."""
+        return self._parse_date(term, Date.MODIFY)
 
     def _parse_created(self, term):
-        pass
+        """Parse part of a query into a date created node and return it."""
+        return self._parse_date(term, Date.CREATE)
 
     def _parse_symbol(self, term):
+        """Parse part of a query into a symbol node and return it."""
         pass
 
     def _parse_function(self, term):
+        """Parse part of a query into a function node and return it."""
         pass
 
     def _parse_class(self, term):
+        """Parse part of a query into a class node and return it."""
         pass
 
     def _parse_variable(self, term):
+        """Parse part of a query into a variable node and return it."""
         pass
 
     def _parse_literal(self, literal):

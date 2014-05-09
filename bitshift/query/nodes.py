@@ -1,6 +1,6 @@
 from ..languages import LANGS
 
-__all__ = ["String", "Regex", "Text", "Language", "Date", "Author", "Symbol",
+__all__ = ["String", "Regex", "Text", "Language", "Author", "Date", "Symbol",
            "BinaryOp", "UnaryOp"]
 
 class _Node(object):
@@ -80,6 +80,19 @@ class Language(_Node):
         return "Language({0})".format(LANGS[self.lang])
 
 
+class Author(_Node):
+    """Represents a author node.
+
+    Searches in the author_name field (full-text search).
+    """
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "Author({0})".format(self.name)
+
+
 class Date(_Node):
     """Represents a date node.
 
@@ -106,19 +119,6 @@ class Date(_Node):
         relations = {self.BEFORE: "BEFORE", self.AFTER: "AFTER"}
         tm = "Date({0}, {1}, {2})"
         return tm.format(types[self.type], relations[self.relation], self.date)
-
-
-class Author(_Node):
-    """Represents a author node.
-
-    Searches in the author_name field (full-text search).
-    """
-
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return "Author({0})".format(self.name)
 
 
 class Symbol(_Node):
