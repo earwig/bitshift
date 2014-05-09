@@ -142,7 +142,7 @@ class Symbol(_Node):
     def __repr__(self):
         types = {self.ALL: "ALL", self.FUNCTION: "FUNCTION",
                  self.CLASS: "CLASS", self.VARIABLE: "VARIABLE"}
-        return "Symbol({0}, {1})".format(types[self.type], name)
+        return "Symbol({0}, {1})".format(types[self.type], self.name)
 
 
 class BinaryOp(_Node):

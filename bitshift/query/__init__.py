@@ -70,19 +70,19 @@ class _QueryParser(object):
 
     def _parse_symbol(self, term):
         """Parse part of a query into a symbol node and return it."""
-        pass
+        return Symbol(Symbol.ALL, self._parse_literal(term))
 
     def _parse_function(self, term):
         """Parse part of a query into a function node and return it."""
-        pass
+        return Symbol(Symbol.FUNCTION, self._parse_literal(term))
 
     def _parse_class(self, term):
         """Parse part of a query into a class node and return it."""
-        pass
+        return Symbol(Symbol.CLASS, self._parse_literal(term))
 
     def _parse_variable(self, term):
         """Parse part of a query into a variable node and return it."""
-        pass
+        return Symbol(Symbol.VARIABLE, self._parse_literal(term))
 
     def _parse_literal(self, literal):
         """Parse part of a search query into a string or regular expression."""
@@ -103,9 +103,9 @@ class _QueryParser(object):
         """
         Parse a search query.
 
-        The result is normalized with a sorting function so that ``"foo OR bar"``
-        and ``"bar OR foo"`` result in the same tree. This is important for caching
-        purposes.
+        The result is normalized with a sorting function so that
+        ``"foo OR bar"`` and ``"bar OR foo"`` result in the same tree. This is
+        important for caching purposes.
 
         :param query: The query be converted.
         :type query: str
