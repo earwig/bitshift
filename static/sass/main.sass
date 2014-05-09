@@ -5,30 +5,36 @@
 @import mixins
 @import variables
 
-body
-    margin: 0px
+html, body
+    height: 100%
+    margin: 0
+    padding: 0
 
     *
         font-family: sans-serif
 
-    div#main
+div#container
+    min-height: 100%
+    position: relative
+
+    div#body
+        padding-bottom: 50px
         padding-top: 4%
 
         div#center
             margin-left: auto
             margin-right: auto
-            margin-top: 0px
             width: 75%
 
     div#footer
         @extend .t3
 
         background-color: $lightBlue
-        bottom: -50px
+        height: 60px
         padding-top: 12px
-        position: fixed
-        width: 100%
+        position: absolute
         text-align: center
+        width: 100%
 
         *
             color: white
@@ -36,16 +42,13 @@ body
         a
             @extend .t3
 
-            text-decoration: none
             font-size: 1.2em
             margin-left: 5%
             margin-right: 5%
+            text-decoration: none
 
             &:hover
                 text-decoration: underline
 
         p span
             font-size: 0.7em
-
-        &:hover
-            bottom: 0px
