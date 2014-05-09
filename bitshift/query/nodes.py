@@ -115,7 +115,7 @@ class Date(_Node):
         self.date = date
 
     def __repr__(self):
-        types = {self.CREATE: "CREATE", self.MODIFY: MODIFY}
+        types = {self.CREATE: "CREATE", self.MODIFY: "MODIFY"}
         relations = {self.BEFORE: "BEFORE", self.AFTER: "AFTER"}
         tm = "Date({0}, {1}, {2})"
         return tm.format(types[self.type], relations[self.relation], self.date)
