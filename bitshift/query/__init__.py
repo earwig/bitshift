@@ -4,6 +4,7 @@ frontend into trees that can be used by the database backend.
 """
 
 from __future__ import unicode_literals
+from re import IGNORECASE, search
 from shlex import split
 
 from dateutil.parser import parse as parse_date
@@ -35,10 +36,35 @@ class _QueryParser(object):
             self._parse_variable: ["v", "var", "variable"]
         }
 
+    def _parse_literal(self, literal):
+        """Parse part of a search query into a string or regular expression."""
+        if literal.startswith(("r:", "re:", "regex:", "regexp:")):
+            return Regex(literal.split(":", 1)[1])
+        return String(literal)
+
     def _parse_language(self, term):
         """Parse part of a query into a language node and return it."""
-        ## TODO: look up language ID
-        return Language(0)
+        term = self._parse_literal(term)
+        if isinstance(term, Regex):
+            langs = [i for i, lang in enumerate(LANGS)
+                     if search(term.regex, lang, IGNORECASE)]
+            if not langs:
+                err = "No languages found for regex: %r" % term.regex
+                raise QueryParseException(err)
+            node = Language(langs.pop())
+            while langs:
+                node = BinaryOp(Language(langs.pop()), BinaryOp.OR, node)
+            return node
+
+        needle = term.string.lower()
+        for i, lang in enumerate(LANGS):
+            if lang.lower() == needle:
+                return Language(i)
+        for i, lang in enumerate(LANGS):
+            if lang.lower().startswith(needle):
+                return Language(i)
+        err = "No languages found for string: %r" % term.string
+        raise QueryParseException(err)
 
     def _parse_author(self, term):
         """Parse part of a query into an author node and return it."""
@@ -53,11 +79,11 @@ class _QueryParser(object):
             relation = Date.AFTER
             dtstr = term.split(":", 1)[1]
         else:
-            raise QueryParseException('Bad relation for date: "%s"' % term)
+            raise QueryParseException("Bad relation for date node: %r" % term)
         try:
             dt = parse_date(dtstr)
         except (TypeError, ValueError):
-            raise QueryParseException('Bad datetime for date: "%s"' % dtstr)
+            raise QueryParseException("Bad datetime for date node: %r" % dtstr)
         return Date(type_, relation, dt)
 
     def _parse_modified(self, term):
@@ -83,12 +109,6 @@ class _QueryParser(object):
     def _parse_variable(self, term):
         """Parse part of a query into a variable node and return it."""
         return Symbol(Symbol.VARIABLE, self._parse_literal(term))
-
-    def _parse_literal(self, literal):
-        """Parse part of a search query into a string or regular expression."""
-        if literal.startswith(("r:", "re:", "regex:", "regexp:")):
-            return Regex(literal.split(":", 1)[1])
-        return String(literal)
 
     def _parse_term(self, term):
         """Parse a query term into a tree node and return it."""
