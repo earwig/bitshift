@@ -163,7 +163,7 @@ class BinaryOp(_Node):
 
 class UnaryOp(_Node):
     """Represents a transformation applied to one node: ``not``."""
-    NOT = 1
+    NOT = 3
 
     def __init__(self, op, node):
         self.op = op
