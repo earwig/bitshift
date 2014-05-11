@@ -3,9 +3,10 @@
  */
 
 @import mixins
-@import variables
 
-div.search-field
+div#search-field
+    @extend .t3
+
     bottom: 0
     height: 200px
     left: 0
@@ -25,3 +26,18 @@ div.search-field
         font-size: 1.1em
         padding: 3px
         width: 100%
+
+    &.partly-visible
+        @extend .t3
+
+        margin-top: 2%
+        width: 46%
+
+        #title
+            display: none
+
+div#results
+    background-color: #F6FAFF
+    margin-left: auto
+    margin-right: auto
+    width: 80%
