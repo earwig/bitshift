@@ -4,6 +4,18 @@
   Home
 = endblock
 
+= block head
+  {{ assets.tag("index.css") }}
+= endblock
+
 = block body
-  <div>Hello, world.</div>
+  <div class="search-field" id="outer">
+    <div id="title">
+      We shift mad bits.
+    </div>
+    <form id="search-bar">
+      <input type="text">
+    </form>
+  </div>
+  {{ assets.tag("index.js") }}
 = endblock
