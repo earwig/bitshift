@@ -130,6 +130,63 @@ class _QueryParser(object):
                     return meth(arg)
         return Text(self._parse_literal(term))
 
+    def _scan_query(self, query, markers):
+        """Scan a query (sub)string for the first occurance of some markers.
+
+        Returns a 2-tuple of (first_marker_found, marker_index).
+        """
+        def _is_escaped(query, index):
+            """Return whether a query marker is backslash-escaped."""
+            return (index > 0 and query[index - 1] == "\\" and
+                    (index < 2 or query[index - 2] != "\\"))
+
+        best_marker, best_index = None, maxsize
+        for marker in markers:
+            index = query.find(marker)
+            if _is_escaped(query, index):
+                _, new_index = self._scan_query(query[index + 1:], marker)
+                index += new_index + 1
+            if index >= 0 and index < best_index:
+                best_marker, best_index = marker, index
+        return best_marker, best_index
+
+    def _split_query(self, query, parens=False):
+        """Split a query string into a nested list of query terms."""
+        query = query.lstrip()
+        if not query:
+            return []
+        marker, index = self._scan_query(query, " \"'()")
+        if not marker:
+            return [query]
+        nest = [query[:index]] if index > 0 else []
+        after = query[index + 1:]
+
+        if marker == " ":
+            nest += self._split_query(after, parens)
+        elif marker in ('"', "'"):
+            close_marker, close_index = self._scan_query(after, marker)
+            if close_marker:
+                if close_index > 0:
+                    nest.append(after[:close_index])
+                after = after[close_index + 1:]
+                nest += self._split_query(after, parens)
+            elif after:
+                nest.append(after)
+        elif marker == "(":
+            inner, after = self._split_query(after, True), []
+            if inner and isinstance(inner[-1], tuple):
+                after = self._split_query(inner.pop()[0], parens)
+            if inner:
+                nest.append(inner)
+            if after:
+                nest += after
+        elif marker == ")":
+            if parens:
+                nest.append((after,))
+            else:
+                nest += self._split_query(after)
+        return nest
+
     def parse(self, query):
         """
         Parse a search query.
@@ -149,60 +206,7 @@ class _QueryParser(object):
         ## TODO: balance tree
         ## --------------------------------------------------------------------
 
-        def SCAN_FOR_MARKERS(string, markers):
-            best_marker, best_index = None, maxsize
-            for marker in markers:
-                index = string.find(marker)
-                if index > 0 and string[index - 1] == "\\" and (index == 1 or string[index - 2] != "\\"):
-                    _, new_index = SCAN_FOR_MARKERS(string[index + 1:], marker)
-                    index += new_index + 1
-                if index >= 0 and index < best_index:
-                    best_marker, best_index = marker, index
-            return best_marker, best_index
-
-        def SPLIT_QUERY_STRING(string, parens=False):
-            string = string.lstrip()
-            if not string:
-                return []
-            marker, index = SCAN_FOR_MARKERS(string, " \"'()")
-
-            if not marker:
-                return [string]
-
-            nest = [string[:index]] if index > 0 else []
-            after = string[index + 1:]
-
-            if marker == " ":
-                nest += SPLIT_QUERY_STRING(after, parens)
-
-            elif marker in ('"', "'"):
-                close_marker, close_index = SCAN_FOR_MARKERS(after, marker)
-                if close_marker:
-                    if close_index > 0:
-                        nest.append(after[:close_index])
-                    after = after[close_index + 1:]
-                    nest += SPLIT_QUERY_STRING(after, parens)
-                elif after:
-                    nest.append(after)
-
-            elif marker == "(":
-                inner, after = SPLIT_QUERY_STRING(after, True), []
-                if inner and isinstance(inner[-1], tuple):
-                    after = SPLIT_QUERY_STRING(inner.pop()[0], parens)
-                if inner:
-                    nest.append(inner)
-                if after:
-                    nest += after
-
-            elif marker == ")":
-                if parens:
-                    nest.append((after,))
-                else:
-                    nest += SPLIT_QUERY_STRING(after)
-
-            return nest
-
-        nest = SPLIT_QUERY_STRING(query.rstrip())
+        nest = self._split_query(query.rstrip())
         if not nest:
             raise QueryParseException('Empty query: "%s"' % query)
 
