@@ -5,7 +5,7 @@ frontend into trees that can be used by the database backend.
 
 from __future__ import unicode_literals
 from re import IGNORECASE, search
-from shlex import split
+from sys import maxsize
 
 from dateutil.parser import parse as parse_date
 
@@ -146,12 +146,109 @@ class _QueryParser(object):
 
         :raises: :py:class:`.QueryParseException`
         """
-        root = None
+        ## TODO: balance tree
+        ## --------------------------------------------------------------------
+
+        def SCAN_FOR_MARKER(string, markers):
+            best_marker, best_index = None, maxsize
+            for marker in markers:
+                index = string.find(marker)
+                if index > 0 and string[index - 1] == "\\" and (index == 1 or string[index - 2] != "\\"):
+                    _, new_index = SCAN_FOR_MARKER(string[index + 1:], marker)
+                    index += new_index + 1
+                if index >= 0 and index < best_index:
+                    best_marker, best_index = marker, index
+            return best_marker, best_index
+
+        def SPLIT_QUERY_STRING(string, parens=False):
+            string = string.lstrip()
+            if not string:
+                return []
+            marker, index = SCAN_FOR_MARKER(string, " \"'()")
+
+            if not marker:
+                return [string]
+
+            before = [string[:index]] if index > 0 else []
+            after = string[index + 1:]
+
+            if marker == " ":
+                return before + SPLIT_QUERY_STRING(after, parens)
+
+            elif marker in ('"', "'"):
+                close_marker, close_index = SCAN_FOR_MARKER(after, marker)
+                if not close_marker:
+                    return before + [after]
+                quoted, after = after[:close_index], after[close_index + 1:]
+                return before + [quoted] + SPLIT_QUERY_STRING(after, parens)
+
+            elif marker == "(":
+                inner = SPLIT_QUERY_STRING(after, True)
+                if inner and isinstance(inner[-1], tuple):
+                    after, inner = inner.pop()[0], [inner] if inner else []
+                    return before + inner + SPLIT_QUERY_STRING(after, parens)
+                return before + [inner]
+
+            elif marker == ")":
+                if parens:
+                    return before + [(after,)]
+                return before + SPLIT_QUERY_STRING(after)
+
+        nest = SPLIT_QUERY_STRING(query.rstrip())
+        if not nest:
+            raise QueryParseException('Empty query: "%s"' % query)
+
+        return nest
+
+        ###########
+
+        group = _NodeGroup()
         for term in split(query):
-            node = self._parse_term(term)
-            root = BinaryOp(root, BinaryOp.AND, node) if root else node
-        tree = Tree(root)
-        return tree
+
+            while term.startswith("("):
+                group = _NodeList(group, explicit=True)
+                term = term[1:]
+
+            closes = 0
+            while term.endswith(")"):
+                closes += 1
+                term = term[:-1]
+
+            if not term:
+                for i in xrange(closes):
+                    group = reduce_group(group, explicit=True)
+                continue
+
+            lcase = term.lower()
+
+            if lcase == "not":
+                UnaryOp.NOT
+            elif lcase == "or":
+                BinaryOp.OR
+            elif lcase == "and":
+                if group.pending_op:
+                    pass
+                else:
+                    group.pending_op = BinaryOP.AND
+            else:
+                group.nodes.append(self._parse_term(term))
+
+        return Tree(reduce_group(group, explicit=False))
+
+        ## --------------------------------------------------------------------
+
+        # root = None
+        # for node in reversed(nodes):
+        #     root = BinaryOp(node, BinaryOp.AND, root) if root else node
+        # tree = Tree(root)
+        # return tree
+
+class _NodeGroup(object):
+    def __init__(self, parent=None):
+        self.parent = parent
+        self.op = None
+        self.left = None
+        self.right = None
 
 
 parse_query = _QueryParser().parse
