@@ -49,7 +49,7 @@ class _QueryParser(object):
             langs = [i for i, lang in enumerate(LANGS)
                      if search(term.regex, lang, IGNORECASE)]
             if not langs:
-                err = "No languages found for regex: %r" % term.regex
+                err = 'No languages found for regex: "%s"' % term.regex
                 raise QueryParseException(err)
             node = Language(langs.pop())
             while langs:
@@ -63,7 +63,7 @@ class _QueryParser(object):
         for i, lang in enumerate(LANGS):
             if lang.lower().startswith(needle):
                 return Language(i)
-        err = "No languages found for string: %r" % term.string
+        err = 'No languages found for string: "%s"' % term.string
         raise QueryParseException(err)
 
     def _parse_author(self, term):
@@ -72,18 +72,22 @@ class _QueryParser(object):
 
     def _parse_date(self, term, type_):
         """Parse part of a query into a date node and return it."""
-        if term.startswith(("before:", "b:")):
+        if ":" not in term:
+            err = "A date relationship is required " \
+                  '("before:<date>" or "after:<date>"): "%s"'
+            raise QueryParseException(err % term)
+        relstr, dtstr = term.split(":", 1)
+        if relstr.lower() in ("before", "b"):
             relation = Date.BEFORE
-            dtstr = term.split(":", 1)[1]
-        elif term.startswith(("after:", "a:")):
+        elif relstr.lower() in ("after", "a"):
             relation = Date.AFTER
-            dtstr = term.split(":", 1)[1]
         else:
-            raise QueryParseException("Bad relation for date node: %r" % term)
+            err = 'Bad date relationship (should be "before" or "after"): "%s"'
+            raise QueryParseException(err % relstr)
         try:
             dt = parse_date(dtstr)
         except (TypeError, ValueError):
-            raise QueryParseException("Bad datetime for date node: %r" % dtstr)
+            raise QueryParseException('Bad date/time string: "%s"' % dtstr)
         return Date(type_, relation, dt)
 
     def _parse_modified(self, term):
@@ -114,6 +118,8 @@ class _QueryParser(object):
         """Parse a query term into a tree node and return it."""
         if ":" in term and not term[0] == ":":
             prefix, arg = term.split(":", 1)
+            if not arg:
+                raise QueryParseException('Incomplete query term: "%s"' % term)
             for meth, prefixes in self._prefixes.iteritems():
                 if prefix in prefixes:
                     return meth(arg)
