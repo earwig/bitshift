@@ -118,10 +118,15 @@ class _QueryParser(object):
         """Parse a query term into a tree node and return it."""
         if ":" in term and not term[0] == ":":
             prefix, arg = term.split(":", 1)
+            invert = prefix.lower() == "not"
+            if invert:
+                prefix, arg = arg.split(":", 1)
             if not arg:
                 raise QueryParseException('Incomplete query term: "%s"' % term)
             for meth, prefixes in self._prefixes.iteritems():
-                if prefix in prefixes:
+                if prefix.lower() in prefixes:
+                    if invert:
+                        return UnaryOp(UnaryOp.NOT, meth(arg))
                     return meth(arg)
         return Text(self._parse_literal(term))
 
@@ -141,34 +146,12 @@ class _QueryParser(object):
 
         :raises: :py:class:`.QueryParseException`
         """
-        print "  STRING:", query
-        for i, term in enumerate(split(query), 1):
-            ## TODO: remove enumerate when removing debug prints
-            print " in [%02d]:" % i, term
+        root = None
+        for term in split(query):
             node = self._parse_term(term)
-            print "out [%02d]:" % i, node
-            tree = Tree(node)
-            print "    TREE:", tree
-            return tree
-            ## TODO
-
-        # language:"Python"
-        # lang:
-        # l:
-
-        # author:"Ben Kurtovic"
-
-        # modified:before
-        # modified:after
-        # created:before
-        # created:after:"Jaunary 4, 2014"
-
-        # func:"foobar"
-        # func:re|gex:"foo?b|car"
-
-        # "foo" -> Tree()
-        # "foo bar" -> "foo bar" OR ("foo" or "bar")
-        # "foo bar baz" -> ""foo bar baz" OR ("foo" OR "bar baz") OR ("foo" OR "bar baz") OR ('foo' OR 'bar' OR 'baz')"
+            root = BinaryOp(root, BinaryOp.AND, node) if root else node
+        tree = Tree(root)
+        return tree
 
 
 parse_query = _QueryParser().parse
