@@ -5,9 +5,16 @@
 
 FINISH_TYPING_INTERVAL = 650;
 searchBar = document.querySelectorAll("form#search-bar input[type='text']")[0];
+resultsDiv = document.querySelectorAll("div#results")[0];
 
 var typingTimer, lastValue;
 searchBar.onkeyup = typingTimer;
+
+$(window).scroll(function() {
+    if($(window).scrollTop() + $(window).height() == $(document).height()) {
+        loadMoreResults();
+    }
+});
 
 /*
  * Clear the existing timer and set a new one the the user types text into the
@@ -32,9 +39,10 @@ function finishedTyping(){
 
     clearResults();
     if(searchBar.value){
-        populateResults();
         if(!searchField.classList.contains("partly-visible"))
             searchField.classList.add("partly-visible");
+
+        populateResults();
     }
     else
         searchField.classList.remove("partly-visible");
@@ -44,10 +52,8 @@ function finishedTyping(){
  * Removes any child elements of `div#results`.
  */
 function clearResults(){
-    var resultsPage = document.querySelectorAll("div#results")[0];
-
-    while(resultsPage.firstChild)
-        resultsPage.removeChild(resultsPage.firstChild);
+    while(resultsDiv.firstChild)
+        resultsDiv.removeChild(resultsDiv.firstChild);
 }
 
 /*
@@ -55,18 +61,17 @@ function clearResults(){
  * with its response.
  */
 function populateResults(){
-    var resultsPage = document.querySelectorAll("div#results")[0];
     var results = queryServer();
 
     for(var result = 0; result < results.length; result++){
         var newDiv = results[result];
-        resultsPage.appendChild(newDiv);
+        resultsDiv.appendChild(newDiv);
         setTimeout(
-        (function(divReference){
-            return function(){
-                divReference.classList.add("cascade");
-            };
-        }(newDiv)), result * 20);
+            (function(divReference){
+                return function(){
+                    divReference.classList.add("cascade");
+                };
+            }(newDiv)), result * 20);
     }
 
     for(var result = 0; result < results.length; result++);
@@ -80,7 +85,7 @@ function populateResults(){
  */
 function queryServer(){
     var resultDivs = []
-    for(var result = 0; result < 200; result++){
+    for(var result = 0; result < 20; result++){
         var newDiv = document.createElement("div");
         newDiv.classList.add("result");
         newDiv.innerHTML = Math.random();
@@ -91,4 +96,21 @@ function queryServer(){
     }
 
     return resultDivs;
+}
+
+/*
+ * Adds more results to `div#results`.
+ */
+function loadMoreResults(){
+    results = queryServer();
+    for(var result = 0; result < results.length; result++){
+        var newDiv = results[result];
+        resultsDiv.appendChild(newDiv);
+        setTimeout(
+            (function(divReference){
+                return function(){
+                    divReference.classList.add("cascade");
+                };
+            }(newDiv)), result * 20);
+    }
 }
