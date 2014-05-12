@@ -151,7 +151,11 @@ class _QueryParser(object):
         return best_marker, best_index
 
     def _split_query(self, query, parens=False):
-        """Split a query string into a nested list of query terms."""
+        """Split a query string into a nested list of query terms.
+
+        Returns a list of terms and/or nested sublists of terms. Each term and
+        sublist is guarenteed to be non-empty.
+        """
         query = query.lstrip()
         if not query:
             return []
@@ -187,6 +191,63 @@ class _QueryParser(object):
                 nest += self._split_query(after)
         return nest
 
+    def _parse_nest(self, nest):
+        """Recursively parse a nested list of search query terms."""
+
+        class _NodeGroup(object):
+            def __init__(self, left=None, op=None, right=None):
+                self.left = left or []
+                self.op = op
+                self.right = right or []
+
+            def append(self, node):
+                self.right.append(node) if self.op else self.left.append(node)
+
+        "  a  AND  b   OR  c   AND  d  NOT e f"
+        "((a) AND (b)) OR ((c) AND (d (NOT (e f))))"
+        "((a) AND (b)) OR ((c) AND (d"
+
+        group = _NodeGroup()
+
+        for term in nest:
+            if isinstance(term, list):
+                group.append(self._parse_nest(term))
+            else:
+                lcase = term.lower()
+
+                if lcase == "not":
+
+                    if group.op:
+                        group.append(_NodeGroup(None, UnaryOp.NOT) ## TODO
+                    else:
+                        pass
+
+                elif lcase == "or":
+
+                    if group.op == BinaryOp.AND:
+                        group = _NodeGroup(group, BinaryOp.OR)
+                    elif group.op == BinaryOp.OR:
+                        pass
+                    elif group.op == UnaryOp.NOT:
+                        pass
+                    else:
+                        group.op = BinaryOp.OR
+
+                elif lcase == "and":
+
+                    if group.op == BinaryOp.OR:
+                        group.right = _NodeGroup(group.right, BinaryOp.AND)
+                    elif group.op == BinaryOp.AND:
+                        pass
+                    elif group.op == UnaryOp.NOT:
+                        pass
+                    else:
+                        group.op = BinaryOP.AND
+
+
+                else:
+                    group.append(self._parse_term(term))
+
     def parse(self, query):
         """
         Parse a search query.
@@ -204,63 +265,10 @@ class _QueryParser(object):
         :raises: :py:class:`.QueryParseException`
         """
         ## TODO: balance tree
-        ## --------------------------------------------------------------------
-
         nest = self._split_query(query.rstrip())
         if not nest:
             raise QueryParseException('Empty query: "%s"' % query)
-
-        return nest
-
-        ###########
-
-        group = _NodeGroup()
-        for term in split(query):
-
-            while term.startswith("("):
-                group = _NodeList(group, explicit=True)
-                term = term[1:]
-
-            closes = 0
-            while term.endswith(")"):
-                closes += 1
-                term = term[:-1]
-
-            if not term:
-                for i in xrange(closes):
-                    group = reduce_group(group, explicit=True)
-                continue
-
-            lcase = term.lower()
-
-            if lcase == "not":
-                UnaryOp.NOT
-            elif lcase == "or":
-                BinaryOp.OR
-            elif lcase == "and":
-                if group.pending_op:
-                    pass
-                else:
-                    group.pending_op = BinaryOP.AND
-            else:
-                group.nodes.append(self._parse_term(term))
-
-        return Tree(reduce_group(group, explicit=False))
-
-        ## --------------------------------------------------------------------
-
-        # root = None
-        # for node in reversed(nodes):
-        #     root = BinaryOp(node, BinaryOp.AND, root) if root else node
-        # tree = Tree(root)
-        # return tree
-
-class _NodeGroup(object):
-    def __init__(self, parent=None):
-        self.parent = parent
-        self.op = None
-        self.left = None
-        self.right = None
+        return Tree(self._parse_nest(nest))
 
 
 parse_query = _QueryParser().parse
