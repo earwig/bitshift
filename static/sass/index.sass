@@ -3,8 +3,11 @@
  */
 
 @import mixins
+@import variables
 
 div#search-field
+    @extend .t3
+
     bottom: 0
     height: 50%
     left: 0
@@ -21,14 +24,12 @@ div#search-field
         text-align: center
 
     form input[type="text"]
-        border: 1px solid #A4ACAF
+        border: 1px solid $baseColor1
         font-size: 1.1em
         padding: 3px
         width: 100%
 
     &.partly-visible
-        @extend .t3
-
         margin-top: 3%
         width: 46%
 
@@ -36,7 +37,15 @@ div#search-field
             display: none
 
 div#results
-    background-color: #F6FAFF
     margin-left: auto
     margin-right: auto
     width: 80%
+
+    div.result
+        background-color: #F8F8F8
+        margin-bottom: 10%
+        margin-top: 1%
+        padding: 1%
+
+        &.cascade
+            margin-bottom: 0%

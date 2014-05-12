@@ -1,3 +1,8 @@
+/*
+ * @file Manages all query entry, `index.html` server querying, and results
+ *      diplay.
+ */
+
 FINISH_TYPING_INTERVAL = 650;
 searchBar = document.querySelectorAll("form#search-bar input[type='text']")[0];
 
@@ -10,7 +15,7 @@ searchBar.onkeyup = typingTimer;
  */
 function typingTimer(){
     clearTimeout(typingTimer);
-    if(lastValue != searchBar.value && searchBar.value)
+    if(lastValue != searchBar.value)
         typingTimer = setTimeout(finishedTyping, FINISH_TYPING_INTERVAL);
 };
 
@@ -22,31 +27,68 @@ function typingTimer(){
  * server.
  */
 function finishedTyping(){
-    queryServer();
+    lastValue = searchBar.value;
     var searchField = document.querySelectorAll("div#search-field")[0]
-    if(!searchField.classList.contains("partly-visible"))
-        searchField.classList.add("partly-visible");
+
+    clearResults();
+    if(searchBar.value){
+        populateResults();
+        if(!searchField.classList.contains("partly-visible"))
+            searchField.classList.add("partly-visible");
+    }
+    else
+        searchField.classList.remove("partly-visible");
 }
 
 /*
- * AJAX the current query string to the server.
- *
- * Currently just fills `div#results` with random content.
+ * Removes any child elements of `div#results`.
  */
-function queryServer(){
-    lastValue = searchBar.value;
-    var resultsPage = document.querySelectorAll("div#results")[0]
+function clearResults(){
+    var resultsPage = document.querySelectorAll("div#results")[0];
 
-    while(resultsPage.firstChild){
+    while(resultsPage.firstChild)
         resultsPage.removeChild(resultsPage.firstChild);
+}
+
+/*
+ * Query the server with the current search string, and populate `div#results`
+ * with its response.
+ */
+function populateResults(){
+    var resultsPage = document.querySelectorAll("div#results")[0];
+    var results = queryServer();
+
+    for(var result = 0; result < results.length; result++){
+        var newDiv = results[result];
+        resultsPage.appendChild(newDiv);
+        setTimeout(
+        (function(divReference){
+            return function(){
+                divReference.classList.add("cascade");
+            };
+        }(newDiv)), result * 20);
     }
 
+    for(var result = 0; result < results.length; result++);
+}
+
+/*
+ * AJAX the current query string to the server, and return its response.
+ *
+ * @return {Array} The server's response in the form of `div.result` DOM
+ *      elements, to fill `div#results`.
+ */
+function queryServer(){
+    var resultDivs = []
     for(var result = 0; result < 200; result++){
         var newDiv = document.createElement("div");
+        newDiv.classList.add("result");
         newDiv.innerHTML = Math.random();
         newDiv.style.textAlign = "center";
         newDiv.style.color = "#" + Math.floor(Math.random() *
                 16777215).toString(16);
-        resultsPage.appendChild(newDiv)
+        resultDivs.push(newDiv)
     }
+
+    return resultDivs;
 }
