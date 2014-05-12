@@ -31,7 +31,7 @@ class _QueryParser(object):
             self._parse_modified: ["m", "mod", "modified", "modify"],
             self._parse_created: ["cr", "create", "created"],
             self._parse_symbol: ["s", "sym", "symb", "symbol"],
-            self._parse_function: ["f", "fn", "func", "function"],
+            self._parse_function: ["f", "fn", "fun", "func", "function"],
             self._parse_class: ["cl", "class", "clss"],
             self._parse_variable: ["v", "var", "variable"]
         }
@@ -191,62 +191,41 @@ class _QueryParser(object):
                 nest += self._split_query(after)
         return nest
 
+    def _parse_boolean_operators(self, nest):
+        """Parse boolean operators in a nested query list."""
+        op_lookup = {
+            "and": BinaryOp.AND,
+            "or": BinaryOp.OR,
+            "not": UnaryOp.NOT
+        }
+        for i, term in enumerate(nest):
+            if isinstance(term, list):
+                self._parse_boolean_operators(term)
+            else:
+                nest[i] = op_lookup.get(term.lower(), term)
+
     def _parse_nest(self, nest):
         """Recursively parse a nested list of search query terms."""
+        def _parse_binary_op(op):
+            """Parse a binary operator in a nested query list."""
+            index = nest.index(op)
+            left = self._parse_nest(nest[:index])
+            right = self._parse_nest(nest[index + 1:])
+            pass
 
-        class _NodeGroup(object):
-            def __init__(self, left=None, op=None, right=None):
-                self.left = left or []
-                self.op = op
-                self.right = right or []
-
-            def append(self, node):
-                self.right.append(node) if self.op else self.left.append(node)
-
-        "  a  AND  b   OR  c   AND  d  NOT e f"
-        "((a) AND (b)) OR ((c) AND (d (NOT (e f))))"
-        "((a) AND (b)) OR ((c) AND (d"
-
-        group = _NodeGroup()
-
-        for term in nest:
-            if isinstance(term, list):
-                group.append(self._parse_nest(term))
-            else:
-                lcase = term.lower()
-
-                if lcase == "not":
-
-                    if group.op:
-                        group.append(_NodeGroup(None, UnaryOp.NOT) ## TODO
-                    else:
-                        pass
-
-                elif lcase == "or":
-
-                    if group.op == BinaryOp.AND:
-                        group = _NodeGroup(group, BinaryOp.OR)
-                    elif group.op == BinaryOp.OR:
-                        pass
-                    elif group.op == UnaryOp.NOT:
-                        pass
-                    else:
-                        group.op = BinaryOp.OR
-
-                elif lcase == "and":
-
-                    if group.op == BinaryOp.OR:
-                        group.right = _NodeGroup(group.right, BinaryOp.AND)
-                    elif group.op == BinaryOp.AND:
-                        pass
-                    elif group.op == UnaryOp.NOT:
-                        pass
-                    else:
-                        group.op = BinaryOP.AND
-
-
-                else:
-                    group.append(self._parse_term(term))
+        if not nest:
+            raise QueryParseException("???")
+        elif BinaryOp.OR in nest:
+            return _parse_binary_op(BinaryOp.OR)
+        elif BinaryOp.AND in nest:
+            return _parse_binary_op(BinaryOp.AND)
+        elif UnaryOp.NOT in nest:
+            index = nest.index(UnaryOp.NOT)
+            pass
+        elif len(nest) > 1:
+            pass
+        else:
+            return self._parse_nest(nest)
 
     def parse(self, query):
         """
@@ -268,6 +247,7 @@ class _QueryParser(object):
         nest = self._split_query(query.rstrip())
         if not nest:
             raise QueryParseException('Empty query: "%s"' % query)
+        self._parse_boolean_operators(nest)
         return Tree(self._parse_nest(nest))
 
 

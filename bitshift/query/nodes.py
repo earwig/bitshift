@@ -147,8 +147,8 @@ class Symbol(_Node):
 
 class BinaryOp(_Node):
     """Represents a relationship between two nodes: ``and``, ``or``."""
-    AND = 1
-    OR = 2
+    AND = object()
+    OR = object()
 
     def __init__(self, left, op, right):
         self.left = left
@@ -163,7 +163,7 @@ class BinaryOp(_Node):
 
 class UnaryOp(_Node):
     """Represents a transformation applied to one node: ``not``."""
-    NOT = 3
+    NOT = object()
 
     def __init__(self, op, node):
         self.op = op
