@@ -206,26 +206,34 @@ class _QueryParser(object):
 
     def _parse_nest(self, nest):
         """Recursively parse a nested list of search query terms."""
-        def _parse_binary_op(op):
+        def parse_binary_op(op):
             """Parse a binary operator in a nested query list."""
             index = nest.index(op)
             left = self._parse_nest(nest[:index])
             right = self._parse_nest(nest[index + 1:])
-            pass
+            return BinaryOp(left, op, right)
 
         if not nest:
-            raise QueryParseException("???")
+            err = "Error while parsing query: empty nest detected."
+            raise QueryParseException(err)
         elif BinaryOp.OR in nest:
-            return _parse_binary_op(BinaryOp.OR)
+            return parse_binary_op(BinaryOp.OR)
         elif BinaryOp.AND in nest:
-            return _parse_binary_op(BinaryOp.AND)
+            return parse_binary_op(BinaryOp.AND)
         elif UnaryOp.NOT in nest:
             index = nest.index(UnaryOp.NOT)
-            pass
+            right = UnaryOp(UnaryOp.NOT, self._parse_nest(nest[index + 1:]))
+            if index > 1:
+                left = self._parse_nest(nest[:index])
+                return BinaryOp(left, BinaryOp.AND, right)
+            return right
         elif len(nest) > 1:
-            pass
+            left, right = self._parse_term(nest[0]), self._parse_nest(nest[1:])
+            return BinaryOp(left, BinaryOp.AND, right)
+        elif isinstance(nest[0], list):
+            return self._parse_nest(nest[0])
         else:
-            return self._parse_nest(nest)
+            return self._parse_term(nest[0])
 
     def parse(self, query):
         """
