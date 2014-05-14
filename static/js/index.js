@@ -4,26 +4,42 @@
  */
 
 FINISH_TYPING_INTERVAL = 650;
-searchBar = document.querySelectorAll("form#search-bar input[type='text']")[0];
-resultsDiv = document.querySelectorAll("div#results")[0];
+searchBar = $("form#search-bar input[type='text']")[0];
+resultsDiv = $("div#results")[0];
 
 var typingTimer, lastValue;
 searchBar.onkeyup = typingTimer;
 
+// Enable infinite scrolling down the results page.
 $(window).scroll(function() {
-    if($(window).scrollTop() + $(window).height() == $(document).height()) {
+    if($(window).scrollTop() + $(window).height() == $(document).height()){
         loadMoreResults();
     }
+});
+
+// Enable capturing the `enter` key.
+$("form#search-bar").submit(function(event){
+    event.preventDefault();
+    return false;
 });
 
 /*
  * Clear the existing timer and set a new one the the user types text into the
  * search bar.
  */
-function typingTimer(){
+function typingTimer(event){
     clearTimeout(typingTimer);
-    if(lastValue != searchBar.value)
-        typingTimer = setTimeout(finishedTyping, FINISH_TYPING_INTERVAL);
+
+    var enterKeyCode = 13;
+    if(event.keyCode != enterKeyCode){
+        if(lastValue != searchBar.value)
+            typingTimer = setTimeout(finishedTyping, FINISH_TYPING_INTERVAL);
+    }
+    else {
+        event.preventDefault();
+        finishedTyping();
+        return false;
+    }
 };
 
 /*
@@ -35,17 +51,17 @@ function typingTimer(){
  */
 function finishedTyping(){
     lastValue = searchBar.value;
-    var searchField = document.querySelectorAll("div#search-field")[0]
+    var searchField = $("div#search-field");
 
     clearResults();
     if(searchBar.value){
-        if(!searchField.classList.contains("partly-visible"))
-            searchField.classList.add("partly-visible");
+        if(!searchField.hasClass("partly-visible"))
+            searchField.addClass("partly-visible");
 
         populateResults();
     }
     else
-        searchField.classList.remove("partly-visible");
+        searchField.removeClass("partly-visible");
 }
 
 /*
@@ -73,8 +89,6 @@ function populateResults(){
                 };
             }(newDiv)), result * 20);
     }
-
-    for(var result = 0; result < results.length; result++);
 }
 
 /*

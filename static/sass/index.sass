@@ -13,6 +13,7 @@ div#search-field
     left: 0
     margin: auto
     margin-top: 15%
+    max-height: 100px
     position: absolute
     right: 0
     top: 0
@@ -33,15 +34,73 @@ div#search-field
             color: $baseColor2
             font-style: italic
 
-    form input[type="text"]
-        border: 1px solid $baseColor1
-        font-size: 1.1em
-        padding: 3px
-        width: 100%
+    form#search-bar
+
+        input[type="text"]
+            @include vendor(box-sizing, border-box)
+
+            border: 1px solid $baseColor1
+            font-size: 1.1em
+            margin-bottom: 0px
+            padding: 3px
+            width: 100%
+
+        div#advanced-search
+            background-color: white
+            border: 1px solid $baseColor2
+            margin: 0px
+            overflow: auto
+
+            >div
+                float: left
+                height: 100%
+
+            >#col1
+                background-color: red
+                width: 10%
+
+            >#col2
+                background-color: yellow
+                width: 15%
+
+            >#col3
+                background-color: blue
+                width: 75%
+
+                div
+                    width: 100%
+
+                #upper-half
+                    background-color: brown
+
+                    div
+                        float: left
+                        height: 100%
+
+                    #col1
+                        background-color: red
+                        width: 40%
+
+                    #col2
+                        background-color: magenta
+                        width: 20%
+
+                    #col3
+                        background-color: pink
+                        width: 40%
+
+                #lower-half
+                    background-color: purple
+
+            input[type="text"]
+                border-color: $baseColor3
+                font-size: 1em
+                width: 30%
 
     &.partly-visible
+        height: 1%
         margin-top: 3%
-        width: 46%
+        width: 60%
 
         #title
             display: none

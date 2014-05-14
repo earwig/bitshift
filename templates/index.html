@@ -10,12 +10,40 @@
 = endblock
 
 = block body
-  <div id="search-field">
+  <div id="search-field" class="partly-visible">
     <div id="title">
       <span id="title-bit">bit</span><span id="title-angle">&laquo;</span><span id="title-shift">shift</span>
     </div>
     <form id="search-bar">
-      <input type="text">
+      <input type="text" name="query">
+      <div id="advanced-search">
+
+        <!-- Tags are closed on the following line to remove whitespace between divs. -->
+        <div id="col1">
+          H
+        </div><div id="col2">
+          H
+        </div><div id="col3">
+          <div id="upper-half">
+            <div id="col1">
+              A
+            </div><div id="col2">
+              B
+            </div><div id="col3">
+              C
+            </div>
+          </div>
+          <div id="lower-half">
+            Z
+          </div>
+        </div>
+          <!-- Languages <input type="text" name="languages"><br> -->
+          <!-- Authors <input type="text" name="authors"><br> -->
+          <!-- Symbols <input type="text" name="symbols"><br> -->
+          <!-- Functions <input type="text" name="functions"><br> -->
+          <!-- Classes <input type="text" name="classes"><br> -->
+          <!-- Variables <input type="text" name="variables"><br> -->
+      </div>
     </form>
   </div>
 
