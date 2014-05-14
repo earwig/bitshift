@@ -11,6 +11,7 @@
   {{ assets.tag("lib/typeahead.bundle.min.js") }}
 
   {{ assets.tag("index.css") }}
+  {{ assets.tag("highlight.css") }}
 
   <script>
     AUTOCOMPLETE_LANGUAGES = {{ autocomplete_languages | safe }};
@@ -89,6 +90,34 @@
               <span class="regex">Regex</span>
             </div>
           </div>
+<<<<<<< HEAD
+=======
+
+          <div id="lower-half">
+            <ul>
+              <li>
+                <label for="symbols">Symbols</label>
+                <input type="text" name="symbols" id="symbols"><br>
+              </li>
+
+              <li>
+                <label for="functions">Functions</label>
+                <input type="text" name="functions" id="functions"><br>
+              </li>
+
+              <li>
+                <label for="classes">Classes</label>
+                <input type="text" name="classes" id="classes"><br>
+              </li>
+
+              <li>
+                <label for="variables">Variables</label>
+                <input type="text" name="variables" id="variables"><br>
+              </li>
+
+            </ul>
+          </div>
+>>>>>>> Search results are now code blocks. Used pygments to parse a block of code into html, and used html styles to highlight the text.
         </div>
       </div>
     </form>
