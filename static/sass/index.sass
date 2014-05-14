@@ -42,7 +42,7 @@ div#search-field
             border: 1px solid $baseColor1
             font-size: 1.1em
             margin-bottom: 0px
-            padding: 3px
+            padding: 6px
             width: 100%
 
         div#advanced-search
@@ -52,50 +52,37 @@ div#search-field
             overflow: auto
 
             >div
+                @include vendor(box-sizing, border-box)
+
                 float: left
                 height: 100%
 
             >#col1
-                background-color: red
                 width: 10%
 
             >#col2
-                background-color: yellow
-                width: 15%
+                width: 84%
 
-            >#col3
-                background-color: blue
-                width: 75%
+                ul
+                    list-style: none
 
-                div
+                    li
+                        margin-bottom: 0.5em
+
+                        label
+                            display: block
+                            font-size: 1.1em
+
+                input[type="text"]
+                    border-color: $baseColor3
+                    font-size: 1em
+                    padding: 2px
                     width: 100%
 
                 #upper-half
-                    background-color: brown
-
-                    div
+                    >div
                         float: left
-                        height: 100%
-
-                    #col1
-                        background-color: red
-                        width: 40%
-
-                    #col2
-                        background-color: magenta
-                        width: 20%
-
-                    #col3
-                        background-color: pink
-                        width: 40%
-
-                #lower-half
-                    background-color: purple
-
-            input[type="text"]
-                border-color: $baseColor3
-                font-size: 1em
-                width: 30%
+                        width: 50%
 
     &.partly-visible
         height: 1%
