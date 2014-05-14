@@ -6,11 +6,12 @@
 
 = block head
   {{ assets.tag("index.css") }}
+  {{ assets.tag("highlight.css") }}
   {{ assets.tag("jquery.min.js") }}
 = endblock
 
 = block body
-  <div id="search-field" class="partly-visible">
+  <div id="search-field">
 
     <div id="title">
       <span id="title-bit">bit</span
@@ -79,7 +80,7 @@
                 <input type="text" name="variables" id="variables"><br>
               </li>
 
-            <u/l>
+            </ul>
           </div>
         </div>
       </div>
