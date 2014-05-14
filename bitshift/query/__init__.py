@@ -223,7 +223,7 @@ class _QueryParser(object):
         elif UnaryOp.NOT in nest:
             index = nest.index(UnaryOp.NOT)
             right = UnaryOp(UnaryOp.NOT, self._parse_nest(nest[index + 1:]))
-            if index > 1:
+            if index > 0:
                 left = self._parse_nest(nest[:index])
                 return BinaryOp(left, BinaryOp.AND, right)
             return right
@@ -240,7 +240,7 @@ class _QueryParser(object):
         if isinstance(node, BinaryOp):
             self._balance_tree(node.left)
             self._balance_tree(node.right)
-            if repr(node.right) < repr(node.left):
+            if node.right.sortkey() < node.left.sortkey():
                 node.left, node.right = node.right, node.left
         elif isinstance(node, UnaryOp):
             self._balance_tree(node.node)

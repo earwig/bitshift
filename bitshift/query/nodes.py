@@ -10,7 +10,10 @@ class _Node(object):
     a :py:class:`~.Language` node represents a constraint where only codelets
     of a specific language are selected.
     """
-    pass
+
+    def sortkey(self):
+        """Return a string sort key for the node."""
+        return ""
 
 
 class _Literal(object):
@@ -33,6 +36,9 @@ class String(_Literal):
     def __repr__(self):
         return "String({0!r})".format(self.string)
 
+    def sortkey(self):
+        return self.string
+
 
 class Regex(_Literal):
     """Represents a regular expression literal."""
@@ -45,6 +51,9 @@ class Regex(_Literal):
 
     def __repr__(self):
         return "Regex({0!r})".format(self.regex)
+
+    def sortkey(self):
+        return self.regex
 
 
 class Text(_Node):
@@ -63,6 +72,9 @@ class Text(_Node):
     def __repr__(self):
         return "Text({0})".format(self.text)
 
+    def sortkey(self):
+        return self.text.sortkey()
+
 
 class Language(_Node):
     """Represents a language node.
@@ -79,6 +91,9 @@ class Language(_Node):
     def __repr__(self):
         return "Language({0})".format(LANGS[self.lang])
 
+    def sortkey(self):
+        return LANGS[self.lang]
+
 
 class Author(_Node):
     """Represents a author node.
@@ -87,10 +102,16 @@ class Author(_Node):
     """
 
     def __init__(self, name):
+        """
+        :type name: :py:class:`_Literal`
+        """
         self.name = name
 
     def __repr__(self):
         return "Author({0})".format(self.name)
+
+    def sortkey(self):
+        return self.name.sortkey()
 
 
 class Date(_Node):
@@ -120,6 +141,9 @@ class Date(_Node):
         tm = "Date({0}, {1}, {2})"
         return tm.format(types[self.type], relations[self.relation], self.date)
 
+    def sortkey(self):
+        return self.date.strftime("%Y%m%d%H%M%S")
+
 
 class Symbol(_Node):
     """Represents a symbol node.
@@ -144,6 +168,9 @@ class Symbol(_Node):
                  self.CLASS: "CLASS", self.VARIABLE: "VARIABLE"}
         return "Symbol({0}, {1})".format(types[self.type], self.name)
 
+    def sortkey(self):
+        return self.name.sortkey()
+
 
 class BinaryOp(_Node):
     """Represents a relationship between two nodes: ``and``, ``or``."""
@@ -160,6 +187,9 @@ class BinaryOp(_Node):
         tmpl = "BinaryOp({0}, {1}, {2})"
         return tmpl.format(self.left, ops[self.op], self.right)
 
+    def sortkey(self):
+        return self.left.sortkey() + self.right.sortkey()
+
 
 class UnaryOp(_Node):
     """Represents a transformation applied to one node: ``not``."""
@@ -172,3 +202,6 @@ class UnaryOp(_Node):
     def __repr__(self):
         ops = {self.NOT: "NOT"}
         return "UnaryOp({0}, {1})".format(ops[self.op], self.node)
+
+    def sortkey(self):
+        return self.node.sortkey()

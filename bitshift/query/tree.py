@@ -9,6 +9,10 @@ class Tree(object):
     def __repr__(self):
         return "Tree({0})".format(self._root)
 
+    def sortkey(self):
+        """Return a string sort key for the query tree."""
+        return self._root.sortkey()
+
     def serialize(self):
         """Create a string representation of the query for caching.
 

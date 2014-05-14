@@ -31,6 +31,27 @@ TESTS = [
     ("class:FooBar", "Tree(Symbol(CLASS, String(u'FooBar')))"),
     ("var:foobar", "Tree(Symbol(VARIABLE, String(u'foobar')))"),
     ("var:r:foobar", "Tree(Symbol(VARIABLE, Regex(u'foobar')))"),
+
+    # Composition
+    ("(a and b) or (c and d)", ", ".join([
+        "Tree(BinaryOp(BinaryOp(Text(String(u'a'))", "AND",
+        "Text(String(u'b')))", "OR", "BinaryOp(Text(String(u'c'))", "AND",
+        "Text(String(u'd')))))"])),
+    ("a and b or c and d", ", ".join([
+        "Tree(BinaryOp(BinaryOp(Text(String(u'a'))", "AND",
+        "Text(String(u'b')))", "OR", "BinaryOp(Text(String(u'c'))", "AND",
+        "Text(String(u'd')))))"])),
+    ("a and b or c or d", ", ".join([
+        "Tree(BinaryOp(BinaryOp(Text(String(u'a'))", "AND",
+        "Text(String(u'b')))", "OR", "BinaryOp(Text(String(u'c'))", "OR",
+        "Text(String(u'd')))))"])),
+    ("a and (b or c or d)", ", ".join([
+        "Tree(BinaryOp(Text(String(u'a'))", "AND",
+        "BinaryOp(Text(String(u'b'))", "OR", "BinaryOp(Text(String(u'c'))", "OR",
+        "Text(String(u'd'))))))"])),
+    ("a not b", ", ".join([
+        "Tree(BinaryOp(Text(String(u'a'))", "AND", "UnaryOp(NOT",
+        "Text(String(u'b')))))"])),
 ]
 
 class TestQueryParser(unittest.TestCase):
