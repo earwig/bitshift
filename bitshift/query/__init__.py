@@ -235,6 +235,16 @@ class _QueryParser(object):
         else:
             return self._parse_term(nest[0])
 
+    def _balance_tree(self, node):
+        """Auto-balance a tree using a string sorting function."""
+        if isinstance(node, BinaryOp):
+            self._balance_tree(node.left)
+            self._balance_tree(node.right)
+            if repr(node.right) < repr(node.left):
+                node.left, node.right = node.right, node.left
+        elif isinstance(node, UnaryOp):
+            self._balance_tree(node.node)
+
     def parse(self, query):
         """
         Parse a search query.
@@ -251,12 +261,13 @@ class _QueryParser(object):
 
         :raises: :py:class:`.QueryParseException`
         """
-        ## TODO: balance tree
         nest = self._split_query(query.rstrip())
         if not nest:
             raise QueryParseException('Empty query: "%s"' % query)
         self._parse_boolean_operators(nest)
-        return Tree(self._parse_nest(nest))
+        root = self._parse_nest(nest)
+        self._balance_tree(root)
+        return Tree(root)
 
 
 parse_query = _QueryParser().parse
