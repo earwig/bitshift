@@ -11,31 +11,31 @@
 .twitter-typeahead
     width: 100%
 
-.tt-hint
-    color: $baseColor2
+    .tt-hint
+        color: $baseColor2
 
-.tt-dropdown-menu
-    width: 100%
-    padding: 4px 0
-    background-color: white
-    border: 1px solid $baseColor2
+    .tt-dropdown-menu
+        width: 100%
+        padding: 4px 0
+        background-color: white
+        border: 1px solid $baseColor2
 
-    .tt-suggestion
-        padding: 4px
+        .tt-suggestion
+            padding: 4px
 
-        p
-            margin: 0
+            p
+                margin: 0
 
-            strong
-                color: $baseColor1
+                strong
+                    color: $baseColor1
 
-        &.tt-cursor
-            @extend .t1
+            &.tt-cursor
+                @extend .t1
 
-            background-color: $baseColor1
+                background-color: $baseColor1
 
-            *
-                color: white
+                *
+                    color: white
 
 div#search-field
     @extend .t2
@@ -81,7 +81,13 @@ div#search-field
             background-color: white
             border: 1px solid $baseColor2
             margin: 0px
+            max-height: 0.1px
             overflow: auto
+            padding: 0px
+
+            &.visible
+                max-height: 100%
+                padding-bottom: 30px
 
             >div
                 @include vendor(box-sizing, border-box)
@@ -110,7 +116,7 @@ div#search-field
 
                     border-color: $baseColor3
                     font-size: 1em
-                    padding: 2px
+                    padding: 4px
                     width: 100%
 
                     &:hover

@@ -1,7 +1,32 @@
 /*
- * @file Manages all query entry, `index.html` server querying, and results
- *      diplay.
+ * @file Manages all library initialization, query entry, server
+ *  querying, and results diplay for `index.html`.
  */
+
+$(function() {
+    $("#date-last-modified").datepicker();
+    $("#date-created").datepicker();
+});
+
+var languages = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    local: $.map(TYPEAHEAD_LANGUAGES, function(state){
+        return {value : state};
+    })
+});
+
+languages.initialize();
+$("#languages.typeahead").typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+    },
+    {
+        name: "languages",
+        displayKey: 'value',
+        source: languages.ttAdapter()
+});
 
 FINISH_TYPING_INTERVAL = 650;
 searchBar = $("form#search-bar input[type='text']")[0];

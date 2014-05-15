@@ -5,12 +5,16 @@
 = endblock
 
 = block head
-  {{ assets.tag("jqueryui.custom.min.css") }}
-  {{ assets.tag("jquery.min.js") }}
-  {{ assets.tag("jquery-ui.min.js") }}
-  {{ assets.tag("typeahead.bundle.min.js") }}
+  {{ assets.tag("lib/jqueryui.custom.min.css") }}
+  {{ assets.tag("lib/jquery.min.js") }}
+  {{ assets.tag("lib/jquery-ui.min.js") }}
+  {{ assets.tag("lib/typeahead.bundle.min.js") }}
 
   {{ assets.tag("index.css") }}
+
+  <script>
+    TYPEAHEAD_LANGUAGES = {{ typeahead_languages | safe }};
+  </script>
 = endblock
 
 = block body
@@ -60,7 +64,7 @@
             <ul>
               <li>
                 <label for="symbols">Symbols</label>
-                <input type="text" name="symbols" id="symbols"><br>
+                <input class="typeahead" type="text" name="symbols" id="symbols"><br>
               </li>
 
               <li>
@@ -87,31 +91,4 @@
   <div id="results"></div>
 
   {{ assets.tag("index.js") }}
-  <script>
-    TYPEAHEAD_LANGUAGES = {{ typeahead_languages | safe }};
-    $(function() {
-      $("#date-last-modified").datepicker();
-      $("#date-created").datepicker();
-    });
-
-    var languages = new Bloodhound({
-      datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
-      queryTokenizer: Bloodhound.tokenizers.whitespace,
-      local: $.map(TYPEAHEAD_LANGUAGES, function(state){
-        return {value : state};
-      })
-    });
-
-    languages.initialize();
-    $(".typeahead").typeahead({
-        hint: true,
-        highlight: true,
-        minLength: 1
-      },
-      {
-        name: "languages",
-        displayKey: 'value',
-        source: languages.ttAdapter()
-      });
-  </script>
 = endblock
