@@ -6,7 +6,7 @@
 @import variables
 
 .ui-datepicker
-    font-size: 0.7em
+    font-size: 70%
 
 .twitter-typeahead
     width: 100%
@@ -52,7 +52,7 @@ div#search-field
     width: 34%
 
     #title
-        font-size: 4em
+        font-size: 400%
         padding-bottom: 0.5em
         text-align: center
 
@@ -68,14 +68,32 @@ div#search-field
 
     form#search-bar
 
-        input[type="text"]
+        input[type="text"], button
+            @extend .t3
             @include vendor(box-sizing, border-box)
 
-            border: 1px solid $baseColor1
-            font-size: 1.1em
+            border: 1px solid $baseColor2
+            font-size: 110%
             margin-bottom: 0px
             padding: 6px
-            width: 100%
+            width: 80%
+
+            &:hover
+                border-color: $baseColor1
+
+        button
+            background-color: $lightBlue
+            border: 1px solid $baseColor2
+            color: white
+            display: inline
+            white-space: nowrap
+            overflow: hidden
+            width: 20%
+
+            &.clicked, &:hover
+                @extend .t3
+
+                background-color: $blue
 
         div#advanced-search
             background-color: white
@@ -83,9 +101,7 @@ div#search-field
             margin: 0px
             overflow: auto
             padding: 0px
-
-            &.visible
-                padding-bottom: 30px
+            display: none
 
             >div
                 @include vendor(box-sizing, border-box)
@@ -107,13 +123,13 @@ div#search-field
 
                         label
                             display: block
-                            font-size: 1.1em
+                            font-size: 110%
 
                 input[type="text"]
                     @extend .t2
 
                     border-color: $baseColor3
-                    font-size: 1em
+                    font-size: 100%
                     padding: 4px
                     width: 100%
 

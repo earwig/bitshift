@@ -18,7 +18,7 @@
 = endblock
 
 = block body
-  <div id="search-field" class="partly-visible">
+  <div id="search-field">
     <div id="title">
       <span id="title-bit">bit</span
       ><span id="title-angle">&laquo;</span
@@ -26,7 +26,9 @@
     </div>
 
     <form id="search-bar">
-      <input type="text" name="query">
+      <input type="text" name="query"
+      ><button id="advanced-search">Advanced search</button>
+
       <div id="advanced-search">
         <!-- Tags are closed on the following line to remove whitespace between divs. -->
         <div id="col1">

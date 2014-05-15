@@ -1,7 +1,21 @@
 /*
- * @file Manages all library initialization, query entry, server
- *  querying, and results diplay for `index.html`.
+ * @file Manages all library initialization, jQuery callbacks, query entry
+ *      callbacks, server querying, and results diplay for `index.html`.
  */
+
+var advancedSearchDiv = $("div#advanced-search");
+var advancedSearchButton = $("button#advanced-search");
+advancedSearchDiv.hide();
+advancedSearchButton.click(function(){
+    if(!advancedSearchDiv.hasClass("visible")){
+        advancedSearchDiv.fadeIn(500);
+        advancedSearchDiv.addClass("visible");
+    }
+    else {
+        advancedSearchDiv.fadeOut(300);
+        advancedSearchDiv.removeClass("visible");
+    }
+});
 
 $(function() {
     $("#date-last-modified").datepicker();
