@@ -6,6 +6,10 @@
 @import variables
 
 $minSearchFieldsWidth: 490px
+$resultWidth: 830px
+$sidebarWidth: 30px
+$codeWidth: 500px
+$metaWidth: 300px
 
 .ui-datepicker
     font-size: 70%
@@ -283,9 +287,8 @@ div#results
     width: 80%
 
     div.result
-        width: 60%
+        width: $resultWidth
         height: 200px
-        font-family: Menlo, Monaco, "Inconsolata"
         margin-top: 3%
 
         table
@@ -296,14 +299,17 @@ div#results
             tr
                 height: inherit
 
+                td
+                    overflow: scroll
+
                 #sidebar
-                    width: 15%
+                    width: $sidebarWidth
                     background-color: #eee
                     border-right: 1px solid #ccc
                     height: inherit
 
                 #code
-                    width: 50%
+                    width: $codeWidth
                     height: inherit
                     border-right: 1px solid #ccc
 
@@ -311,28 +317,16 @@ div#results
                         overflow: scroll
                         width: 100%
                         height: inherit
+                        background-color: #49483e
 
                         table
                             table-layout:fixed
                             border-collapse: collapse
                             border: none
-                            background-color: #49483e
-
-                            pre
-                                margin: 0
-
-                            .linenodiv
-                                padding-left: 5px
-                                padding-right: 5px
-                                color: white
-
-                            .hll
-                                border-left: 1px solid #666
-                                padding: 3%
-                                overflow: scroll
+                            font-family: monospace
 
                 #meta
-                    width: 35%
+                    width: $metaWidth
 
         &.cascade
             @extend .t3
