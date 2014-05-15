@@ -103,11 +103,56 @@ div#results
     width: 80%
 
     div.result
-        background-color: none
-        font-family: Arial, "Inconsolata"
-        margin-bottom: 10%
-        margin-top: 1%
-        padding: 1%
+        width: 60%
+        height: 200px
+        font-family: Menlo, Monaco, "Inconsolata"
+        margin-top: 3%
+
+        table
+            border-collapse: collapse
+            border: 1px solid #ccc
+            height: inherit
+
+            tr
+                height: inherit
+
+                #sidebar
+                    width: 15%
+                    background-color: #eee
+                    border-right: 1px solid #ccc
+                    height: inherit
+
+                #code
+                    width: 50%
+                    height: inherit
+                    border-right: 1px solid #ccc
+
+                    #tablecontainer
+                        overflow: scroll
+                        width: 100%
+                        height: inherit
+
+                        table
+                            table-layout:fixed
+                            border-collapse: collapse
+                            border: none
+                            background-color: #49483e
+
+                            pre
+                                margin: 0
+
+                            .linenodiv
+                                padding-left: 5px
+                                padding-right: 5px
+                                color: white
+
+                            .hll
+                                border-left: 1px solid #666
+                                padding: 3%
+                                overflow: scroll
+
+                #meta
+                    width: 35%
 
         &.cascade
             @extend .t3
