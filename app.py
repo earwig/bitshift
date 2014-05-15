@@ -6,6 +6,7 @@ from flask import Flask
 from flask import render_template, session
 
 from bitshift import assets
+from bitshift import languages
 # from bitshift.database import Database
 # from bitshift.query import parse_query
 
@@ -20,7 +21,7 @@ app_env.globals.update(assets=assets)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", typeahead_languages=languages.LANGS)
 
 @app.route("/search/<query>")
 def search(query):
