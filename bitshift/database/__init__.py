@@ -9,6 +9,8 @@ import mmh3
 import oursql
 
 from .migration import VERSION, MIGRATIONS
+from ..query.nodes import (String, Regex, Text, Language, Author, Date, Symbol,
+                           BinaryOp, UnaryOp)
 
 __all__ = ["Database"]
 
@@ -51,23 +53,64 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
-    def _search_with_query(self, cursor, query):
-        """Convert a query tree into SQL SELECTs, execute, and return results.
+    def _explode_query_tree(self, tree):
+        """Convert a query tree into components of an SQL SELECT statement."""
+        def _parse_node(node):
+            if isinstance(node, Text):
+                tables |= {"code", "symbols"}
+                # (FTS: codelet_name, =: symbol_name, FTS: code_code) vs. node.text (_Literal)
+                pass
+            elif isinstance(node, Language):
+                tables |= {"code"}
+                return "(code_lang = ?)", [node.lang]
+            elif isinstance(node, Author):
+                tables |= {"authors"}
+                # (FTS: author_name) vs. node.name (_Literal)
+                pass
+            elif isinstance(node, Date):
+                # read node.type, node.relation
+                # (>=/<=: codelet_date_created / codelet_date_modified) vs. node.date (datetime.datetime)
+                pass
+            elif isinstance(node, Symbol):
+                tables |= {"symbols"}
+                # (symbol_type, symbol_name) vs. (node.type, node.name)
+                pass
+            elif isinstance(node, BinaryOp):
+                left_cond, left_args = _parse_node(node.left)
+                right_cond, right_args = _parse_node(node.right)
+                op = node.OPS[node.op]
+                cond = "(" + left_cond  + " " + op + " " + right_cond + ")"
+                return cond, left_args + right_args
+            elif isinstance(node, UnaryOp):
+                cond, args = _parse_node(node.node)
+                return "(" + node.OPS[node.op] + " " + cond + ")", args
+
+        tables = set()
+        conditional, arglist = _parse_node(tree.root)
+        # joins = " ".join(tables)
+
+        return conditional, joins, tuple(arglist)
+
+    def _search_with_query(self, cursor, query, page):
+        """Execute an SQL query based on a query tree, and return results.
 
         The returned data is a 2-tuple of (list of codelet IDs, estimated
         number of total results).
         """
-        raise NotImplementedError()  ## TODO
+        conditional, joins, args = self._explode_query_tree(query)
+        base = "SELECT codelet_id FROM codelets %s WHERE %s LIMIT 10"
+        qstring = base % (joins, conditional)
+        if page > 1:
+            qstring += " OFFSET %d" % ((page - 1) * 10)
 
-        results = cursor.fetchall()
-        ids = NotImplemented  ## TODO: extract ids from results
-        num_results = NotImplemented  ## TODO: num if results else 0
-
+        cursor.execute(qstring, args)
+        ids = [id for id, in cursor.fetchall()]
+        num_results = 0  # TODO: NotImplemented
         return ids, num_results
 
     def _get_codelets_from_ids(self, cursor, ids):
         """Return a list of Codelet objects given a list of codelet IDs."""
-        raise NotImplementedError()  ## TODO
+        raise NotImplementedError()  # TODO
 
     def _decompose_url(self, cursor, url):
         """Break up a URL into an origin (with a URL base) and a suffix."""
