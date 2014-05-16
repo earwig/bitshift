@@ -68,13 +68,18 @@ class Database(object):
                 # (FTS: author_name) vs. node.name (_Literal)
                 pass
             elif isinstance(node, Date):
-                # read node.type, node.relation
-                # (>=/<=: codelet_date_created / codelet_date_modified) vs. node.date (datetime.datetime)
-                pass
+                column = {node.CREATE: "codelet_date_created",
+                          node.MODIFY: "codelet_date_modified"}[node.type]
+                op = {node.BEFORE: "<=", node.AFTER: ">="}[node.relation]
+                return "(" + column + " " + op + " ?)", [node.date]
             elif isinstance(node, Symbol):
                 tables |= {"symbols"}
-                # (symbol_type, symbol_name) vs. (node.type, node.name)
-                pass
+                if node.type == node.ALL:
+                    # OR all of the types of symbol_types
+                    pass
+                else:
+                    cond = "(symbol_type = ? AND symbol_name = ?)"
+                return cond, [node.type, node.name]
             elif isinstance(node, BinaryOp):
                 left_cond, left_args = _parse_node(node.left)
                 right_cond, right_args = _parse_node(node.right)
