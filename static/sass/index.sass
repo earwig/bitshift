@@ -46,14 +46,14 @@ div#search-field
     margin: auto
     margin-top: 15%
     max-height: 100px
-    position: absolute
     right: 0
+    position: absolute
     top: 0
-    width: 34%
+    width: 40%
 
     #title
         font-size: 400%
-        padding-bottom: 0.5em
+        padding-bottom: 0.2em
         text-align: center
 
         #title-bit
@@ -67,7 +67,6 @@ div#search-field
             font-style: italic
 
     form#search-bar
-
         input[type="text"], button
             @extend .t3
             @include vendor(box-sizing, border-box)
@@ -76,24 +75,36 @@ div#search-field
             font-size: 110%
             margin-bottom: 0px
             padding: 6px
-            width: 80%
+
+        input[type="text"]
+            width: 85%
 
             &:hover
                 border-color: $baseColor1
 
         button
-            background-color: $lightBlue
-            border: 1px solid $baseColor2
-            color: white
-            display: inline
-            white-space: nowrap
-            overflow: hidden
-            width: 20%
+            background-color: white
+            border: 1px solid white
+            width: 15%
+            height: 10%
+            padding: 0px
+            float: right
 
             &.clicked, &:hover
-                @extend .t3
+                img
+                    @extend .t3
 
-                background-color: $blue
+                    background-color: black
+                    cursor: pointer
+
+            &:focus
+                outline: 0
+
+            img
+                background-color: $baseColor2
+                margin-top: 5px
+                width: 26px
+                height: 26px
 
         div#advanced-search
             background-color: white
@@ -121,23 +132,26 @@ div#search-field
                     li
                         margin-bottom: 0.5em
 
+                        &:hover, &:focus
+                            input[type="text"]
+                                border-color: $baseColor1
+
+                            label
+                                @extend .t3
+                                color: black
+
                         label
                             display: block
                             font-size: 110%
+                            color: #747575
 
                 input[type="text"]
-                    @extend .t2
+                    @extend .t3
 
                     border-color: $baseColor3
                     font-size: 100%
                     padding: 4px
                     width: 100%
-
-                    &:hover
-                        border-color: $baseColor2
-
-                    &:focus
-                        border-color: $baseColor1
 
                 #upper-half
                     >div
@@ -148,15 +162,31 @@ div#search-field
                         input[type="text"]
                             width: 50%
 
+                #lower-half
+                    padding-bottom: 20px
+
     &.partly-visible
-        height: 1%
-        margin-top: 3%
-        width: 60%
+        margin-top: 0%
+        padding-bottom: 3%
+        position: absolute
+        width: 100%
 
         #title
-            display: none
+            position: absolute
+            top: -1%
+            left: 1%
+
+            span
+                font-size: 50%
+
+        form#search-bar
+            padding-top: 3%
+            margin-left: auto
+            margin-right: auto
+            width: 60%
 
 div#results
+    margin: 3% auto 0 auto
     margin-left: auto
     margin-right: auto
     width: 80%

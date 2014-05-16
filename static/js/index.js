@@ -7,13 +7,17 @@ var advancedSearchDiv = $("div#advanced-search");
 var advancedSearchButton = $("button#advanced-search");
 advancedSearchDiv.hide();
 advancedSearchButton.click(function(){
+    var searchField = $("div#search-field");
     if(!advancedSearchDiv.hasClass("visible")){
-        advancedSearchDiv.fadeIn(500);
-        advancedSearchDiv.addClass("visible");
+        searchField.addClass("partly-visible");
+        advancedSearchDiv.fadeIn(500).addClass("visible");
+        advancedSearchButton.addClass("clicked");
     }
     else {
-        advancedSearchDiv.fadeOut(300);
-        advancedSearchDiv.removeClass("visible");
+        advancedSearchDiv.fadeOut(300).removeClass("visible");
+        advancedSearchButton.removeClass("clicked");
+        if($("div#results .result").length == 0)
+            searchField.removeClass("partly-visible");
     }
 });
 
@@ -38,7 +42,7 @@ $("#languages.typeahead").typeahead({
     },
     {
         name: "languages",
-        displayKey: 'value',
+        displayKey: "value",
         source: languages.ttAdapter()
 });
 
@@ -94,13 +98,14 @@ function finishedTyping(){
 
     clearResults();
     if(searchBar.value){
-        if(!searchField.hasClass("partly-visible"))
-            searchField.addClass("partly-visible");
-
+        searchField.addClass("partly-visible");
         populateResults();
     }
-    else
+    else {
         searchField.removeClass("partly-visible");
+        $("div#advanced-search").fadeOut(50);
+        advancedSearchButton.removeClass("clicked");
+    }
 }
 
 /*
@@ -145,7 +150,7 @@ function queryServer(){
         newDiv.style.textAlign = "center";
         newDiv.style.color = "#" + Math.floor(Math.random() *
                 16777215).toString(16);
-        resultDivs.push(newDiv)
+        resultDivs.push(newDiv);
     }
 
     return resultDivs;
@@ -164,6 +169,7 @@ function loadMoreResults(){
                 return function(){
                     divReference.classList.add("cascade");
                 };
-            }(newDiv)), result * 20);
+            }(newDiv)),
+            result * 20);
     }
 }
