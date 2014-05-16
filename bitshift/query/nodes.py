@@ -176,6 +176,7 @@ class BinaryOp(_Node):
     """Represents a relationship between two nodes: ``and``, ``or``."""
     AND = object()
     OR = object()
+    OPS = {AND: "AND", OR: "OR"}
 
     def __init__(self, left, op, right):
         self.left = left
@@ -183,9 +184,8 @@ class BinaryOp(_Node):
         self.right = right
 
     def __repr__(self):
-        ops = {self.AND: "AND", self.OR: "OR"}
         tmpl = "BinaryOp({0}, {1}, {2})"
-        return tmpl.format(self.left, ops[self.op], self.right)
+        return tmpl.format(self.left, self.OPS[self.op], self.right)
 
     def sortkey(self):
         return self.left.sortkey() + self.right.sortkey()
@@ -194,14 +194,14 @@ class BinaryOp(_Node):
 class UnaryOp(_Node):
     """Represents a transformation applied to one node: ``not``."""
     NOT = object()
+    OPS = {NOT: "NOT"}
 
     def __init__(self, op, node):
         self.op = op
         self.node = node
 
     def __repr__(self):
-        ops = {self.NOT: "NOT"}
-        return "UnaryOp({0}, {1})".format(ops[self.op], self.node)
+        return "UnaryOp({0}, {1})".format(self.OPS[self.op], self.node)
 
     def sortkey(self):
         return self.node.sortkey()

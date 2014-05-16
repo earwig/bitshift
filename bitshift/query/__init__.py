@@ -209,6 +209,9 @@ class _QueryParser(object):
         def parse_binary_op(op):
             """Parse a binary operator in a nested query list."""
             index = nest.index(op)
+            if index == 0 or index == len(nest) - 1:
+                err = "Invalid query: '%s' given without argument."
+                raise QueryParseException(err % BinaryOp.OPS[op])
             left = self._parse_nest(nest[:index])
             right = self._parse_nest(nest[index + 1:])
             return BinaryOp(left, op, right)
@@ -222,6 +225,9 @@ class _QueryParser(object):
             return parse_binary_op(BinaryOp.AND)
         elif UnaryOp.NOT in nest:
             index = nest.index(UnaryOp.NOT)
+            if index == len(nest) - 1:
+                err = "Invalid query: '%s' given without argument."
+                raise QueryParseException(err % UnaryOp.OPS[op])
             right = UnaryOp(UnaryOp.NOT, self._parse_nest(nest[index + 1:]))
             if index > 0:
                 left = self._parse_nest(nest[:index])

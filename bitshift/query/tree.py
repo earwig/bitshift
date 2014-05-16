@@ -9,6 +9,11 @@ class Tree(object):
     def __repr__(self):
         return "Tree({0})".format(self._root)
 
+    @property
+    def root(self):
+        """The root node of the tree."""
+        return self._root
+
     def sortkey(self):
         """Return a string sort key for the query tree."""
         return self._root.sortkey()
