@@ -5,7 +5,6 @@
 
 var advancedSearchDiv = $("div#advanced-search");
 var advancedSearchButton = $("button#advanced-search");
-advancedSearchDiv.hide();
 advancedSearchButton.click(function(){
     var searchField = $("div#search-field");
     if(!advancedSearchDiv.hasClass("visible")){
@@ -21,10 +20,8 @@ advancedSearchButton.click(function(){
     }
 });
 
-$(function() {
-    $("#date-last-modified").datepicker();
-    $("#date-created").datepicker();
-});
+$("#date-last-modified").datepicker();
+$("#date-created").datepicker();
 
 var languages = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
@@ -171,5 +168,57 @@ function loadMoreResults(){
                 };
             }(newDiv)),
             result * 20);
+    }
+}
+
+var searchGroups = [];
+var currentSearchGroup = 0;
+
+$("div#add-group").click(function(){
+    storeSearchGroup();
+    currentSearchGroup = searchGroups.length;
+    $("span#current, span#total").text(currentSearchGroup + 1);
+});
+
+$("div#previous-group").click(function(){
+    console.log(currentSearchGroup);
+    if(0 < currentSearchGroup){
+        storeSearchGroup();
+        currentSearchGroup--;
+        loadSearchGroup();
+        $("span#current").text(currentSearchGroup + 1);
+    }
+});
+
+$("div#next-group").click(function(){
+    console.log(currentSearchGroup);
+    if(currentSearchGroup < searchGroups.length - 1){
+        storeSearchGroup();
+        currentSearchGroup++;
+        loadSearchGroup();
+        $("span#current").text(currentSearchGroup + 1);
+    }
+});
+
+function storeSearchGroup(){
+    var searchGroup = {};
+    var inputs = $("div#advanced-search input[type='text']");
+
+    for(var input = 0; input < inputs.length; input++)
+        if(inputs[input].value.length > 0){
+            searchGroup[inputs[input].id] = inputs[input].value;
+            inputs[input].value = "";
+        }
+
+    if(currentSearchGroup < searchGroups.length)
+        searchGroups[currentSearchGroup] = searchGroup;
+    else
+        searchGroups.push(searchGroup);
+}
+
+function loadSearchGroup(groupNumber){
+    for(var inputId in searchGroups[currentSearchGroup]){
+        var selector = "div#advanced-search input[type='text']#" + inputId;
+        $(selector).val(searchGroups[currentSearchGroup][inputId]);
     }
 }

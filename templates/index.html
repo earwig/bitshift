@@ -18,12 +18,14 @@
 = endblock
 
 = block body
-  <div id="search-field">
-    <div id="title">
-      <span id="title-bit">bit</span
-      ><span id="title-angle">&laquo;</span
-      ><span id="title-shift">shift</span>
-    </div>
+  <div id="search-field" class="partly-visible">
+    <a id="title" href="/">
+      <div id="title">
+        <span id="title-bit">bit</span
+        ><span id="title-angle">&laquo;</span
+        ><span id="title-shift">shift</span>
+      </div>
+    </a>
 
     <form id="search-bar">
       <input type="text" name="query"
@@ -34,14 +36,27 @@
       <div id="advanced-search">
         <!-- Tags are closed on the following line to remove whitespace between divs. -->
         <div id="col1">
-          + Add group <!-- Placeholder.  -->
-        </div><div id="col2">
+          <div id="group-count">
+            <span id="current">1</span
+            ><span id="seperator">/</span
+            ><span id="total">1</span>
+          </div>
+          <div id="group-selector">
+            <div id="previous-group"></div>
+            <div></div>
+            <div id="next-group"></div>
+          </div>
+          <div id="add-group">
+            <span>+</span>
+          </div>
+        </div
+        ><div id="col2">
           <div id="upper-half">
             <div id="col1">
               <ul>
                 <li>
                   <label for="languages">Languages</label>
-                  <input class="typeahead" type="text" name="languages" id="languages"><br>
+                  <input type="text" name="languages" id="languages" class="typeahead"><br>
                 </li>
 
                 <li>
