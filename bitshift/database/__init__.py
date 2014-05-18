@@ -74,12 +74,12 @@ class Database(object):
                 return "(" + column + " " + op + " ?)", [node.date]
             elif isinstance(node, Symbol):
                 tables |= {"symbols"}
-                if node.type == node.ALL:
-                    # OR all of the types of symbol_types
-                    pass
-                else:
-                    cond = "(symbol_type = ? AND symbol_name = ?)"
-                return cond, [node.type, node.name]
+                cond_base = "(symbol_type = ? AND symbol_name = ?)"
+                if node.type != node.ALL:
+                    return cond_base, [node.type, node.name]
+                cond = "(" + " OR ".join([cond_base] * len(node.TYPES)) + ")"
+                args = zip(node.TYPES.keys(), [node.name] * len(node.TYPES))
+                return cond, [arg for tup in args for arg in tup]
             elif isinstance(node, BinaryOp):
                 left_cond, left_args = _parse_node(node.left)
                 right_cond, right_args = _parse_node(node.right)

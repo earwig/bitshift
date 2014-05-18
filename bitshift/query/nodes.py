@@ -154,6 +154,8 @@ class Symbol(_Node):
     FUNCTION = 1
     CLASS = 2
     VARIABLE = 3
+    TYPES = {ALL: "ALL", FUNCTION: "FUNCTION", CLASS: "CLASS",
+             VARIABLE: "VARIABLE"}
 
     def __init__(self, type_, name):
         """
@@ -164,9 +166,7 @@ class Symbol(_Node):
         self.name = name
 
     def __repr__(self):
-        types = {self.ALL: "ALL", self.FUNCTION: "FUNCTION",
-                 self.CLASS: "CLASS", self.VARIABLE: "VARIABLE"}
-        return "Symbol({0}, {1})".format(types[self.type], self.name)
+        return "Symbol({0}, {1})".format(self.TYPES[self.type], self.name)
 
     def sortkey(self):
         return self.name.sortkey()
