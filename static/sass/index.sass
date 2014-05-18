@@ -110,145 +110,23 @@ div#search-field
                 height: 26px
 
         div#advanced-search
-            border: 1px solid $baseColor2
-            margin: 0px
+            background-color: red
+            padding-top: 0px
             overflow: auto
-            padding: 0px
-            // display: none
 
             >div
                 @include vendor(box-sizing, border-box)
 
+                display: inline-block
                 float: left
-                height: 100%
 
-            >#col1
-                width: 10%
+            #sidebar
+                background-color: yellow
+                width: 20%
 
-                div#group-count
-                    font-size: 150%
-                    margin-left: 10%
-                    padding: 35% 0 20% 12%
-
-                    #current
-                        color: green
-                        font-size: 140%
-
-                    #seperator
-                        color: $baseColor3
-                        font-weight: bold
-
-                div#group-selector
-                    margin-left: 20%
-
-                    div
-                        $triangleHeight: 40%
-
-                        display: inline-block
-                        height: 0
-                        padding-bottom: $triangleHeight
-                        padding-top: $triangleHeight
-                        overflow: hidden
-
-                        &:after
-                            border-bottom: 500px solid transparent
-                            border-top: 500px solid transparent
-                            content: ""
-                            display: block
-                            height: 0
-                            margin-top: -500px
-                            width: 0
-
-                        &#previous-group
-                            width: $triangleHeight
-
-                            &:after
-                                border-right: 500px solid $baseColor3
-
-                            &:hover
-                                &:after
-                                    @extend .t3
-
-                                    border-right-color: green
-
-                        &#next-group
-                            padding-left: $triangleHeight
-                            width: 0
-
-                            &:after
-                                border-left: 500px solid $baseColor3
-                                margin-left: -500px
-
-                            &:hover
-                                &:after
-                                    @extend .t3
-
-                                    border-left-color: green
-
-                div#add-group
-                    margin-top: -10px
-                    margin-left: auto
-                    margin-right: auto
-                    width: 50%
-
-                    span
-                        color: $baseColor3
-                        font-size: 510%
-                        font-weight: bold
-
-                        &:hover
-                            @extend .t3
-
-                            color: green
-
-                div#add-group, div#group-selector div
-                    &:hover
-                        cursor: pointer
-
-            >#col2
-                width: 84%
-
-                ul
-                    list-style: none
-
-                    li
-                        margin-bottom: 0.5em
-
-                        label
-                            @extend .t3
-
-
-                        &:hover
-                            input[type="text"]
-                                border-color: $baseColor1
-
-                            label
-                                color: black
-
-                        label
-                            display: block
-                            font-size: 110%
-                            color: #747575
-
-                input[type="text"]
-                    @extend .t3
-
-                    border-color: $baseColor3
-                    font-size: 100%
-                    padding: 4px
-                    width: 100%
-
-                #upper-half
-                    >div
-                        float: left
-                        width: 50%
-
-                    #col2
-                        input[type="text"]
-                            width: 50%
-
-                #lower-half
-                    padding-bottom: 20px
+            #search-groups
+                background-color: blue
+                width: 80%
 
     &.partly-visible
         margin-top: 0%

@@ -174,12 +174,14 @@ function loadMoreResults(){
 var searchGroups = [];
 var currentSearchGroup = 0;
 
+// Create a new search group.
 $("div#add-group").click(function(){
     storeSearchGroup();
     currentSearchGroup = searchGroups.length;
     $("span#current, span#total").text(currentSearchGroup + 1);
 });
 
+// Save the current's search group's values, and load the previous one.
 $("div#previous-group").click(function(){
     console.log(currentSearchGroup);
     if(0 < currentSearchGroup){
@@ -190,6 +192,7 @@ $("div#previous-group").click(function(){
     }
 });
 
+// Save the current's search group's values, and load the next one.
 $("div#next-group").click(function(){
     console.log(currentSearchGroup);
     if(currentSearchGroup < searchGroups.length - 1){
@@ -200,6 +203,10 @@ $("div#next-group").click(function(){
     }
 });
 
+/*
+ * Store the advanced search form's values into the currently selected search
+ * group object.
+ */
 function storeSearchGroup(){
     var searchGroup = {};
     var inputs = $("div#advanced-search input[type='text']");
@@ -216,6 +223,10 @@ function storeSearchGroup(){
         searchGroups.push(searchGroup);
 }
 
+/*
+ * Load the values belonging to the currently selected search group object into
+ * the advanced search form.
+ */
 function loadSearchGroup(groupNumber){
     for(var inputId in searchGroups[currentSearchGroup]){
         var selector = "div#advanced-search input[type='text']#" + inputId;

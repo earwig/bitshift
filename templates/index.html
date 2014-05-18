@@ -34,74 +34,34 @@
       </button>
 
       <div id="advanced-search">
-        <!-- Tags are closed on the following line to remove whitespace between divs. -->
-        <div id="col1">
-          <div id="group-count">
-            <span id="current">1</span
-            ><span id="seperator">/</span
-            ><span id="total">1</span>
-          </div>
-          <div id="group-selector">
-            <div id="previous-group"></div>
-            <div></div>
-            <div id="next-group"></div>
-          </div>
-          <div id="add-group">
-            <span>+</span>
-          </div>
-        </div
-        ><div id="col2">
-          <div id="upper-half">
-            <div id="col1">
-              <ul>
-                <li>
-                  <label for="languages">Languages</label>
-                  <input type="text" name="languages" id="languages" class="typeahead"><br>
-                </li>
-
-                <li>
-                  <label for="authors">Authors</label>
-                  <input type="text" name="authors" id="authors"><br>
-                </li>
-              </ul>
-            </div><div id="col2">
-              <ul>
-                <li>
-                  <label for="date-last-modified">Date last modified</label>
-                  <input type="text" name="date-last-modified" id="date-last-modified">
-                </li>
-
-                <li>
-                  <label for="date-created">Date created</label>
-                  <input type="text" name="date-created" id="date-created">
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div id="lower-half">
-            <ul>
-              <li>
-                <label for="symbols">Symbols</label>
-                <input class="typeahead" type="text" name="symbols" id="symbols"><br>
-              </li>
-
-              <li>
-                <label for="functions">Functions</label>
-                <input type="text" name="functions" id="functions"><br>
-              </li>
-
-              <li>
-                <label for="classes">Classes</label>
-                <input type="text" name="classes" id="classes"><br>
-              </li>
-
-              <li>
-                <label for="variables">Variables</label>
-                <input type="text" name="variables" id="variables"><br>
-              </li>
-            </ul>
-          </div>
+        <div id="sidebar">
+          <div>Fields</div>
+          <ul>
+            <li><button id="language">languages</button></li>
+            <li><button id="author">authors</button></li>
+            <li><button id="modified">date last modified</button></li>
+            <li><button id="created">date created</button></li>
+            <li><button id="symbol">symbols</button></li>
+            <li><button id="function">functions</button></li>
+            <li><button id="class">classes</button></li>
+            <li><button id="variable">variables</button></li>
+          </ul>
+          <button id="add-group">
+            Add group.
+          </button>
+        </div>
+        <div id="search-groups">
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
+          <div class="search-group">Hello, world.</div>
         </div>
       </div>
     </form>
