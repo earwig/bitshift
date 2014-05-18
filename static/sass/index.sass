@@ -110,7 +110,8 @@ div#search-field
                 height: 26px
 
         div#advanced-search
-            background-color: red
+            background-color: white
+            border: 1px solid $baseColor3
             padding-top: 0px
             overflow: auto
 
@@ -121,8 +122,36 @@ div#search-field
                 float: left
 
             #sidebar
-                background-color: yellow
+                padding-left: 1%
                 width: 20%
+
+                *
+                    font-size: 95%
+
+                >div
+                    color: $baseColor2
+                    font-size: 107%
+                    padding-top: 5%
+
+                >ul
+                    list-style: none
+                    padding-left: 0
+                    margin-bottom: 8%
+                    margin-top: 2%
+
+                    li button
+                        background-color: #F1F1F1
+                        border: none
+                        width: 80%
+
+                        &.clicked, &:hover
+                            @extend .t2
+
+                            background-color: $baseColor1
+                            color: white
+                            width: 90%
+
+                >button#add-group
 
             #search-groups
                 background-color: blue
