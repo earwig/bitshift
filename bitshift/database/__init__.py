@@ -55,45 +55,44 @@ class Database(object):
 
     def _explode_query_tree(self, tree):
         """Convert a query tree into components of an SQL SELECT statement."""
-        def _parse_node(node):
+        def _parse_node(node, tables):
             if isinstance(node, Text):
                 tables |= {"code", "symbols"}
                 # (FTS: codelet_name, =: symbol_name, FTS: code_code) vs. node.text (_Literal)
                 pass
             elif isinstance(node, Language):
                 tables |= {"code"}
-                return "(code_lang = ?)", [node.lang]
+                return "(code_lang = ?)", tables, [node.lang]
             elif isinstance(node, Author):
                 tables |= {"authors"}
                 if isinstance(node.name, Regex):
                     return "(author_name REGEXP ?)", [node.name.regex]
                 cond = "(MATCH(author_name) AGAINST (? IN BOOLEAN MODE))"
-                return cond, [node.name.string]
+                return cond, tables, [node.name.string]
             elif isinstance(node, Date):
                 column = {node.CREATE: "codelet_date_created",
                           node.MODIFY: "codelet_date_modified"}[node.type]
                 op = {node.BEFORE: "<=", node.AFTER: ">="}[node.relation]
-                return "(" + column + " " + op + " ?)", [node.date]
+                return "(" + column + " " + op + " ?)", tables, [node.date]
             elif isinstance(node, Symbol):
                 tables |= {"symbols"}
                 cond_base = "(symbol_type = ? AND symbol_name = ?)"
                 if node.type != node.ALL:
-                    return cond_base, [node.type, node.name]
+                    return cond_base, tables, [node.type, node.name]
                 cond = "(" + " OR ".join([cond_base] * len(node.TYPES)) + ")"
                 args = zip(node.TYPES.keys(), [node.name] * len(node.TYPES))
-                return cond, [arg for tup in args for arg in tup]
+                return cond, tables, [arg for tup in args for arg in tup]
             elif isinstance(node, BinaryOp):
-                left_cond, left_args = _parse_node(node.left)
-                right_cond, right_args = _parse_node(node.right)
+                left_cond, tbls, left_args = _parse_node(node.left, tables)
+                right_cond, tables, right_args = _parse_node(node.right, tbls)
                 op = node.OPS[node.op]
                 cond = "(" + left_cond  + " " + op + " " + right_cond + ")"
-                return cond, left_args + right_args
+                return cond, tables, left_args + right_args
             elif isinstance(node, UnaryOp):
-                cond, args = _parse_node(node.node)
-                return "(" + node.OPS[node.op] + " " + cond + ")", args
+                cond, tables, args = _parse_node(node.node, tables)
+                return "(" + node.OPS[node.op] + " " + cond + ")", tables, args
 
-        tables = set()
-        conditional, arglist = _parse_node(tree.root)
+        conditional, tables, arglist = _parse_node(tree.root, set())
         # joins = " ".join(tables)
 
         return conditional, joins, tuple(arglist)
