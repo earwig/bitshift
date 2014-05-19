@@ -53,61 +53,18 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
-    def _explode_query_tree(self, tree):
-        """Convert a query tree into components of an SQL SELECT statement."""
-        def _parse_node(node, tables):
-            if isinstance(node, Text):
-                tables |= {"code", "symbols"}
-                # (FTS: codelet_name, =: symbol_name, FTS: code_code) vs. node.text (_Literal)
-                pass
-            elif isinstance(node, Language):
-                tables |= {"code"}
-                return "(code_lang = ?)", tables, [node.lang]
-            elif isinstance(node, Author):
-                tables |= {"authors"}
-                if isinstance(node.name, Regex):
-                    return "(author_name REGEXP ?)", [node.name.regex]
-                cond = "(MATCH(author_name) AGAINST (? IN BOOLEAN MODE))"
-                return cond, tables, [node.name.string]
-            elif isinstance(node, Date):
-                column = {node.CREATE: "codelet_date_created",
-                          node.MODIFY: "codelet_date_modified"}[node.type]
-                op = {node.BEFORE: "<=", node.AFTER: ">="}[node.relation]
-                return "(" + column + " " + op + " ?)", tables, [node.date]
-            elif isinstance(node, Symbol):
-                tables |= {"symbols"}
-                cond_base = "(symbol_type = ? AND symbol_name = ?)"
-                if node.type != node.ALL:
-                    return cond_base, tables, [node.type, node.name]
-                cond = "(" + " OR ".join([cond_base] * len(node.TYPES)) + ")"
-                args = zip(node.TYPES.keys(), [node.name] * len(node.TYPES))
-                return cond, tables, [arg for tup in args for arg in tup]
-            elif isinstance(node, BinaryOp):
-                left_cond, tbls, left_args = _parse_node(node.left, tables)
-                right_cond, tables, right_args = _parse_node(node.right, tbls)
-                op = node.OPS[node.op]
-                cond = "(" + left_cond  + " " + op + " " + right_cond + ")"
-                return cond, tables, left_args + right_args
-            elif isinstance(node, UnaryOp):
-                cond, tables, args = _parse_node(node.node, tables)
-                return "(" + node.OPS[node.op] + " " + cond + ")", tables, args
-
-        conditional, tables, arglist = _parse_node(tree.root, set())
-        # joins = " ".join(tables)
-
-        return conditional, joins, tuple(arglist)
-
     def _search_with_query(self, cursor, query, page):
         """Execute an SQL query based on a query tree, and return results.
 
         The returned data is a 2-tuple of (list of codelet IDs, estimated
         number of total results).
         """
-        conditional, joins, args = self._explode_query_tree(query)
         base = """SELECT codelet_id
                   FROM codelets %s
                   WHERE %s
                   ORDER BY codelet_rank LIMIT 10"""
+        conditional, tables, args = query.parameterize()
+        joins = " ".join(tables)
         qstring = base % (joins, conditional)
         if page > 1:
             qstring += " OFFSET %d" % ((page - 1) * 10)

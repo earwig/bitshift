@@ -139,7 +139,7 @@ class _QueryParser(object):
 
         Returns a 2-tuple of (first_marker_found, marker_index).
         """
-        def _is_escaped(query, index):
+        def is_escaped(query, index):
             """Return whether a query marker is backslash-escaped."""
             return (index > 0 and query[index - 1] == "\\" and
                     (index < 2 or query[index - 2] != "\\"))
@@ -147,7 +147,7 @@ class _QueryParser(object):
         best_marker, best_index = None, maxsize
         for marker in markers:
             index = query.find(marker)
-            if _is_escaped(query, index):
+            if is_escaped(query, index):
                 _, new_index = self._scan_query(query[index + 1:], marker)
                 index += new_index + 1
             if index >= 0 and index < best_index:

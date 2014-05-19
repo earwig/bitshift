@@ -25,3 +25,12 @@ class Tree(object):
         :rtype: str
         """
         return repr(self)
+
+    def parameterize(self):
+        """Parameterize the query tree for an SQL SELECT statement.
+
+        :return: SQL query data.
+        :rtype: 3-tuple of (query conditional string, table set, param tuple)
+        """
+        conditional, tables, arglist = self._root.parameterize(set())
+        return conditional, tables, tuple(arglist)
