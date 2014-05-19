@@ -62,7 +62,7 @@ class Database(object):
         base = """SELECT codelet_id
                   FROM codelets %s
                   WHERE %s
-                  ORDER BY codelet_rank LIMIT 10"""
+                  GROUP BY codelet_id ORDER BY codelet_rank DESC LIMIT 10"""
         conditional, tables, args = query.parameterize()
         joins = " ".join(tables)
         qstring = base % (joins, conditional)

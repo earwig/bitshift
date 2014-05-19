@@ -84,8 +84,15 @@ class Text(_Node):
 
     def parameterize(self, tables):
         tables |= {"code", "symbols"}
-        # (FTS: codelet_name, =: symbol_name, FTS: code_code) vs. node.text (_Literal)
-        pass
+        if isinstance(self.text, Regex):
+            cols = ["codelet_name", "symbol_name", "code_code"]
+            cond = "((" + " REGEXP ?) OR (".join(cols) + " REGEXP ?))"
+            return cond, [self.text.regex] * 3
+        conds = ["MATCH(codelet_name) AGAINST (? IN BOOLEAN MODE)",
+                 "MATCH(code_code) AGAINST (? IN BOOLEAN MODE)",
+                 "symbol_name = ?"]
+        cond = "((" + ") OR (".join(conds) + "))"
+        return cond, tables, [self.text.string] * 3
 
 
 class Language(_Node):
