@@ -8,7 +8,7 @@
 $resultWidth: 830px
 $sidebarWidth: 30px
 $codeWidth: 500px
-$metaWidth: 300px
+$hiddenInfoWidth: 300px
 
 div#search-field
     @extend .t2
@@ -103,10 +103,32 @@ div#results
     margin-right: auto
     width: 80%
 
+    /* TODO:
+        1) On the side
+            - add way to cycle through hits in the code.*/
     div.result
         width: $resultWidth
         height: 200px
-        margin-top: 3%
+        margin-top: 2%
+        margin-bottom: 6%
+
+        #display-info
+            a
+                text-decoration: none
+
+                &:hover
+                    color: orange
+
+            #title
+                margin-right: 50px
+
+            #site
+                text-transform: capitalize
+
+            #date-modified
+                font-family: monospace
+                color: #333
+                display: block
 
         table
             border-collapse: collapse
@@ -142,10 +164,32 @@ div#results
                             border: none
                             font-family: monospace
 
-                #meta
-                    width: $metaWidth
+                #hidden-info
+                    width: $hiddenInfoWidth
+                    text-align: center
+                    font-size: 1.2em
+
+                    #date-created
+                        display: block
+
+                    #language
+                        display: inline-block
+                        padding: 3px
+                        @include vendor(border-radius, 3px)
+                        background-color: #eee
+                        font-weight: bold
+                        color: purple
+
+                        &:hover
+                            background-color: #ddd
+
+                    #matches
+                        span
+                            color: red
+
+                    #authors
+                        span
+                            color: red
 
         &.cascade
             @extend .t3
-
-            margin-bottom: 0%
