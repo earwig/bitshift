@@ -65,8 +65,10 @@ class Database(object):
                 return "(code_lang = ?)", [node.lang]
             elif isinstance(node, Author):
                 tables |= {"authors"}
-                # (FTS: author_name) vs. node.name (_Literal)
-                pass
+                if isinstance(node.name, Regex):
+                    return "(author_name REGEXP ?)", [node.name.regex]
+                cond = "(MATCH(author_name) AGAINST (? IN BOOLEAN MODE))"
+                return cond, [node.name.string]
             elif isinstance(node, Date):
                 column = {node.CREATE: "codelet_date_created",
                           node.MODIFY: "codelet_date_modified"}[node.type]
@@ -103,7 +105,10 @@ class Database(object):
         number of total results).
         """
         conditional, joins, args = self._explode_query_tree(query)
-        base = "SELECT codelet_id FROM codelets %s WHERE %s LIMIT 10"
+        base = """SELECT codelet_id
+                  FROM codelets %s
+                  WHERE %s
+                  ORDER BY codelet_rank LIMIT 10"""
         qstring = base % (joins, conditional)
         if page > 1:
             qstring += " OFFSET %d" % ((page - 1) * 10)
