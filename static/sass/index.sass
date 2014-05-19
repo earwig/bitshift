@@ -70,6 +70,8 @@ div#search-field
                 font-style: italic
 
     form#search-bar
+        min-width: 510px
+
         input[type="text"], button
             @extend .t3
             @include vendor(box-sizing, border-box)
@@ -113,7 +115,8 @@ div#search-field
             background-color: white
             border: 1px solid $baseColor3
             padding-top: 0px
-            overflow: auto
+            overflow-x: auto
+            height: 400px
 
             >div
                 @include vendor(box-sizing, border-box)
@@ -145,7 +148,7 @@ div#search-field
                             div
                                 @extend .t3
 
-                                background-color: #F1F1F1
+                                background-color: $lightGray
                                 border: none
                                 font-size: 96%
                                 padding: 3%
@@ -156,6 +159,7 @@ div#search-field
 
                                     background-color: $baseColor2
                                     color: white
+                                    cursor: pointer
                                     width: 90%
 
                         input[type="checkbox"]
@@ -168,9 +172,48 @@ div#search-field
                                 color: white
                                 width: 90%
 
+                button#add-group
+                    background-color: $lightBlue
+                    border: none
+                    color: white
+                    font-weight: bold
+                    height: 40px
+                    margin-bottom: 10%
+                    width: 40px
+
+                    &:hover
+                        @extend .t3
+
+                        background-color: $blue
+                        cursor: pointer
+
             #search-groups
-                background-color: blue
+                margin-top: 2%
+                max-height: 93%
+                overflow-y: scroll
                 width: 75%
+
+                .search-group
+                    background-color: $lightGray
+                    padding: 1%
+                    margin-bottom: 1%
+
+                    >div
+                        margin-bottom: 0.7%
+
+                        div
+                            display: inline-block
+                            width: 20%
+
+                        input[type=text]
+                            padding: 2px
+                            width: 60%
+
+                        input[type=checkbox]
+                            margin-left: 2%
+
+                        span
+                            font-size: 80%
 
     &.partly-visible
         margin-top: 0%
