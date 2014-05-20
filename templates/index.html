@@ -34,48 +34,50 @@
       </button>
 
       <div id="advanced-search">
+        <div id="heading">
+          <div id="col1">Fields</div
+          ><div id="col2">Search groups</div>
+        </div>
         <div id="sidebar">
-          <div>
-            Fields
-          </div>
           <ul>
             <li>
-              <input type="checkbox" id="language" checked/>
+              <input type="checkbox" id="language" checked="true">
               <label for="language"><div>languages</div></label>
             </li>
             <li>
-              <input type="checkbox" id="author"/>
+              <input type="checkbox" id="author">
               <label for="author"><div>authors</div></label>
             </li>
             <li>
-              <input type="checkbox" id="modified"/>
-              <label for="modified"><div>date last modified</div></label>
+              <input type="checkbox" id="date-last-modified">
+              <label for="date-last-modified"><div>date last modified</div></label>
             </li>
             <li>
-              <input type="checkbox" id="created"/>
-              <label for="created"><div>date created</div></label>
+              <input type="checkbox" id="date-created">
+              <label for="date-created"><div>date created</div></label>
             </li>
             <li>
-              <input type="checkbox" id="symbol"/>
+              <input type="checkbox" id="symbol">
               <label for="symbol"><div>symbols</div></label>
             </li>
             <li>
-              <input type="checkbox" id="function"/>
+              <input type="checkbox" id="function">
               <label for="function"><div>functions</div></label>
             </li>
             <li>
-              <input type="checkbox" id="class"/>
+              <input type="checkbox" id="class">
               <label for="class"><div>classes</div></label>
             </li>
             <li>
-              <input type="checkbox" id="variable"/>
+              <input type="checkbox" id="variable">
               <label for="variable"><div>variables</div></label>
             </li>
           </ul>
           <button id="add-group">
-            <div>
-              <span>+</span> Add group
-            </div>
+            <div><span>+</span> Add</div>
+          </button>
+          <button id="remove-group">
+            <div><span>-</span> Remove</div>
           </button>
         </div>
         <div id="search-groups">

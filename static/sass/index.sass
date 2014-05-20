@@ -69,7 +69,11 @@ div#search-field
                 color: $baseColor2
                 font-style: italic
 
+    $minSearchFieldsWidth: 490px
+
     form#search-bar
+        min-width: $minSearchFieldsWidth
+
         input[type="text"], button
             @extend .t3
             @include vendor(box-sizing, border-box)
@@ -113,10 +117,28 @@ div#search-field
             background-color: white
             border: 1px solid $baseColor3
             font-size: 96%
-            min-width: 490px
+            min-width: $minSearchFieldsWidth
             padding-top: 0px
             overflow-x: auto
             height: 400px
+
+            #heading
+                color: $baseColor2
+                display: block
+                font-size: 120%
+                padding-left: 1%
+                padding-top: 1%
+                width: 100%
+
+                div
+                    display: inline-block
+                    font-size: 110%
+
+                    &#col1
+                        width: 25%
+
+                    &#col2
+                        width: 75%
 
             >div
                 @include vendor(box-sizing, border-box)
@@ -127,11 +149,6 @@ div#search-field
             #sidebar
                 padding-left: 1%
                 width: 25%
-
-                >div
-                    color: $baseColor2
-                    font-size: 120%
-                    padding-top: 5%
 
                 >ul
                     list-style: none
@@ -175,8 +192,9 @@ div#search-field
                     background-color: $lightBlue
                     border: none
                     color: white
+                    display: block
                     height: 40px
-                    margin-bottom: 10%
+                    margin-bottom: 2%
                     overflow: hidden
                     white-space: nowrap
                     width: 40px
@@ -185,7 +203,7 @@ div#search-field
                         font-size: 150%
                         font-weight: bold
                         margin-left: 6px
-                        margin-right: 10px
+                        margin-right: 14px
 
                     &:hover
                         @extend .t3
@@ -194,23 +212,39 @@ div#search-field
                         cursor: pointer
                         width: 90%
 
+                button#remove-group
+                    @extend button#add-group
+
+                    background-color: #D82D48
+
+                    span
+                        padding-left: 3px
+
+                    &:hover
+                        @extend .t3
+
+                        background-color: #F11437
+
             #search-groups
-                margin-top: 2%
+                margin-top: 1%
                 max-height: 93%
                 overflow-y: auto
                 width: 75%
 
                 .search-group
+                    @include vendor(transition, all 0.6s ease-out)
+
                     background-color: $lightGray
                     padding: 1%
-                    margin-bottom: 1%
+                    margin-bottom: 2%
+                    width: 97%
 
                     >div
                         margin-bottom: 0.7%
 
                         div
                             display: inline-block
-                            width: 20%
+                            width: 18%
 
                         input[type=text]
                             padding: 2px
@@ -227,6 +261,9 @@ div#search-field
 
                         span
                             font-size: 80%
+
+                    &#selected
+                        background-color: #CACACA
 
     &.partly-visible
         margin-top: 0%
