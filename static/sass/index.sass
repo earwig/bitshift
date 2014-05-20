@@ -70,8 +70,6 @@ div#search-field
                 font-style: italic
 
     form#search-bar
-        min-width: 510px
-
         input[type="text"], button
             @extend .t3
             @include vendor(box-sizing, border-box)
@@ -114,6 +112,8 @@ div#search-field
         div#advanced-search
             background-color: white
             border: 1px solid $baseColor3
+            font-size: 96%
+            min-width: 490px
             padding-top: 0px
             overflow-x: auto
             height: 400px
@@ -150,7 +150,6 @@ div#search-field
 
                                 background-color: $lightGray
                                 border: none
-                                font-size: 96%
                                 padding: 3%
                                 width: 85%
 
@@ -176,21 +175,29 @@ div#search-field
                     background-color: $lightBlue
                     border: none
                     color: white
-                    font-weight: bold
                     height: 40px
                     margin-bottom: 10%
+                    overflow: hidden
+                    white-space: nowrap
                     width: 40px
+
+                    span
+                        font-size: 150%
+                        font-weight: bold
+                        margin-left: 6px
+                        margin-right: 10px
 
                     &:hover
                         @extend .t3
 
                         background-color: $blue
                         cursor: pointer
+                        width: 90%
 
             #search-groups
                 margin-top: 2%
                 max-height: 93%
-                overflow-y: scroll
+                overflow-y: auto
                 width: 75%
 
                 .search-group
@@ -211,6 +218,12 @@ div#search-field
 
                         input[type=checkbox]
                             margin-left: 2%
+
+                            &:checked + span
+                                @extend .t2
+
+                                color: green
+                                font-weight: bold
 
                         span
                             font-size: 80%

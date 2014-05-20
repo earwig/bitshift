@@ -171,65 +171,33 @@ function loadMoreResults(){
     }
 }
 
-var searchGroups = [];
-var currentSearchGroup = 0;
-
+var searchGroups = $("div#search-groups");
 // Create a new search group.
-$("div#add-group").click(function(){
-    storeSearchGroup();
-    currentSearchGroup = searchGroups.length;
-    $("span#current, span#total").text(currentSearchGroup + 1);
+$("button#add-group").click(function(){
+    var searchGroup = $("<div/>", {class : "search-group"});
+    searchGroups.append(searchGroup.append(createSearchGroupInput("language")));
 });
 
-// Save the current's search group's values, and load the previous one.
-$("div#previous-group").click(function(){
-    console.log(currentSearchGroup);
-    if(0 < currentSearchGroup){
-        storeSearchGroup();
-        currentSearchGroup--;
-        loadSearchGroup();
-        $("span#current").text(currentSearchGroup + 1);
-    }
-});
-
-// Save the current's search group's values, and load the next one.
-$("div#next-group").click(function(){
-    console.log(currentSearchGroup);
-    if(currentSearchGroup < searchGroups.length - 1){
-        storeSearchGroup();
-        currentSearchGroup++;
-        loadSearchGroup();
-        $("span#current").text(currentSearchGroup + 1);
-    }
-});
-
-/*
- * Store the advanced search form's values into the currently selected search
- * group object.
- */
-function storeSearchGroup(){
-    var searchGroup = {};
-    var inputs = $("div#advanced-search input[type='text']");
-
-    for(var input = 0; input < inputs.length; input++)
-        if(inputs[input].value.length > 0){
-            searchGroup[inputs[input].id] = inputs[input].value;
-            inputs[input].value = "";
-        }
-
-    if(currentSearchGroup < searchGroups.length)
-        searchGroups[currentSearchGroup] = searchGroup;
+$("div#advanced-search #sidebar input[type=checkbox]").click(function(){
+    var fieldId = $(this).attr("id");
+    if($(this).is(":checked"))
+        $("div.search-group#selected").append(
+            $.parseHTML(createSearchGroupInput(fieldId)));
     else
-        searchGroups.push(searchGroup);
-}
+        $("div.search-group#selected #" + fieldId).remove()
+})
 
 /*
- * Load the values belonging to the currently selected search group object into
- * the advanced search form.
+ * Return an HTML string representing a new input field div in a search group.
+ *
+ * @param fieldId The id of the input field div, and its child elements.
  */
-function loadSearchGroup(groupNumber){
-    for(var inputId in searchGroups[currentSearchGroup]){
-        var selector = "div#advanced-search input[type='text']#" + inputId;
-        $(selector).val(searchGroups[currentSearchGroup][inputId]);
-    }
+function createSearchGroupInput(fieldId){
+    return [
+        "<div id='" + fieldId + "'>",
+            "<div>" + fieldId + "</div>",
+            "<input id='" + "'type='text'>",
+            "<input type='checkbox' name='regex'><span>Regex</span>",
+        "</div>"
+    ].join("");
 }
