@@ -9,7 +9,8 @@
     font-size: 70%
 
 .twitter-typeahead
-    width: 100%
+    // display: inline-block
+    width: 60%
 
     .tt-hint
         color: $baseColor2
@@ -117,10 +118,11 @@ div#search-field
             background-color: white
             border: 1px solid $baseColor3
             font-size: 96%
+            height: 400px
             min-width: $minSearchFieldsWidth
             padding-top: 0px
             overflow-x: auto
-            height: 400px
+            overflow-y: hidden
 
             #heading
                 color: $baseColor2
@@ -242,15 +244,15 @@ div#search-field
                     >div
                         margin-bottom: 0.7%
 
-                        div
+                        >div
                             display: inline-block
                             width: 18%
 
-                        input[type=text]
+                        >input[type=text]
                             padding: 2px
                             width: 60%
 
-                        input[type=checkbox]
+                        >input[type=checkbox]
                             margin-left: 2%
 
                             &:checked + span
@@ -259,7 +261,7 @@ div#search-field
                                 color: green
                                 font-weight: bold
 
-                        span
+                        span.regex
                             font-size: 80%
 
                     &#selected

@@ -84,8 +84,8 @@
           <div class="search-group" id="selected">
             <div id="language">
               <div>language</div>
-              <input id="language" type="text">
-              <input type="checkbox" name="regex"><span>Regex</span>
+              <input class="language" type="text">
+              <input type="checkbox" name="regex"><span class="regex">Regex</span>
             </div>
           </div>
         </div>
@@ -96,4 +96,5 @@
   <div id="results"></div>
 
   {{ assets.tag("index.js") }}
+  {{ assets.tag("index.advanced-search-form.js") }}
 = endblock
