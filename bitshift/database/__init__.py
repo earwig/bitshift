@@ -53,29 +53,21 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
-    def _search_with_query(self, cursor, query, page):
+    def _search_with_query(self, cursor, tree, page):
         """Execute an SQL query based on a query tree, and return results.
 
         The returned data is a 2-tuple of (list of codelet IDs, estimated
         number of total results).
         """
-        base = """SELECT codelet_id
-                  FROM codelets %s
-                  WHERE %s
-                  GROUP BY codelet_id ORDER BY codelet_rank DESC LIMIT 10"""
-        conditional, tables, args = query.parameterize()
-        joins = " ".join(tables)
-        qstring = base % (joins, conditional)
-        if page > 1:
-            qstring += " OFFSET %d" % ((page - 1) * 10)
-
-        cursor.execute(qstring, args)
-        ids = [id for id, in cursor.fetchall()]
+        query, args = tree.build_query(page)
+        cursor.execute(query, args)
+        ids = [id for id, _ in cursor.fetchall()]
         num_results = 0  # TODO: NotImplemented
         return ids, num_results
 
     def _get_codelets_from_ids(self, cursor, ids):
         """Return a list of Codelet objects given a list of codelet IDs."""
+        # TODO: remember that codelets need an origin field
         raise NotImplementedError()  # TODO
 
     def _decompose_url(self, cursor, url):

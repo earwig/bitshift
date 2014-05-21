@@ -1,5 +1,12 @@
 __all__ = ["Tree"]
 
+QUERY_TEMPLATE = """SELECT codelet_id, (codelet_rank + %s) AS score
+FROM codelets %s
+WHERE %s
+GROUP BY codelet_id
+ORDER BY score DESC
+LIMIT %d OFFSET %d""".replace("\n", " ")
+
 class Tree(object):
     """Represents a query tree."""
 
@@ -26,11 +33,25 @@ class Tree(object):
         """
         return repr(self)
 
-    def parameterize(self):
-        """Parameterize the query tree for an SQL SELECT statement.
+    def build_query(self, page=1, page_size=10, pretty=False):
+        """Convert the query tree into a parameterized SQL SELECT statement.
+
+        :param page: The page number to get results for.
+        :type page: int
+        :param page_size: The number of results per page.
+        :type page_size: int
+        :param pretty: Whether to pretty-print the SQL query or not.
+        :type pretty: bool
 
         :return: SQL query data.
-        :rtype: 3-tuple of (query conditional string, table set, param tuple)
+        :rtype: 2-tuple of (SQL statement string, query parameter tuple)
         """
-        conditional, tables, arglist = self._root.parameterize(set())
-        return conditional, tables, tuple(arglist)
+        tables = set()
+        cond, ranks, arglist = self._root.parameterize(tables)
+        ranks = ranks or [cond]
+        score = "((%s) / %d)" % (" + ".join(ranks), len(ranks))
+        joins = " ".join(tables)  # TODO
+        offset = (page - 1) * page_size
+
+        query = QUERY_TEMPLATE % (score, joins, cond, page_size, offset)
+        return query, tuple(arglist * 2)
