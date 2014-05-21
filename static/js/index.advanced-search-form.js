@@ -10,25 +10,14 @@ var searchGroups = $("div#search-groups");
 (function loadInputFieldWidgets(){
     $(".search-group input#date-last-modified").datepicker();
     $(".search-group input#date-created").datepicker();
-
-    var languages = new Bloodhound({
-        datumTokenizer: Bloodhound.tokenizers.obj.whitespace("value"),
-        queryTokenizer: Bloodhound.tokenizers.whitespace,
-        local: $.map(TYPEAHEAD_LANGUAGES, function(state){
-            return {value : state};
-        })
-    });
-
-    languages.initialize();
-    $("#language.typeahead").typeahead({
-            hint: true,
-            highlight: true,
-            minLength: 1
-        },
-        {
-            name: "languages",
-            displayKey: "value",
-            source: languages.ttAdapter()
+    $("#autocomplete").autocomplete({
+        source: function(request, response){
+            var matcher = new RegExp(
+                $.ui.autocomplete.escapeRegex(request.term), "i");
+            response($.grep(AUTOCOMPLETE_LANGUAGES, function(item){
+                return matcher.test(item);
+            }));
+        }
     });
 }());
 
@@ -36,18 +25,19 @@ var searchGroups = $("div#search-groups");
  * Set all advanced search form button callbacks.
  */
 (function setSearchFormCallbacks(){
-    // Create a new search group, and update the `#sidebar` checklist accordingly.
+    // Create a new search group, and update the `#sidebar` checklist.
     $("button#add-group").click(function(){
         $("div#sidebar input[type=checkbox]").prop("checked", false);
 
         searchGroups.children("#selected").removeAttr("id");
         var searchGroup = $("<div/>", {class : "search-group", id : "selected"});
-        searchGroups.append(searchGroup.append(createSearchGroupInput("language")));
+        searchGroups.append(
+                searchGroup.append(createSearchGroupInput("language")));
         $("div#sidebar input[type=checkbox]#language").prop("checked", true);
     });
 
-    // Remove the currently selected group if it's not the only one, and mark one
-    // of its siblings as selected.
+    // Remove the currently selected group if it's not the only one, and mark
+    // one of its siblings as selected.
     $("button#remove-group").click(function(){
         var currentGroup = $("div.search-group#selected");
 
@@ -96,7 +86,7 @@ var searchGroups = $("div#search-groups");
 function createSearchGroupInput(fieldId){
     return [
         "<div id='" + fieldId + "'>",
-            "<div>" + fieldId.replace(/-/g, " ") + "</div>",
+            "<div class='name'>" + fieldId.replace(/-/g, " ") + "</div>",
             "<input class='" + fieldId + "' name='" + fieldId + "'type='text'>",
             "<input type='checkbox' name='regex'><span>Regex</span>",
         "</div>"
@@ -111,28 +101,35 @@ function assembleQuery(){
     var groupQueries = [];
 
     for(var group = 0; group < groups.length; group++){
-        var inputs = groups[group].querySelectorAll("input[type=text]");
-        var groupQuery = []
-        for(var field = 0; field < inputs.length; field++)
-            if(inputs[field].value.length > 0)
-                groupQuery.push(genFieldQueryString(inputs[field]));
+        var inputFields = groups[group].querySelectorAll("input[type=text]");
+        var regexCheckbox = groups[group].querySelectorAll("input[name=regex]");
+        var groupQuery = [];
+
+        for(var field = 0; field < inputFields.length; field++)
+            if(inputFields[field].value.length > 0)
+                groupQuery.push(genFieldQueryString(
+                        inputFields[field], regexCheckbox[field].checked));
 
         groupQueries.push(groupQuery.join(" AND "));
     }
 
-    // console.log(groupQueries.join(" OR "));
+    console.log(groupQueries.join(" OR "));
 }
 
 /*
  * Generate a processed query string for an input field's value.
  *
- * @param field An `input[type=text]` DOM element.
+ * @param field (DOM element) An `input[type=text]` element.
+ * @param hasRegex (boolean) Whether or not the field's value has regex.
  */
-function genFieldQueryString(field){
+function genFieldQueryString(field, hasRegex){
     var terms = field.value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
-    if(field.value.indexOf('"') >= 0)
-        return '"' + field.getAttribute("name") + ":" + terms + '"';
-    return terms;
+    var query = field.getAttribute("name") + ":" + ((hasRegex)?"re:":"") + terms;
+    if(field.value.indexOf('"') >= 0){
+        // ['"', field.getAttribute("name"), ":", regex?"re:":"", terms, '"']
+        return '"' + query + '"';
+    }
+    return query;
 }
 
 (function testQueryStringGeneration(){

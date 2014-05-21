@@ -1,42 +1,24 @@
 /*
- Stylesheet for index.html.
+ Stylesheet for `index.html`.
  */
 
 @import mixins
 @import variables
 
+$minSearchFieldsWidth: 490px
+
 .ui-datepicker
     font-size: 70%
 
-.twitter-typeahead
-    // display: inline-block
-    width: 60%
+.ui-autocomplete
+    max-height: 30%
+    overflow-x: hidden
+    overflow-y: scroll
+    padding: 0px
 
-    .tt-hint
-        color: $baseColor2
+    >li.ui-menu-item a.ui-state-focus
+        @include vendor(transition, background-color 0.3s ease-out)
 
-    .tt-dropdown-menu
-        width: 100%
-        padding: 4px 0
-        background-color: white
-        border: 1px solid $baseColor2
-
-        .tt-suggestion
-            padding: 4px
-
-            p
-                margin: 0
-
-                strong
-                    color: $baseColor1
-
-            &.tt-cursor
-                @extend .t1
-
-                background-color: $baseColor1
-
-                *
-                    color: white
 
 div#search-field
     @extend .t2
@@ -69,8 +51,6 @@ div#search-field
             #title-shift
                 color: $baseColor2
                 font-style: italic
-
-    $minSearchFieldsWidth: 490px
 
     form#search-bar
         min-width: $minSearchFieldsWidth
@@ -114,159 +94,6 @@ div#search-field
                 width: 26px
                 height: 26px
 
-        div#advanced-search
-            background-color: white
-            border: 1px solid $baseColor3
-            font-size: 96%
-            height: 400px
-            min-width: $minSearchFieldsWidth
-            padding-top: 0px
-            overflow-x: auto
-            overflow-y: hidden
-
-            #heading
-                color: $baseColor2
-                display: block
-                font-size: 120%
-                padding-left: 1%
-                padding-top: 1%
-                width: 100%
-
-                div
-                    display: inline-block
-                    font-size: 110%
-
-                    &#col1
-                        width: 25%
-
-                    &#col2
-                        width: 75%
-
-            >div
-                @include vendor(box-sizing, border-box)
-
-                display: inline-block
-                float: left
-
-            #sidebar
-                padding-left: 1%
-                width: 25%
-
-                >ul
-                    list-style: none
-                    padding-left: 0
-                    margin-bottom: 8%
-                    margin-top: 2%
-
-                    li
-                        margin-bottom: 2%
-
-                        label
-                            user-select: none
-
-                            div
-                                @extend .t3
-
-                                background-color: $lightGray
-                                border: none
-                                padding: 3%
-                                width: 85%
-
-                                &:hover, &.selectedInputField
-                                    @extend .t3
-
-                                    background-color: $baseColor2
-                                    color: white
-                                    cursor: pointer
-                                    width: 90%
-
-                        input[type="checkbox"]
-                            display: none
-
-                            &:checked + label > div
-                                @extend .selectedInputField
-
-                                background-color: $baseColor1
-                                color: white
-                                width: 90%
-
-                button#add-group
-                    background-color: $lightBlue
-                    border: none
-                    color: white
-                    display: block
-                    height: 40px
-                    margin-bottom: 2%
-                    overflow: hidden
-                    white-space: nowrap
-                    width: 40px
-
-                    span
-                        font-size: 150%
-                        font-weight: bold
-                        margin-left: 6px
-                        margin-right: 14px
-
-                    &:hover
-                        @extend .t3
-
-                        background-color: $blue
-                        cursor: pointer
-                        width: 90%
-
-                button#remove-group
-                    @extend button#add-group
-
-                    background-color: #D82D48
-
-                    span
-                        padding-left: 3px
-
-                    &:hover
-                        @extend .t3
-
-                        background-color: #F11437
-
-            #search-groups
-                margin-top: 1%
-                max-height: 93%
-                overflow-y: auto
-                width: 75%
-
-                .search-group
-                    @include vendor(transition, all 0.6s ease-out)
-
-                    background-color: $lightGray
-                    padding: 1%
-                    margin-bottom: 2%
-                    width: 97%
-
-                    >div
-                        margin-bottom: 0.7%
-
-                        >div
-                            display: inline-block
-                            width: 18%
-
-                        >input[type=text]
-                            padding: 2px
-                            width: 60%
-
-                        >input[type=checkbox]
-                            margin-left: 2%
-
-                            &:checked + span
-                                @extend .t2
-
-                                color: green
-                                font-weight: bold
-
-                        span.regex
-                            font-size: 80%
-
-                    &#selected
-                        background-color: #CACACA
-
     &.partly-visible
         margin-top: 0%
         padding-bottom: 3%
@@ -286,6 +113,161 @@ div#search-field
             margin-left: auto
             margin-right: auto
             width: 60%
+
+div#advanced-search
+    background-color: white
+    border: 1px solid $baseColor3
+    display: none
+    font-size: 96%
+    height: 400px
+    min-width: $minSearchFieldsWidth
+    padding-top: 0px
+    overflow-x: auto
+    overflow-y: hidden
+
+    #heading
+        color: $baseColor2
+        display: block
+        font-size: 120%
+        padding-left: 1%
+        padding-top: 1%
+        width: 100%
+
+        div
+            display: inline-block
+            font-size: 110%
+
+            &#col1
+                width: 25%
+
+            &#col2
+                width: 75%
+
+    >div
+        @include vendor(box-sizing, border-box)
+
+        display: inline-block
+        float: left
+
+    #sidebar
+        padding-left: 1%
+        width: 25%
+
+        >ul
+            list-style: none
+            padding-left: 0
+            margin-bottom: 8%
+            margin-top: 2%
+
+            li
+                margin-bottom: 2%
+
+                label
+                    user-select: none
+
+                    div
+                        @extend .t3
+
+                        background-color: $lightGray
+                        border: none
+                        padding: 3%
+                        width: 85%
+
+                        &:hover, &.selectedInputField
+                            @extend .t3
+
+                            background-color: $baseColor2
+                            color: white
+                            cursor: pointer
+                            width: 90%
+
+                input[type="checkbox"]
+                    display: none
+
+                    &:checked + label > div
+                        @extend .selectedInputField
+
+                        background-color: $baseColor1
+                        color: white
+                        width: 90%
+
+        button#add-group
+            background-color: $lightBlue
+            border: none
+            color: white
+            display: block
+            height: 40px
+            margin-bottom: 2%
+            overflow: hidden
+            white-space: nowrap
+            width: 40px
+
+            span
+                font-size: 150%
+                font-weight: bold
+                margin-left: 6px
+                margin-right: 14px
+
+            &:hover
+                @extend .t3
+
+                background-color: $blue
+                cursor: pointer
+                width: 90%
+
+        button#remove-group
+            @extend button#add-group
+
+            background-color: #D82D48
+
+            span
+                padding-left: 3px
+
+            &:hover
+                @extend .t3
+
+                background-color: #F11437
+
+    #search-groups
+        margin-top: 1%
+        max-height: 93%
+        overflow-y: auto
+        width: 75%
+
+        .search-group
+            @include vendor(transition, all 0.6s ease-out)
+
+            background-color: $lightGray
+            padding: 1%
+            margin-bottom: 2%
+            width: 97%
+
+            >div
+                margin-bottom: 0.7%
+
+                >div.name
+                    display: inline-block
+                    width: 18%
+
+                >input[type=text]
+                    display: inline-block
+                    padding: 2px
+                    width: 60%
+
+                >input[type=checkbox]
+                    margin-left: 2%
+
+                    &:checked + span
+                        @extend .t2
+
+                        color: green
+                        font-weight: bold
+
+                span.regex
+                    font-size: 80%
+
+            &#selected
+                background-color: #CACACA
 
 div#results
     margin: 3% auto 0 auto
