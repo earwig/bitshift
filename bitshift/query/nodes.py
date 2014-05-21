@@ -213,16 +213,15 @@ class Symbol(_Node):
     def parameterize(self, tables):
         tables |= {"code", "symbols"}
         if isinstance(self.name, Regex):
-            cond_base = "(symbol_type = ? AND symbol_name REGEXP ?)"
-            name = self.name.regex
+            cond, name = "symbol_name REGEXP ?", self.name.regex
         else:
-            cond_base = "(symbol_type = ? AND symbol_name = ?)"
-            name = self.name.string
+            cond, name = "symbol_name = ?", self.name.string
+            if self.type == self.ALL:
+                types = ", ".join(str(type_) for type_ in self.TYPES)
+                cond += " AND symbol_type IN (%s)" % types
         if self.type != self.ALL:
-            return cond_base, [], [self.type, name]
-        cond = "(" + " OR ".join([cond_base] * len(self.TYPES)) + ")"
-        args = zip(self.TYPES.keys(), [name] * len(self.TYPES))
-        return cond, [], [arg for tup in args for arg in tup]
+            cond += " AND symbol_type = %d" % self.type
+        return "(" + cond + ")", [], [name]
 
 
 class BinaryOp(_Node):
