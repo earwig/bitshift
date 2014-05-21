@@ -89,14 +89,13 @@ class Text(_Node):
         if isinstance(self.text, Regex):
             ranks = ["(codelet_name REGEXP ?)", "(symbol_name REGEXP ?)",
                      "(code_code REGEXP ?)"]
-            cond = "(" + " OR ".join(ranks) + ")"
-            return cond, ranks, [self.text.regex] * 3
+            text = self.text.regex
         else:
             ranks = ["(MATCH(codelet_name) AGAINST (? IN BOOLEAN MODE))",
                      "(MATCH(code_code) AGAINST (? IN BOOLEAN MODE))",
                      "(symbol_name = ?)"]
-            cond = "(" + " OR ".join(ranks) + ")"
-            return cond, ranks, [self.text.string] * 3
+            text = self.text.string
+        return cond, ranks, [text] * 3
 
 
 class Language(_Node):
@@ -199,7 +198,7 @@ class Symbol(_Node):
     def __init__(self, type_, name):
         """
         :type type_: int (``ALL``, ``FUNCTION``, ``CLASS``, etc.)
-        :type name: :py:class:`.Literal`
+        :type name: :py:class:`._Literal`
         """
         self.type = type_
         self.name = name
@@ -212,14 +211,18 @@ class Symbol(_Node):
         return self.name.sortkey()
 
     def parameterize(self, tables):
-        tables |= {"symbols"}
-        cond_base = "(symbol_type = ? AND symbol_name = ?)"
+        tables |= {"code", "symbols"}
+        if isinstance(self.name, Regex):
+            cond_base = "(symbol_type = ? AND symbol_name REGEXP ?)"
+            name = self.name.regex
+        else:
+            cond_base = "(symbol_type = ? AND symbol_name = ?)"
+            name = self.name.string
         if self.type != self.ALL:
-            return cond_base, [], [self.type, self.name]
-        ranks = [cond_base] * len(self.TYPES)
-        cond = "(" + " OR ".join(ranks) + ")"
-        args = zip(self.TYPES.keys(), [self.name] * len(self.TYPES))
-        return cond, ranks, [arg for tup in args for arg in tup]
+            return cond_base, [], [self.type, name]
+        cond = "(" + " OR ".join([cond_base] * len(self.TYPES)) + ")"
+        args = zip(self.TYPES.keys(), [name] * len(self.TYPES))
+        return cond, [], [arg for tup in args for arg in tup]
 
 
 class BinaryOp(_Node):

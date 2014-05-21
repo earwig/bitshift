@@ -46,12 +46,22 @@ class Tree(object):
         :return: SQL query data.
         :rtype: 2-tuple of (SQL statement string, query parameter tuple)
         """
+        def get_table_join(table):
+            tables = {
+                "code": ("codelet_code_id", "code_id"),
+                "authors": ("author_codelet", "codelet_id"),
+                "symbols": ("symbol_code", "code_id")
+            }
+            tmpl = "INNER JOIN %s ON %s = %s"
+            return tmpl % (table, tables[table][0], tables[table][1])
+
         tables = set()
         cond, ranks, arglist = self._root.parameterize(tables)
         ranks = ranks or [cond]
         score = "((%s) / %d)" % (" + ".join(ranks), len(ranks))
-        joins = " ".join(tables)  # TODO
+        joins = " ".join(get_table_join(table) for table in tables)
         offset = (page - 1) * page_size
 
+        ## TODO: handle pretty
         query = QUERY_TEMPLATE % (score, joins, cond, page_size, offset)
         return query, tuple(arglist * 2)
