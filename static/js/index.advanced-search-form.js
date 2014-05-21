@@ -30,9 +30,12 @@ var searchGroups = $("div#search-groups");
         $("div#sidebar input[type=checkbox]").prop("checked", false);
 
         searchGroups.children("#selected").removeAttr("id");
-        var searchGroup = $("<div/>", {class : "search-group", id : "selected"});
+        var searchGroup = $("<div/>", {
+            class : "search-group",
+            id : "selected"
+        });
         searchGroups.append(
-                searchGroup.append(createSearchGroupInput("language")));
+            searchGroup.append(createSearchGroupInput("language")));
         $("div#sidebar input[type=checkbox]#language").prop("checked", true);
     });
 
@@ -76,6 +79,17 @@ var searchGroups = $("div#search-groups");
         else
             $("div.search-group#selected #" + fieldId).remove()
     });
+
+    var previousAdvancedQuery = "";
+    var searchBar = $("form#search-bar input[name=query]");
+
+    window.setInterval(function(){
+        var currentQuery = assembleQuery();
+        if(currentQuery != previousAdvancedQuery){
+            previousAdvancedQuery = currentQuery;
+            searchBar.val(assembleQuery());
+        }
+    }, 1e3 / 15);
 }());
 
 /*
@@ -88,7 +102,8 @@ function createSearchGroupInput(fieldId){
         "<div id='" + fieldId + "'>",
             "<div class='name'>" + fieldId.replace(/-/g, " ") + "</div>",
             "<input class='" + fieldId + "' name='" + fieldId + "'type='text'>",
-            "<input type='checkbox' name='regex'><span>Regex</span>",
+            "<input type='checkbox' name='regex'>",
+            "<span class='regex'>Regex</span>",
         "</div>"
     ].join("");
 }
@@ -113,7 +128,7 @@ function assembleQuery(){
         groupQueries.push(groupQuery.join(" AND "));
     }
 
-    console.log(groupQueries.join(" OR "));
+    return groupQueries.join(" OR ");
 }
 
 /*
@@ -124,25 +139,9 @@ function assembleQuery(){
  */
 function genFieldQueryString(field, hasRegex){
     var terms = field.value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
-    var query = field.getAttribute("name") + ":" + ((hasRegex)?"re:":"") + terms;
+    var query = field.getAttribute("name") + ":" + (hasRegex?"re:":"") + terms;
     if(field.value.indexOf('"') >= 0){
-        // ['"', field.getAttribute("name"), ":", regex?"re:":"", terms, '"']
         return '"' + query + '"';
     }
     return query;
 }
-
-(function testQueryStringGeneration(){
-    var sampleStrings = [
-        "A B",
-        "A \\ B",
-        '"A \\" B"',
-        '"A \\" B" C D "A B"',
-    ];
-    for(var string = 0; string < sampleStrings.length; string++)
-        console.log([
-                (sampleStrings[string] + "          ").slice(0, 12),
-                ":",
-                "  " + genFieldQueryString($("<input>").val(sampleStrings[string])[0])
-            ].join(""));
-})();

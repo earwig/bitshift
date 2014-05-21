@@ -19,7 +19,6 @@ $minSearchFieldsWidth: 490px
     >li.ui-menu-item a.ui-state-focus
         @include vendor(transition, background-color 0.3s ease-out)
 
-
 div#search-field
     @extend .t2
 
@@ -78,17 +77,21 @@ div#search-field
             padding: 0px
             float: right
 
-            &.clicked, &:hover
+            &:hover
                 img
-                    @extend .t3
-
                     background-color: black
                     cursor: pointer
+
+            &.clicked
+                img
+                    background-color: $baseColor1
 
             &:focus
                 outline: 0
 
             img
+                @extend .t3
+
                 background-color: $baseColor2
                 margin-top: 5px
                 width: 26px
@@ -247,7 +250,8 @@ div#advanced-search
 
                 >div.name
                     display: inline-block
-                    width: 18%
+                    font-size: 90%
+                    width: 20%
 
                 >input[type=text]
                     display: inline-block
@@ -262,6 +266,9 @@ div#advanced-search
 
                         color: green
                         font-weight: bold
+
+                    &:hover
+                        cursor: checkbox
 
                 span.regex
                     font-size: 80%
