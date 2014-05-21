@@ -84,11 +84,17 @@
           <div class="search-group" id="selected">
             <div id="language">
               <div>language</div>
-              <input class="language" type="text">
+              <input class="language" name="language" type="text">
               <input type="checkbox" name="regex"><span class="regex">Regex</span>
             </div>
           </div>
         </div>
+
+        <!-- Temporary.  -->
+        <button onclick="assembleQuery()">
+          Assemble
+        </button>
+
       </div>
     </form>
   </div>

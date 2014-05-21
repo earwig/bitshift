@@ -84,7 +84,7 @@ var searchGroups = $("div#search-groups");
                 $(".search-group#selected ." + fieldId).datepicker();
         }
         else
-            $("div.search-group#selected ." + fieldId).remove()
+            $("div.search-group#selected #" + fieldId).remove()
     });
 }());
 
@@ -97,16 +97,55 @@ function createSearchGroupInput(fieldId){
     return [
         "<div id='" + fieldId + "'>",
             "<div>" + fieldId.replace(/-/g, " ") + "</div>",
-            "<input class='" + fieldId + "'type='text'/>",
+            "<input class='" + fieldId + "' name='" + fieldId + "'type='text'>",
             "<input type='checkbox' name='regex'><span>Regex</span>",
         "</div>"
     ].join("");
 }
 
+/*
+ * Create a query from advanced-search groups.
+ */
 function assembleQuery(){
     var groups = searchGroups.children(".search-group");
     var groupQueries = [];
 
-    for(var group = 0; group < groups.length; group++)
-        console.log(group);
+    for(var group = 0; group < groups.length; group++){
+        var inputs = groups[group].querySelectorAll("input[type=text]");
+        var groupQuery = []
+        for(var field = 0; field < inputs.length; field++)
+            if(inputs[field].value.length > 0)
+                groupQuery.push(genFieldQueryString(inputs[field]));
+
+        groupQueries.push(groupQuery.join(" AND "));
+    }
+
+    // console.log(groupQueries.join(" OR "));
 }
+
+/*
+ * Generate a processed query string for an input field's value.
+ *
+ * @param field An `input[type=text]` DOM element.
+ */
+function genFieldQueryString(field){
+    var terms = field.value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
+    if(field.value.indexOf('"') >= 0)
+        return '"' + field.getAttribute("name") + ":" + terms + '"';
+    return terms;
+}
+
+(function testQueryStringGeneration(){
+    var sampleStrings = [
+        "A B",
+        "A \\ B",
+        '"A \\" B"',
+        '"A \\" B" C D "A B"',
+    ];
+    for(var string = 0; string < sampleStrings.length; string++)
+        console.log([
+                (sampleStrings[string] + "          ").slice(0, 12),
+                ":",
+                "  " + genFieldQueryString($("<input>").val(sampleStrings[string])[0])
+            ].join(""));
+})();
