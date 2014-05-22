@@ -5,40 +5,47 @@
 
 var advancedSearchDiv = $("div#advanced-search");
 var advancedSearchButton = $("button#advanced-search");
-advancedSearchButton.click(function(){
-    var searchField = $("div#search-field");
-    if(!advancedSearchDiv.hasClass("visible")){
-        searchField.addClass("partly-visible");
-        advancedSearchDiv.fadeIn(500).addClass("visible");
-        advancedSearchButton.addClass("clicked");
-    }
-    else {
-        advancedSearchDiv.fadeOut(300).removeClass("visible");
-        advancedSearchButton.removeClass("clicked");
-        if($("div#results .result").length == 0)
-            searchField.removeClass("partly-visible");
-    }
-});
-
 FINISH_TYPING_INTERVAL = 650;
-searchBar = $("form#search-bar input[type='text']")[0];
-resultsDiv = $("div#results")[0];
+var searchBar = $("form#search-bar input[type='text']")[0];
+var resultsDiv = $("div#results")[0];
 
 var typingTimer, lastValue;
-searchBar.onkeyup = typingTimer;
 
-// Enable infinite scrolling down the results page.
-$(window).scroll(function() {
-    if($(window).scrollTop() + $(window).height() == $(document).height()){
-        loadMoreResults();
-    }
-});
+/*
+ * Set all page callbacks.
+ */
+(function setHomePageCallbabacks(){
+    // Enable infinite scrolling down the results page.
+    $(window).scroll(function(){
+        if($(window).scrollTop() + $(window).height() == $(document).height() &&
+                resultsDiv.querySelectorAll(".result").length > 0)
+            loadMoreResults();
+    });
 
-// Enable capturing the `enter` key.
-$("form#search-bar").submit(function(event){
-    event.preventDefault();
-    return false;
-});
+    // Toggle the advanced-search form's visibility.
+    advancedSearchButton.click(function(){
+        var searchField = $("div#search-field");
+        if(!advancedSearchDiv.hasClass("visible")){
+            searchField.addClass("partly-visible");
+            advancedSearchDiv.fadeIn(500).addClass("visible");
+            advancedSearchButton.addClass("clicked");
+        }
+        else {
+            advancedSearchDiv.fadeOut(300).removeClass("visible");
+            advancedSearchButton.removeClass("clicked");
+            if($("div#results .result").length == 0)
+                searchField.removeClass("partly-visible");
+        }
+    });
+
+    // Enable capturing the `enter` key.
+    $("form#search-bar").submit(function(event){
+        event.preventDefault();
+        return false;
+    });
+
+    searchBar.onkeyup = typingTimer;
+}());
 
 /*
  * Clear the existing timer and set a new one the the user types text into the

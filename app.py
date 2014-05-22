@@ -21,7 +21,7 @@ app_env.globals.update(assets=assets)
 
 @app.route("/")
 def index():
-    return render_template("index.html", typeahead_languages=languages.LANGS)
+    return render_template("index.html", autocomplete_languages=languages.LANGS)
 
 @app.route("/search/<query>")
 def search(query):
