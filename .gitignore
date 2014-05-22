@@ -1,3 +1,6 @@
+static/css/*
+!static/css/lib/*
+
 *.swp
 .sass-cache
 .DS_Store
@@ -21,7 +24,6 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
 lib64
 __pycache__
 

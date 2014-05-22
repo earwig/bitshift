@@ -2,6 +2,58 @@
  Global project stylesheet.
  */
 
-// placeholder
-p
-    font-size: 1.5em
+@import mixins
+@import variables
+
+html, body
+    height: 100%
+    margin: 0
+    padding: 0
+
+    *
+        font-family: sans-serif
+
+div#container
+    min-height: 100%
+    position: relative
+
+    div#header
+        padding: 10px
+
+    div#body
+        height: 100%
+        padding-bottom: 110px
+        padding-top: 4%
+
+        div#center
+            margin-left: auto
+            margin-right: auto
+            width: 75%
+
+    div#footer
+        @extend .t3
+
+        background-color: $baseColor1
+        bottom: 0
+        height: 60px
+        padding-top: 12px
+        position: absolute
+        text-align: center
+        width: 100%
+
+        *
+            color: white
+
+        a
+            @extend .t3
+
+            font-size: 1.2em
+            margin-left: 5%
+            margin-right: 5%
+            text-decoration: none
+
+            &:hover
+                text-decoration: underline
+
+        p span
+            font-size: 0.7em
