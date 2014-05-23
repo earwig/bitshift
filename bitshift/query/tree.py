@@ -1,6 +1,6 @@
 __all__ = ["Tree"]
 
-QUERY_TEMPLATE = """SELECT codelet_id, (codelet_rank + %s) AS score
+QUERY_TEMPLATE = """SELECT codelet_id, (codelet_rank%s) AS score
 FROM codelets %s
 WHERE %s
 GROUP BY codelet_id
@@ -54,18 +54,19 @@ class Tree(object):
             ]
             tmpl = "INNER JOIN %s ON %s = %s"
             for args in data:
-                if table in tables:
+                if args[0] in tables:
                     yield tmpl % args
 
         tables = set()
-        cond, ranks, arglist = self._root.parameterize(tables)
+        cond, arglist, ranks, need_ranks = self._root.parameterize(tables)
         ranks = ranks or [cond]
-        # TODO: if the only rank is a single thing and it's a boolean value
-        # (i.e. not a match statement), get rid of it.
-        score = "((%s) / %d)" % (" + ".join(ranks), len(ranks))
+        if need_ranks:
+            score = " + ((%s) / %d)" % (" + ".join(ranks), len(ranks))
+        else:
+            score = ""
         joins = " ".join(get_table_joins(tables))
         offset = (page - 1) * page_size
 
         ## TODO: handle pretty
         query = QUERY_TEMPLATE % (score, joins, cond, page_size, offset)
-        return query, tuple(arglist * 2)
+        return query, tuple(arglist * 2 if need_ranks else arglist)

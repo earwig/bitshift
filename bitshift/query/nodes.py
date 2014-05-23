@@ -18,11 +18,11 @@ class _Node(object):
     def parameterize(self, tables):
         """Parameterize the node.
 
-        Returns a 3-tuple of (conditional string, rank list, parameter list).
-        If the rank list is empty, then it is assumed to contain the
-        conditional string.
+        Returns a 4-tuple of (conditional string, parameter list, rank list,
+        should-we-rank boolean). If the rank list is empty, then it is assumed
+        to contain the conditional string.
         """
-        return "", [], []
+        return "", [], [], False
 
 
 class _Literal(object):
@@ -95,7 +95,8 @@ class Text(_Node):
                      "(MATCH(code_code) AGAINST (? IN BOOLEAN MODE))",
                      "(symbol_name = ?)"]
             text = self.text.string
-        return cond, ranks, [text] * 3
+        cond = "(" + " OR ".join(ranks) + ")"
+        return cond, [text] * 3, ranks, True
 
 
 class Language(_Node):
@@ -118,7 +119,7 @@ class Language(_Node):
 
     def parameterize(self, tables):
         tables |= {"code"}
-        return "(code_lang = ?)", [], [self.lang]
+        return "(code_lang = ?)", [self.lang], [], False
 
 
 class Author(_Node):
@@ -142,9 +143,9 @@ class Author(_Node):
     def parameterize(self, tables):
         tables |= {"authors"}
         if isinstance(self.name, Regex):
-            return "(author_name REGEXP ?)", [], [self.name.regex]
+            return "(author_name REGEXP ?)", [self.name.regex], [], False
         cond = "(MATCH(author_name) AGAINST (? IN BOOLEAN MODE))"
-        return cond, [], [self.name.string]
+        return cond, [self.name.string], [], True
 
 
 class Date(_Node):
@@ -181,7 +182,7 @@ class Date(_Node):
         column = {self.CREATE: "codelet_date_created",
                   self.MODIFY: "codelet_date_modified"}[self.type]
         op = {self.BEFORE: "<=", self.AFTER: ">="}[self.relation]
-        return "(" + column + " " + op + " ?)", [], [self.date]
+        return "(" + column + " " + op + " ?)", [self.date], [], False
 
 
 class Symbol(_Node):
@@ -221,7 +222,7 @@ class Symbol(_Node):
                 cond += " AND symbol_type IN (%s)" % types
         if self.type != self.ALL:
             cond += " AND symbol_type = %d" % self.type
-        return "(" + cond + ")", [], [name]
+        return "(" + cond + ")", [name], [], False
 
 
 class BinaryOp(_Node):
@@ -243,12 +244,13 @@ class BinaryOp(_Node):
         return self.left.sortkey() + self.right.sortkey()
 
     def parameterize(self, tables):
-        lcond, lranks, largs = self.left.parameterize(tables)
-        rcond, rranks, rargs = self.right.parameterize(tables)
+        lcond, largs, lranks, need_lranks = self.left.parameterize(tables)
+        rcond, rargs, rranks, need_rranks = self.right.parameterize(tables)
         lranks, rranks = lranks or [lcond], rranks or [rcond]
         op = self.OPS[self.op]
         cond = "(" + lcond  + " " + op + " " + rcond + ")"
-        return cond, lranks + rranks, largs + rargs
+        need_ranks = need_lranks or need_rranks or self.op == self.OR
+        return cond, largs + rargs, lranks + rranks, need_ranks
 
 
 class UnaryOp(_Node):
@@ -267,6 +269,7 @@ class UnaryOp(_Node):
         return self.node.sortkey()
 
     def parameterize(self, tables):
-        cond, ranks, args = self.node.parameterize(tables)
+        cond, args, ranks, need_ranks = self.node.parameterize(tables)
+        new_cond = "(" + self.OPS[self.op] + " " + cond + ")"
         ranks = ranks or [cond]
-        return "(" + self.OPS[self.op] + " " + cond + ")", ranks, args
+        return new_cond, args, ranks, need_ranks
