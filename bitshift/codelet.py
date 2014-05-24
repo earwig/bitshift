@@ -18,12 +18,14 @@ class Codelet(object):
         code was last modified.
     :ivar rank: (float) A quanitification of the source code's quality, as
         per available ratings (stars, forks, upvotes, etc.).
-    :ivar symbols: (dict) Dictionary containing dictionaries of functions, classes,
-        variable definitions, etc.
+    :ivar symbols: (dict) Dictionary containing dictionaries of functions,
+        classes, variable definitions, etc.
+    :ivar origin: (tuple) 3-tuple of (site_name, site_url, image_blob), as
+        added by the database.
     """
 
     def __init__(self, name, code, filename, language, authors, code_url,
-            date_created, date_modified, rank):
+            date_created, date_modified, rank, symbols=None, origin=None):
         """
         Create a Codelet instance.
 
@@ -36,6 +38,8 @@ class Codelet(object):
         :param date_created: see :attr:`self.date_created`
         :param date_modified: see :attr:`self.date_modified`
         :param rank: see :attr:`self.rank`
+        :param symbols: see :attr:`self.symbols`
+        :param origin: see :attr:`self.origin`
 
         :type name: see :attr:`self.name`
         :type code: see :attr:`self.code`
@@ -46,6 +50,8 @@ class Codelet(object):
         :type date_created: see :attr:`self.date_created`
         :type date_modified: see :attr:`self.date_modified`
         :type rank: see :attr:`self.rank`
+        :type symbols: see :attr:`self.symbols`
+        :type origin: see :attr:`self.origin`
         """
 
         self.name = name
@@ -57,3 +63,5 @@ class Codelet(object):
         self.date_created = date_created
         self.date_modified = date_modified
         self.rank = rank
+        self.symbols = symbols or {}
+        self.origin = origin or (None, None, None)

@@ -33,15 +33,13 @@ class Tree(object):
         """
         return repr(self)
 
-    def build_query(self, page=1, page_size=10, pretty=False):
+    def build_query(self, page=1, page_size=10):
         """Convert the query tree into a parameterized SQL SELECT statement.
 
         :param page: The page number to get results for.
         :type page: int
         :param page_size: The number of results per page.
         :type page_size: int
-        :param pretty: Whether to pretty-print the SQL query or not.
-        :type pretty: bool
 
         :return: SQL query data.
         :rtype: 2-tuple of (SQL statement string, query parameter tuple)
@@ -67,6 +65,5 @@ class Tree(object):
         joins = " ".join(get_table_joins(tables))
         offset = (page - 1) * page_size
 
-        ## TODO: handle pretty
         query = QUERY_TEMPLATE % (score, joins, cond, page_size, offset)
         return query, tuple(arglist * 2 if need_ranks else arglist)

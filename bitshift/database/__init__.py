@@ -65,10 +65,30 @@ class Database(object):
         num_results = 0  # TODO: NotImplemented
         return ids, num_results
 
-    def _get_codelets_from_ids(self, cursor, ids):
+    def _get_codelets_from_ids(self, ids):
         """Return a list of Codelet objects given a list of codelet IDs."""
-        # TODO: remember that codelets need an origin field
-        raise NotImplementedError()  # TODO
+        query = """SELECT *
+                   FROM codelets
+                   INNER JOIN code ON codelet_code_id = code_id
+                   INNER JOIN origins ON codelet_origin = origin_id
+                   WHERE codelet_id = ?"""
+
+        with self._conn.cursor(oursql.DictCursor) as cursor:
+            cursor.executemany(query, [(id,) for id in ids])
+            for row in cursor.fetchone():
+                if row["origin_url_base"]:
+                    url = row["codelet_url"]
+                else:
+                    url = row["origin_url_base"] + row["codelet_url"]
+                origin = (row["origin_name"], row["origin_url"],
+                          row["origin_image"])
+                authors = NotImplemented  # TODO: list of 3-tuples (author_name, author_url or None)
+                symbols = NotImplemented  # TODO: dict of {sym_type: (name, decls, uses)}
+                yield Codelet(
+                    row["codelet_name"], row["code_code"], None,
+                    row["code_lang"], authors, url,
+                    row["codelet_date_created"], row["codelet_date_modified"],
+                    row["codelet_rank"], symbols, origin)
 
     def _decompose_url(self, cursor, url):
         """Break up a URL into an origin (with a URL base) and a suffix."""
@@ -133,7 +153,8 @@ class Database(object):
                 num_mnt = num_results / (10 ** num_exp)
                 cursor.execute(query2, (cache_id, num_mnt, num_exp))
                 cursor.executemany(query3, [(cache_id, c_id) for c_id in ids])
-            return (num_results, self._get_codelets_from_ids(cursor, ids))
+        codelet_gen = self._get_codelets_from_ids(ids)
+        return (num_results, list(codelet_gen))
 
     def insert(self, codelet):
         """
