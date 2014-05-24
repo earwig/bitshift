@@ -116,6 +116,10 @@ class _QueryParser(object):
 
     def _parse_term(self, term):
         """Parse a query term into a tree node and return it."""
+        try:
+            term = term.decode("unicode_escape")
+        except UnicodeDecodeError:
+            raise QueryParseException('Invalid query term: "%s"' % term)
         if ":" in term and not term[0] == ":":
             prefix, arg = term.split(":", 1)
             invert = prefix.lower() == "not"
@@ -135,7 +139,7 @@ class _QueryParser(object):
 
         Returns a 2-tuple of (first_marker_found, marker_index).
         """
-        def _is_escaped(query, index):
+        def is_escaped(query, index):
             """Return whether a query marker is backslash-escaped."""
             return (index > 0 and query[index - 1] == "\\" and
                     (index < 2 or query[index - 2] != "\\"))
@@ -143,7 +147,7 @@ class _QueryParser(object):
         best_marker, best_index = None, maxsize
         for marker in markers:
             index = query.find(marker)
-            if _is_escaped(query, index):
+            if is_escaped(query, index):
                 _, new_index = self._scan_query(query[index + 1:], marker)
                 index += new_index + 1
             if index >= 0 and index < best_index:
@@ -209,6 +213,9 @@ class _QueryParser(object):
         def parse_binary_op(op):
             """Parse a binary operator in a nested query list."""
             index = nest.index(op)
+            if index == 0 or index == len(nest) - 1:
+                err = "Invalid query: '%s' given without argument."
+                raise QueryParseException(err % BinaryOp.OPS[op])
             left = self._parse_nest(nest[:index])
             right = self._parse_nest(nest[index + 1:])
             return BinaryOp(left, op, right)
@@ -222,6 +229,9 @@ class _QueryParser(object):
             return parse_binary_op(BinaryOp.AND)
         elif UnaryOp.NOT in nest:
             index = nest.index(UnaryOp.NOT)
+            if index == len(nest) - 1:
+                err = "Invalid query: '%s' given without argument."
+                raise QueryParseException(err % UnaryOp.OPS[UnaryOp.NOT])
             right = UnaryOp(UnaryOp.NOT, self._parse_nest(nest[index + 1:]))
             if index > 0:
                 left = self._parse_nest(nest[:index])

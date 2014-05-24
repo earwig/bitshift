@@ -15,6 +15,15 @@ class _Node(object):
         """Return a string sort key for the node."""
         return ""
 
+    def parameterize(self, tables):
+        """Parameterize the node.
+
+        Returns a 4-tuple of (conditional string, parameter list, rank list,
+        should-we-rank boolean). If the rank list is empty, then it is assumed
+        to contain the conditional string.
+        """
+        return "", [], [], False
+
 
 class _Literal(object):
     """Represents a literal component of a search query, present at the leaves.
@@ -75,6 +84,20 @@ class Text(_Node):
     def sortkey(self):
         return self.text.sortkey()
 
+    def parameterize(self, tables):
+        tables |= {"code", "symbols"}
+        if isinstance(self.text, Regex):
+            ranks = ["(codelet_name REGEXP ?)", "(symbol_name REGEXP ?)",
+                     "(code_code REGEXP ?)"]
+            text = self.text.regex
+        else:
+            ranks = ["(MATCH(codelet_name) AGAINST (? IN BOOLEAN MODE))",
+                     "(MATCH(code_code) AGAINST (? IN BOOLEAN MODE))",
+                     "(symbol_name = ?)"]
+            text = self.text.string
+        cond = "(" + " OR ".join(ranks) + ")"
+        return cond, [text] * 3, ranks, True
+
 
 class Language(_Node):
     """Represents a language node.
@@ -94,6 +117,10 @@ class Language(_Node):
     def sortkey(self):
         return LANGS[self.lang]
 
+    def parameterize(self, tables):
+        tables |= {"code"}
+        return "(code_lang = ?)", [self.lang], [], False
+
 
 class Author(_Node):
     """Represents a author node.
@@ -112,6 +139,13 @@ class Author(_Node):
 
     def sortkey(self):
         return self.name.sortkey()
+
+    def parameterize(self, tables):
+        tables |= {"authors"}
+        if isinstance(self.name, Regex):
+            return "(author_name REGEXP ?)", [self.name.regex], [], False
+        cond = "(MATCH(author_name) AGAINST (? IN BOOLEAN MODE))"
+        return cond, [self.name.string], [], True
 
 
 class Date(_Node):
@@ -144,38 +178,59 @@ class Date(_Node):
     def sortkey(self):
         return self.date.strftime("%Y%m%d%H%M%S")
 
+    def parameterize(self, tables):
+        column = {self.CREATE: "codelet_date_created",
+                  self.MODIFY: "codelet_date_modified"}[self.type]
+        op = {self.BEFORE: "<=", self.AFTER: ">="}[self.relation]
+        return "(" + column + " " + op + " ?)", [self.date], [], False
+
 
 class Symbol(_Node):
     """Represents a symbol node.
 
     Searches in symbol_type and symbol_name.
     """
-    ALL = 0
-    FUNCTION = 1
-    CLASS = 2
-    VARIABLE = 3
+    ALL = -1
+    FUNCTION = 0
+    CLASS = 1
+    VARIABLE = 2
+    TYPES = {FUNCTION: "FUNCTION", CLASS: "CLASS", VARIABLE: "VARIABLE"}
+    TYPES_INV = ["functions", "classes", "variables"]
 
     def __init__(self, type_, name):
         """
         :type type_: int (``ALL``, ``FUNCTION``, ``CLASS``, etc.)
-        :type name: :py:class:`.Literal`
+        :type name: :py:class:`._Literal`
         """
         self.type = type_
         self.name = name
 
     def __repr__(self):
-        types = {self.ALL: "ALL", self.FUNCTION: "FUNCTION",
-                 self.CLASS: "CLASS", self.VARIABLE: "VARIABLE"}
-        return "Symbol({0}, {1})".format(types[self.type], self.name)
+        type_ = self.TYPES.get(self.type, "ALL")
+        return "Symbol({0}, {1})".format(type_, self.name)
 
     def sortkey(self):
         return self.name.sortkey()
+
+    def parameterize(self, tables):
+        tables |= {"code", "symbols"}
+        if isinstance(self.name, Regex):
+            cond, name = "symbol_name REGEXP ?", self.name.regex
+        else:
+            cond, name = "symbol_name = ?", self.name.string
+            if self.type == self.ALL:
+                types = ", ".join(str(type_) for type_ in self.TYPES)
+                cond += " AND symbol_type IN (%s)" % types
+        if self.type != self.ALL:
+            cond += " AND symbol_type = %d" % self.type
+        return "(" + cond + ")", [name], [], False
 
 
 class BinaryOp(_Node):
     """Represents a relationship between two nodes: ``and``, ``or``."""
     AND = object()
     OR = object()
+    OPS = {AND: "AND", OR: "OR"}
 
     def __init__(self, left, op, right):
         self.left = left
@@ -183,25 +238,39 @@ class BinaryOp(_Node):
         self.right = right
 
     def __repr__(self):
-        ops = {self.AND: "AND", self.OR: "OR"}
         tmpl = "BinaryOp({0}, {1}, {2})"
-        return tmpl.format(self.left, ops[self.op], self.right)
+        return tmpl.format(self.left, self.OPS[self.op], self.right)
 
     def sortkey(self):
         return self.left.sortkey() + self.right.sortkey()
+
+    def parameterize(self, tables):
+        lcond, largs, lranks, need_lranks = self.left.parameterize(tables)
+        rcond, rargs, rranks, need_rranks = self.right.parameterize(tables)
+        lranks, rranks = lranks or [lcond], rranks or [rcond]
+        op = self.OPS[self.op]
+        cond = "(" + lcond  + " " + op + " " + rcond + ")"
+        need_ranks = need_lranks or need_rranks or self.op == self.OR
+        return cond, largs + rargs, lranks + rranks, need_ranks
 
 
 class UnaryOp(_Node):
     """Represents a transformation applied to one node: ``not``."""
     NOT = object()
+    OPS = {NOT: "NOT"}
 
     def __init__(self, op, node):
         self.op = op
         self.node = node
 
     def __repr__(self):
-        ops = {self.NOT: "NOT"}
-        return "UnaryOp({0}, {1})".format(ops[self.op], self.node)
+        return "UnaryOp({0}, {1})".format(self.OPS[self.op], self.node)
 
     def sortkey(self):
         return self.node.sortkey()
+
+    def parameterize(self, tables):
+        cond, args, ranks, need_ranks = self.node.parameterize(tables)
+        new_cond = "(" + self.OPS[self.op] + " " + cond + ")"
+        ranks = ranks or [cond]
+        return new_cond, args, ranks, need_ranks

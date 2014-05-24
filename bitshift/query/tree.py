@@ -1,5 +1,12 @@
 __all__ = ["Tree"]
 
+QUERY_TEMPLATE = """SELECT codelet_id, (codelet_rank%s) AS score
+FROM codelets %s
+WHERE %s
+GROUP BY codelet_id
+ORDER BY score DESC
+LIMIT %d OFFSET %d""".replace("\n", " ")
+
 class Tree(object):
     """Represents a query tree."""
 
@@ -8,6 +15,11 @@ class Tree(object):
 
     def __repr__(self):
         return "Tree({0})".format(self._root)
+
+    @property
+    def root(self):
+        """The root node of the tree."""
+        return self._root
 
     def sortkey(self):
         """Return a string sort key for the query tree."""
@@ -20,3 +32,38 @@ class Tree(object):
         :rtype: str
         """
         return repr(self)
+
+    def build_query(self, page=1, page_size=10):
+        """Convert the query tree into a parameterized SQL SELECT statement.
+
+        :param page: The page number to get results for.
+        :type page: int
+        :param page_size: The number of results per page.
+        :type page_size: int
+
+        :return: SQL query data.
+        :rtype: 2-tuple of (SQL statement string, query parameter tuple)
+        """
+        def get_table_joins(tables):
+            data = [
+                ("code", "codelet_code_id", "code_id"),
+                ("authors", "author_codelet", "codelet_id"),
+                ("symbols", "symbol_code", "code_id")
+            ]
+            tmpl = "INNER JOIN %s ON %s = %s"
+            for args in data:
+                if args[0] in tables:
+                    yield tmpl % args
+
+        tables = set()
+        cond, arglist, ranks, need_ranks = self._root.parameterize(tables)
+        ranks = ranks or [cond]
+        if need_ranks:
+            score = " + ((%s) / %d)" % (" + ".join(ranks), len(ranks))
+        else:
+            score = ""
+        joins = " ".join(get_table_joins(tables))
+        offset = (page - 1) * page_size
+
+        query = QUERY_TEMPLATE % (score, joins, cond, page_size, offset)
+        return query, tuple(arglist * 2 if need_ranks else arglist)
