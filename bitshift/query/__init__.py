@@ -231,7 +231,7 @@ class _QueryParser(object):
             index = nest.index(UnaryOp.NOT)
             if index == len(nest) - 1:
                 err = "Invalid query: '%s' given without argument."
-                raise QueryParseException(err % UnaryOp.OPS[op])
+                raise QueryParseException(err % UnaryOp.OPS[UnaryOp.NOT])
             right = UnaryOp(UnaryOp.NOT, self._parse_nest(nest[index + 1:]))
             if index > 0:
                 left = self._parse_nest(nest[:index])

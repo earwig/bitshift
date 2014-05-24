@@ -190,11 +190,12 @@ class Symbol(_Node):
 
     Searches in symbol_type and symbol_name.
     """
-    ALL = 0
-    FUNCTION = 1
-    CLASS = 2
-    VARIABLE = 3
+    ALL = -1
+    FUNCTION = 0
+    CLASS = 1
+    VARIABLE = 2
     TYPES = {FUNCTION: "FUNCTION", CLASS: "CLASS", VARIABLE: "VARIABLE"}
+    TYPES_INV = ["functions", "classes", "variables"]
 
     def __init__(self, type_, name):
         """
