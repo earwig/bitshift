@@ -44,6 +44,7 @@ var testCodelet = {
                     [17, -1, 17, -1] ]]
         ]
     },
+    'origin': ['GitHub', 'https://github.com', ''],
     'authors': ['sevko', 'earwig'],
     'html_code': codeExample
 };
@@ -172,12 +173,9 @@ function createResult(codelet) {
     authors.id = 'authors';
 
     //Add the bulk of the html
-    var hostUrl = codelet.code_url.match(/htt(p|ps):\/\/\w+\.\w+/)[0],
-        hostName = hostUrl.split('://')[1].split('.')[0];
-
     title.innerHTML = 'File <a href="' + codelet.code_url + '">'
                       + codelet.filename + '</a>';
-    site.innerHTML = 'on <a href="' + hostUrl + '">' + hostName +'</a>';
+    site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
     dateModified.innerHTML = 'Last modified ' + codelet.date_modified;
     // Needs to be changed from int to string on the server
     language.innerHTML = codelet.language;
@@ -205,7 +203,6 @@ function createResult(codelet) {
 
     displayInfo.appendChild(title);
     displayInfo.appendChild(site);
-    displayInfo.appendChild(dateModified);
 
     hiddenInfo.appendChild(dateCreated);
     hiddenInfo.appendChild(language);
