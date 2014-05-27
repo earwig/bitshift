@@ -104,8 +104,22 @@ div#results
     width: 80%
 
     /* TODO:
-        1) On the side
-            - add way to cycle through hits in the code.*/
+        1) Sidebar
+            - Add way to cycle through hits in the code.
+        2) Hidden info
+            - Use effect to make it transition into view.
+            - Add date modified.
+            - Get rid of symbols matches.
+            - Don't use monospace.
+            - Add links for authors.
+            - Cross out search terms based on what's in the codelet.
+        3) Header
+            - Remove date modified.
+            - Make the title bigger.
+            - Add an icon for the website.
+            - Change the spacing.
+        4) Code body
+            - Add highlighting.*/
     div.result
         width: $resultWidth
         height: 200px
@@ -126,8 +140,8 @@ div#results
                 text-transform: capitalize
 
             #date-modified
-                font-family: monospace
-                color: #333
+                font-style: italic
+                color: #777
                 display: block
 
         table
@@ -168,6 +182,7 @@ div#results
                     width: $hiddenInfoWidth
                     text-align: center
                     font-size: 1.2em
+                    font-family: monospace
 
                     #date-created
                         display: block
