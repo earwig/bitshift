@@ -9,7 +9,7 @@ $minSearchFieldsWidth: 490px
 $resultWidth: 830px
 $sidebarWidth: 30px
 $codeWidth: 500px
-$hiddenInfoWidth: 300px
+$hiddenInfoWidth: 250px
 
 .ui-datepicker
     font-size: 70%
@@ -291,16 +291,9 @@ div#results
             - Add way to cycle through hits in the code.
         2) Hidden info
             - Use effect to make it transition into view.
-            - Add date modified.
-            - Get rid of symbols matches.
-            - Don't use monospace.
             - Add links for authors.
-            - Cross out search terms based on what's in the codelet.
         3) Header
-            - Remove date modified.
-            - Make the title bigger.
             - Add an icon for the website.
-            - Change the spacing.
         4) Code body
             - Add highlighting.*/
     div.result
@@ -310,6 +303,8 @@ div#results
         margin-bottom: 6%
 
         #display-info
+            font-size: 1.2em
+
             a
                 text-decoration: none
 
@@ -317,15 +312,10 @@ div#results
                     color: orange
 
             #title
-                margin-right: 50px
+                margin-right: 10px
 
             #site
                 text-transform: capitalize
-
-            #date-modified
-                font-style: italic
-                color: #777
-                display: block
 
         table
             border-collapse: collapse
@@ -334,9 +324,6 @@ div#results
 
             tr
                 height: inherit
-
-                td
-                    overflow: scroll
 
                 #sidebar
                     width: $sidebarWidth
@@ -361,33 +348,49 @@ div#results
                             border: none
                             font-family: monospace
 
+                #display-button
+                    width: 25px
+                    background: url(http://icons.iconarchive.com/icons/visualpharm/icons8-metro-style/512/Image-Edition-Tools-Arrow-icon.png)
+                    background-size: 25px 25px
+                    background-repeat: no-repeat
+                    background-position: center
+
+                    &:hover
+                        background-color: #eee
+
+                    &.active
+                        @include vendor(transform, rotateY(180deg))
+
                 #hidden-info
                     width: $hiddenInfoWidth
+                    margin-left: -$hiddenInfoWidth
+                    height: 100%
+                    padding-top: 25px
                     text-align: center
                     font-size: 1.2em
-                    font-family: monospace
+                    line-height: 1.5em
+                    @include vendor(transition, margin-left 0.2s ease-in-out)
+
+                    &.visible
+                        margin-left: 0px
 
                     #date-created
+                        display: inline-block
+
+                    #date-modified
                         display: block
 
                     #language
                         display: inline-block
-                        padding: 3px
-                        @include vendor(border-radius, 3px)
-                        background-color: #eee
                         font-weight: bold
                         color: purple
 
-                        &:hover
-                            background-color: #ddd
-
-                    #matches
-                        span
-                            color: red
-
                     #authors
-                        span
-                            color: red
+                        a
+                            text-decoration: none
+
+                            &:hover
+                                color: orange
 
         &.cascade
             @extend .t3

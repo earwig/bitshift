@@ -35,15 +35,6 @@ var testCodelet = {
     'language': 'Python',
     'date_created': 'May 10, 2014',
     'date_modified': '2 days ago',
-    'symbols': {
-        'vars': [
-            ['app', [ [12, -1, 12, -1] ],
-                    [ [13, -1, 13, -1],
-                    [15, -1, 15, -1],
-                    [16, -1, 16, -1],
-                    [17, -1, 17, -1] ]]
-        ]
-    },
     'origin': ['GitHub', 'https://github.com', ''],
     'authors': ['sevko', 'earwig'],
     'html_code': codeExample
@@ -146,14 +137,15 @@ function createResult(codelet) {
     var displayInfo = document.createElement("div"),
         sidebar = document.createElement("td"),
         codeElt = document.createElement("td"),
-        hiddenInfo = document.createElement("td");
+        displayButton = document.createElement("td"),
+        hiddenInfoContainer = document.createElement("td"),
+        hiddenInfo = document.createElement("div");
     //Level 3
     var title = document.createElement("span"),
         site = document.createElement("span"),
         dateModified = document.createElement("span"),
         language = document.createElement("span"),
         dateCreated = document.createElement("span"),
-        matches = document.createElement("div"),
         authors = document.createElement("div");
 
     //Classes and ID's
@@ -162,6 +154,7 @@ function createResult(codelet) {
     displayInfo.id = 'display-info';
     sidebar.id = 'sidebar';
     codeElt.id = 'code';
+    displayButton.id = 'display-button';
     hiddenInfo.id = 'hidden-info';
 
     title.id = 'title';
@@ -169,7 +162,6 @@ function createResult(codelet) {
     dateModified.id = 'date-modified';
     language.id = 'language';
     dateCreated.id = 'date-created';
-    matches.id = 'matches';
     authors.id = 'authors';
 
     //Add the bulk of the html
@@ -180,34 +172,37 @@ function createResult(codelet) {
     // Needs to be changed from int to string on the server
     language.innerHTML = codelet.language;
     dateCreated.innerHTML = 'Created ' + codelet.date_created;
-    matches.innerHTML = 'Symbol matches: ';
-    $.each(Object.keys(codelet.symbols), function(i, t) {
-        $.each(codelet.symbols[t], function(i, s) {
-            matches.innerHTML += '<span>' + s[0] + '</span>';
-        });
-    });
     authors.innerHTML = 'Authors: ';
     $.each(codelet.authors, function(i, a) {
-        authors.innerHTML += '<span>' + a + '; </span>';
+        authors.innerHTML += '<a href=#>' + a + '; </a>';
     });
 
     sidebar.innerHTML = '';
     // Needs to be processed on the server
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
 
+    //Event binding
+    $(displayButton).click(function(e) {
+        $(hiddenInfo).toggleClass('visible');
+        $(this).toggleClass('active');
+    });
+
     //Finish and append elements to parent elements
+    hiddenInfo.appendChild(dateCreated);
+    hiddenInfo.appendChild(dateModified);
+    hiddenInfo.appendChild(authors);
+    hiddenInfo.appendChild(language);
+
+    hiddenInfoContainer.appendChild(hiddenInfo);
+
     row.appendChild(sidebar);
     row.appendChild(codeElt);
-    row.appendChild(hiddenInfo);
+    row.appendChild(hiddenInfoContainer);
+    row.appendChild(displayButton);
     table.appendChild(row);
 
     displayInfo.appendChild(title);
     displayInfo.appendChild(site);
-
-    hiddenInfo.appendChild(dateCreated);
-    hiddenInfo.appendChild(language);
-    hiddenInfo.appendChild(matches);
-    hiddenInfo.appendChild(authors);
 
     newDiv.appendChild(displayInfo);
     newDiv.appendChild(table);
