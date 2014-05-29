@@ -1,5 +1,5 @@
 import json
+from os import path
 
-with open("bitshift/resources/languages.json") as lang_json:
-    LANGS = [lang.encode("ascii","ignore") for lang in
-            json.load(lang_json)["languages"]]
+with open(path.join(path.dirname(__file__), "languages.json")) as lang_json:
+    LANGS = [lang for lang in json.load(lang_json)["languages"]]

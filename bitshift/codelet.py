@@ -1,3 +1,7 @@
+import json
+
+from .languages import LANGS
+
 __all__ = ["Codelet"]
 
 class Codelet(object):
@@ -65,3 +69,14 @@ class Codelet(object):
         self.rank = rank
         self.symbols = symbols or {}
         self.origin = origin or (None, None, None)
+
+    def serialize(self):
+        """
+        Convert the codelet into a JSON string representation for the frontend.
+
+        :return: The JSON codelet representation.
+        :rtype: str
+        """
+        lang = LANGS[self.language]
+        data = {"name": self.name, "code": self.code, "lang": lang}
+        return json.dumps(data)
