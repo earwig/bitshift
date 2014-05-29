@@ -36,10 +36,75 @@ class _QueryParser(object):
             self._parse_variable: ["v", "var", "variable"]
         }
 
+    def _scan_query(self, query, markers):
+        """Scan a query (sub)string for the first occurance of some markers.
+
+        Returns a 2-tuple of (first_marker_found, marker_index).
+        """
+        def is_escaped(query, index):
+            """Return whether a query marker is backslash-escaped."""
+            return (index > 0 and query[index - 1] == "\\" and
+                    (index < 2 or query[index - 2] != "\\"))
+
+        best_marker, best_index = None, maxsize
+        for marker in markers:
+            index = query.find(marker)
+            if is_escaped(query, index):
+                _, new_index = self._scan_query(query[index + 1:], marker)
+                index += new_index + 1
+            if index >= 0 and index < best_index:
+                best_marker, best_index = marker, index
+        return best_marker, best_index
+
+    def _split_query(self, query, markers, parens=False):
+        """Split a query string into a nested list of query terms.
+
+        Returns a list of terms and/or nested sublists of terms. Each term and
+        sublist is guarenteed to be non-empty.
+        """
+        query = query.lstrip()
+        if not query:
+            return []
+        marker, index = self._scan_query(query, markers)
+        if not marker:
+            return [query]
+        nest = [query[:index]] if index > 0 else []
+        after = query[index + 1:]
+
+        if marker == " ":
+            nest += self._split_query(after, markers, parens)
+        elif marker in ('"', "'"):
+            close_marker, close_index = self._scan_query(after, marker)
+            if close_marker:
+                if close_index > 0:
+                    nest.append(after[:close_index])
+                after = after[close_index + 1:]
+                nest += self._split_query(after, markers, parens)
+            elif after:
+                nest.append(after)
+        elif marker == "(":
+            inner, after = self._split_query(after, markers, True), []
+            if inner and isinstance(inner[-1], tuple):
+                after = self._split_query(inner.pop()[0], markers, parens)
+            if inner:
+                nest.append(inner)
+            if after:
+                nest += after
+        elif marker == ")":
+            if parens:
+                nest.append((after,))
+            else:
+                nest += self._split_query(after, markers)
+        return nest
+
     def _parse_literal(self, literal):
         """Parse part of a search query into a string or regular expression."""
         if literal.startswith(("r:", "re:", "regex:", "regexp:")):
-            return Regex(literal.split(":", 1)[1])
+            arg = literal.split(":", 1)[1]
+            if not arg:
+                err = 'Incomplete query term: "%s"' % literal
+                raise QueryParseException(err)
+            return Regex(arg)
         return String(literal)
 
     def _parse_language(self, term):
@@ -98,21 +163,29 @@ class _QueryParser(object):
         """Parse part of a query into a date created node and return it."""
         return self._parse_date(term, Date.CREATE)
 
-    def _parse_symbol(self, term):
+    def _parse_symbol(self, term, stype=Symbol.ALL):
         """Parse part of a query into a symbol node and return it."""
-        return Symbol(Symbol.ALL, self._parse_literal(term))
+        literal = self._parse_literal(term)
+        if isinstance(literal, String):
+            make_symbol = lambda lit: Symbol(stype, String(lit))
+            symbols = self._split_query(literal.string, " \"'")
+            node = make_symbol(symbols.pop())
+            while symbols:
+                node = BinaryOp(make_symbol(symbols.pop()), BinaryOp.OR, node)
+            return node
+        return Symbol(stype, literal)
 
     def _parse_function(self, term):
         """Parse part of a query into a function node and return it."""
-        return Symbol(Symbol.FUNCTION, self._parse_literal(term))
+        return self._parse_symbol(term, Symbol.FUNCTION)
 
     def _parse_class(self, term):
         """Parse part of a query into a class node and return it."""
-        return Symbol(Symbol.CLASS, self._parse_literal(term))
+        return self._parse_symbol(term, Symbol.CLASS)
 
     def _parse_variable(self, term):
         """Parse part of a query into a variable node and return it."""
-        return Symbol(Symbol.VARIABLE, self._parse_literal(term))
+        return self._parse_symbol(term, Symbol.VARIABLE)
 
     def _parse_term(self, term):
         """Parse a query term into a tree node and return it."""
@@ -133,67 +206,6 @@ class _QueryParser(object):
                         return UnaryOp(UnaryOp.NOT, meth(arg))
                     return meth(arg)
         return Text(self._parse_literal(term))
-
-    def _scan_query(self, query, markers):
-        """Scan a query (sub)string for the first occurance of some markers.
-
-        Returns a 2-tuple of (first_marker_found, marker_index).
-        """
-        def is_escaped(query, index):
-            """Return whether a query marker is backslash-escaped."""
-            return (index > 0 and query[index - 1] == "\\" and
-                    (index < 2 or query[index - 2] != "\\"))
-
-        best_marker, best_index = None, maxsize
-        for marker in markers:
-            index = query.find(marker)
-            if is_escaped(query, index):
-                _, new_index = self._scan_query(query[index + 1:], marker)
-                index += new_index + 1
-            if index >= 0 and index < best_index:
-                best_marker, best_index = marker, index
-        return best_marker, best_index
-
-    def _split_query(self, query, parens=False):
-        """Split a query string into a nested list of query terms.
-
-        Returns a list of terms and/or nested sublists of terms. Each term and
-        sublist is guarenteed to be non-empty.
-        """
-        query = query.lstrip()
-        if not query:
-            return []
-        marker, index = self._scan_query(query, " \"'()")
-        if not marker:
-            return [query]
-        nest = [query[:index]] if index > 0 else []
-        after = query[index + 1:]
-
-        if marker == " ":
-            nest += self._split_query(after, parens)
-        elif marker in ('"', "'"):
-            close_marker, close_index = self._scan_query(after, marker)
-            if close_marker:
-                if close_index > 0:
-                    nest.append(after[:close_index])
-                after = after[close_index + 1:]
-                nest += self._split_query(after, parens)
-            elif after:
-                nest.append(after)
-        elif marker == "(":
-            inner, after = self._split_query(after, True), []
-            if inner and isinstance(inner[-1], tuple):
-                after = self._split_query(inner.pop()[0], parens)
-            if inner:
-                nest.append(inner)
-            if after:
-                nest += after
-        elif marker == ")":
-            if parens:
-                nest.append((after,))
-            else:
-                nest += self._split_query(after)
-        return nest
 
     def _parse_boolean_operators(self, nest):
         """Parse boolean operators in a nested query list."""
@@ -271,7 +283,7 @@ class _QueryParser(object):
 
         :raises: :py:class:`.QueryParseException`
         """
-        nest = self._split_query(query.rstrip())
+        nest = self._split_query(query.rstrip(), " \"'()")
         if not nest:
             raise QueryParseException('Empty query: "%s"' % query)
         self._parse_boolean_operators(nest)
