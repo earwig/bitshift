@@ -174,7 +174,7 @@ function createResult(codelet) {
     dateCreated.innerHTML = 'Created ' + codelet.date_created;
     authors.innerHTML = 'Authors: ';
     $.each(codelet.authors, function(i, a) {
-        authors.innerHTML += '<a href=#>' + a + '; </a>';
+        authors.innerHTML += '<a href=#>' + a + ' </a>';
     });
 
     sidebar.innerHTML = '';

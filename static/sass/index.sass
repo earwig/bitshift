@@ -290,10 +290,11 @@ div#results
         1) Sidebar
             - Add way to cycle through hits in the code.
         2) Hidden info
-            - Use effect to make it transition into view.
             - Add links for authors.
+            - Remove language field.
         3) Header
             - Add an icon for the website.
+            - Add language tag.
         4) Code body
             - Add highlighting.*/
     div.result
@@ -319,7 +320,7 @@ div#results
 
         table
             border-collapse: collapse
-            border: 1px solid #ccc
+            border: 1px solid $baseColor3
             height: inherit
 
             tr
@@ -328,13 +329,13 @@ div#results
                 #sidebar
                     width: $sidebarWidth
                     background-color: #eee
-                    border-right: 1px solid #ccc
+                    border-right: 1px solid $baseColor3
                     height: inherit
 
                 #code
                     width: $codeWidth
                     height: inherit
-                    border-right: 1px solid #ccc
+                    border-right: 1px solid $baseColor3
 
                     #tablecontainer
                         overflow: scroll
@@ -365,9 +366,9 @@ div#results
                     width: $hiddenInfoWidth
                     margin-left: -$hiddenInfoWidth
                     height: 100%
-                    padding-top: 25px
+                    padding-top: 50px
                     text-align: center
-                    font-size: 1.2em
+                    font-size: 1em
                     line-height: 1.5em
                     @include vendor(transition, margin-left 0.2s ease-in-out)
 
@@ -383,7 +384,7 @@ div#results
                     #language
                         display: inline-block
                         font-weight: bold
-                        color: purple
+                        color: orange
 
                     #authors
                         a
