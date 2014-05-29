@@ -77,6 +77,10 @@ class Codelet(object):
         :return: The JSON codelet representation.
         :rtype: str
         """
-        lang = LANGS[self.language]
-        data = {"name": self.name, "code": self.code, "lang": lang}
-        return json.dumps(data)
+        return json.dumps({
+            "name": self.name, "code": self.code, "lang": LANGS[self.language],
+            "authors": self.authors, "url": self.code_url,
+            "created": self.date_created.isoformat(),
+            "modified": self.date_modified.isoformat(),
+            "symbols": self.symbols, "origin": self.origin
+        })
