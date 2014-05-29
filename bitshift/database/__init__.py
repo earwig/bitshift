@@ -63,7 +63,7 @@ class Database(object):
         query, args = tree.build_query(page)
         cursor.execute(query, args)
         ids = [id for id, _ in cursor.fetchall()]
-        num_results = 0  # TODO: NotImplemented
+        num_results = len(ids)  # TODO: NotImplemented
         return ids, num_results
 
     def _get_authors_for_codelet(self, cursor, codelet_id):
