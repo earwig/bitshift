@@ -7,6 +7,7 @@ import bs4, datetime, logging, os, Queue, re, shutil, string, subprocess, time,\
         threading
 
 from ..database import Database
+from ..parser import parse
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp/bitshift"
@@ -73,6 +74,7 @@ class GitIndexer(threading.Thread):
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
         self.git_cloner = _GitCloner(clone_queue, self.index_queue)
         self.git_cloner.start()
+        self.database = Database()
         self._logger = logging.getLogger("%s.%s" %
                 (__name__, self.__class__.__name__))
         self._logger.info("Starting.")
@@ -158,6 +160,8 @@ class GitIndexer(threading.Thread):
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"],
                             repo.rank)
+            parse(codelet)
+            self.database.insert(codelet)
 
     def _generate_file_url(self, filename, repo_url, framework_name):
         """
