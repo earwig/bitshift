@@ -312,8 +312,11 @@ div#results
             height: inherit
 
             tr
-
                 height: inherit
+
+        &.cascade
+            @extend .t3
+
 div#display-info
     font-size: 1.3em
     padding: 5px 0px 5px 5px
@@ -404,6 +407,3 @@ div#hidden-info
 
             &:hover
                 color: orange
-
-        &.cascade
-            @extend .t3
