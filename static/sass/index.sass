@@ -6,9 +6,9 @@
 @import variables
 
 $minSearchFieldsWidth: 490px
-$resultWidth: 830px
+$resultWidth: 1000px
 $sidebarWidth: 30px
-$codeWidth: 500px
+$codeWidth: 650px
 $hiddenInfoWidth: 250px
 
 .ui-datepicker
@@ -296,27 +296,15 @@ div#results
             - Add an icon for the website.
             - Add language tag.
         4) Code body
-            - Add highlighting.*/
+            - Add highlighting.
+        5) Display button
+            - unicode glyph */
     div.result
         width: $resultWidth
         height: 200px
         margin-top: 2%
-        margin-bottom: 6%
+        margin-bottom: 10%
 
-        #display-info
-            font-size: 1.2em
-
-            a
-                text-decoration: none
-
-                &:hover
-                    color: orange
-
-            #title
-                margin-right: 10px
-
-            #site
-                text-transform: capitalize
 
         table
             border-collapse: collapse
@@ -324,74 +312,98 @@ div#results
             height: inherit
 
             tr
+
                 height: inherit
+div#display-info
+    font-size: 1.3em
+    padding: 5px 0px 5px 5px
+    border: 1px dotted $baseColor3
+    border-bottom: none
+    width: 400px
 
-                #sidebar
-                    width: $sidebarWidth
-                    background-color: #eee
-                    border-right: 1px solid $baseColor3
-                    height: inherit
+    a
+        text-decoration: none
 
-                #code
-                    width: $codeWidth
-                    height: inherit
-                    border-right: 1px solid $baseColor3
+        &:hover
+            color: orange
 
-                    #tablecontainer
-                        overflow: scroll
-                        width: 100%
-                        height: inherit
-                        background-color: #49483e
+    #title
+        margin-right: 10px
 
-                        table
-                            table-layout:fixed
-                            border-collapse: collapse
-                            border: none
-                            font-family: monospace
+    #site
+        text-transform: capitalize
 
-                #display-button
-                    width: 25px
-                    background: url(http://icons.iconarchive.com/icons/visualpharm/icons8-metro-style/512/Image-Edition-Tools-Arrow-icon.png)
-                    background-size: 25px 25px
-                    background-repeat: no-repeat
-                    background-position: center
+    #language
+        font-size: 0.8em
+        font-weight: bold
+        margin-left: 100px
+        padding: 3px
+        @include vendor(border-radius, 2px)
+        background: #ddd
+        color: orange
 
-                    &:hover
-                        background-color: #eee
+td#sidebar
+    width: $sidebarWidth
+    background-color: #eee
+    border-right: 1px solid $baseColor3
+    height: inherit
 
-                    &.active
-                        @include vendor(transform, rotateY(180deg))
+td#code
+    width: $codeWidth
+    height: inherit
+    border-right: 1px solid $baseColor3
+    @include vendor(transition, width 0.2s ease-in-out)
 
-                #hidden-info
-                    width: $hiddenInfoWidth
-                    margin-left: -$hiddenInfoWidth
-                    height: 100%
-                    padding-top: 50px
-                    text-align: center
-                    font-size: 1em
-                    line-height: 1.5em
-                    @include vendor(transition, margin-left 0.2s ease-in-out)
+    .display-all &
+        width: 500px
 
-                    &.visible
-                        margin-left: 0px
+    #tablecontainer
+        overflow: scroll
+        width: 100%
+        height: inherit
+        background-color: #49483e
 
-                    #date-created
-                        display: inline-block
+        table
+            table-layout:fixed
+            border-collapse: collapse
+            border: none
+            font-family: monospace
 
-                    #date-modified
-                        display: block
+td#display-button
+    width: 25px
+    background: url(https://cdn1.iconfinder.com/data/icons/windows-8-metro-style/512/View_Details-.png)
+    background-size: 25px 25px
+    background-repeat: no-repeat
+    background-position: center
 
-                    #language
-                        display: inline-block
-                        font-weight: bold
-                        color: orange
+    .display-all &
+        @include vendor(transform, rotateY(180deg))
 
-                    #authors
-                        a
-                            text-decoration: none
+div#hidden-info
+    width: $hiddenInfoWidth
+    margin-left: -$hiddenInfoWidth
+    height: 100%
+    padding-top: 40px
+    font-size: 1.2em
+    line-height: 1.5em
+    @include vendor(transition, margin-left 0.2s ease-in-out)
 
-                            &:hover
-                                color: orange
+    .display-all &
+        margin-left: 0px
+        padding-left: 20px
+
+    #date-created
+        display: inline-block
+
+    #date-modified
+        display: block
+
+    #authors
+        a
+            text-decoration: none
+
+            &:hover
+                color: orange
 
         &.cascade
             @extend .t3

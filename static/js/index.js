@@ -32,7 +32,7 @@ searchBar.onkeyup = typingTimer;
 var testCodelet = {
     'code_url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
     'filename': 'app.py',
-    'language': 'Python',
+    'language': 'python',
     'date_created': 'May 10, 2014',
     'date_modified': '2 days ago',
     'origin': ['GitHub', 'https://github.com', ''],
@@ -168,9 +168,9 @@ function createResult(codelet) {
     title.innerHTML = 'File <a href="' + codelet.code_url + '">'
                       + codelet.filename + '</a>';
     site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
+    language.innerHTML = codelet.language;
     dateModified.innerHTML = 'Last modified ' + codelet.date_modified;
     // Needs to be changed from int to string on the server
-    language.innerHTML = codelet.language;
     dateCreated.innerHTML = 'Created ' + codelet.date_created;
     authors.innerHTML = 'Authors: ';
     $.each(codelet.authors, function(i, a) {
@@ -182,16 +182,20 @@ function createResult(codelet) {
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
 
     //Event binding
-    $(displayButton).click(function(e) {
-        $(hiddenInfo).toggleClass('visible');
-        $(this).toggleClass('active');
+    $(displayButton).hover(function(e) {
+        $(row).addClass('display-all');
+    });
+
+    $(newDiv).on('transitionend', function(e) {
+        $(newDiv).one('mouseleave', function(e) {
+            $(row).removeClass('display-all');
+        });
     });
 
     //Finish and append elements to parent elements
     hiddenInfo.appendChild(dateCreated);
     hiddenInfo.appendChild(dateModified);
     hiddenInfo.appendChild(authors);
-    hiddenInfo.appendChild(language);
 
     hiddenInfoContainer.appendChild(hiddenInfo);
 
@@ -203,6 +207,7 @@ function createResult(codelet) {
 
     displayInfo.appendChild(title);
     displayInfo.appendChild(site);
+    displayInfo.appendChild(language);
 
     newDiv.appendChild(displayInfo);
     newDiv.appendChild(table);
