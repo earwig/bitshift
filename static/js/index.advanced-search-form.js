@@ -67,7 +67,7 @@ var searchGroups = $("div#search-groups");
         })
     });
 
-    // Add an input field to the currently selected search group.
+    // Toggle the presence of an input field.
     $("div#sidebar input[type=checkbox]").click(function(){
         var fieldId = $(this).prop("id");
         if($(this).is(":checked")){
@@ -76,8 +76,12 @@ var searchGroups = $("div#search-groups");
             if(fieldId.slice(0, 4) == "date")
                 $(".search-group#selected ." + fieldId).datepicker();
         }
-        else
-            $("div.search-group#selected #" + fieldId).remove()
+        else {
+            if($(".search-group#selected").children("div").length > 1)
+                $(".search-group#selected #" + fieldId).remove()
+            else
+                $(this).prop("checked", true);
+        }
     });
 
     var previousAdvancedQuery = "";
@@ -140,8 +144,5 @@ function assembleQuery(){
 function genFieldQueryString(field, hasRegex){
     var terms = field.value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
     var query = field.getAttribute("name") + ":" + (hasRegex?"re:":"") + terms;
-    if(field.value.indexOf('"') >= 0){
-        return '"' + query + '"';
-    }
-    return query;
+    return '"' + query + '"';
 }
