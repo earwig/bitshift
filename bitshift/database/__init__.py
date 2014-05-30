@@ -9,6 +9,9 @@ import mmh3
 import oursql
 
 from .migration import VERSION, MIGRATIONS
+from ..codelet import Codelet
+from ..query.nodes import (String, Regex, Text, Language, Author, Date, Symbol,
+                           BinaryOp, UnaryOp)
 
 __all__ = ["Database"]
 
@@ -51,9 +54,71 @@ class Database(object):
                           "Run `python -m bitshift.database.migration`."
                     raise RuntimeError(err)
 
+    def _search_with_query(self, cursor, tree, page):
+        """Execute an SQL query based on a query tree, and return results.
+
+        The returned data is a 2-tuple of (list of codelet IDs, estimated
+        number of total results).
+        """
+        query, args = tree.build_query(page)
+        cursor.execute(query, args)
+        ids = [id for id, _ in cursor.fetchall()]
+        num_results = 0  # TODO: NotImplemented
+        return ids, num_results
+
+    def _get_authors_for_codelet(self, cursor, codelet_id):
+        """Return a list of authors for a given codelet."""
+        query = """SELECT author_name, author_url
+                   FROM authors
+                   WHERE author_codelet = ?"""
+
+        cursor.execute(query, (codelet_id,))
+        return cursor.fetchall()
+
+    def _get_symbols_for_code(self, cursor, code_id):
+        """Return a list of symbols for a given codelet."""
+        query = """SELECT symbol_type, symbol_name, sloc_type, sloc_row,
+                          sloc_col, sloc_end_row, sloc_end_col
+                   FROM symbols
+                   INNER JOIN symbol_locations ON sloc_symbol = symbol_id
+                   WHERE symbol_code = ?"""
+
+        symbols = {type_: {} for type_ in Symbol.TYPES_INV}
+        cursor.execute(query, (code_id,))
+        for type_, name, loc_type, row, col, erow, ecol in cursor.fetchall():
+            sdict = symbols[Symbol.TYPES_INV[type_]]
+            if name not in sdict:
+                sdict[name] = ((), ())
+            sdict[name][loc_type].append((row, col, erow, ecol))
+        for type_, sdict in symbols.items():
+            symbols[type_] = [(n, d, u) for n, (d, u) in sdict.iteritems()]
+        return symbols
+
     def _get_codelets_from_ids(self, cursor, ids):
         """Return a list of Codelet objects given a list of codelet IDs."""
-        raise NotImplementedError()  ## TODO
+        query = """SELECT *
+                   FROM codelets
+                   INNER JOIN code ON codelet_code_id = code_id
+                   INNER JOIN origins ON codelet_origin = origin_id
+                   WHERE codelet_id = ?"""
+
+        with self._conn.cursor(oursql.DictCursor) as dict_cursor:
+            dict_cursor.executemany(query, [(id,) for id in ids])
+            for row in dict_cursor.fetchone():
+                codelet_id = row["codelet_id"]
+                if row["origin_url_base"]:
+                    url = row["codelet_url"]
+                else:
+                    url = row["origin_url_base"] + row["codelet_url"]
+                origin = (row["origin_name"], row["origin_url"],
+                          row["origin_image"])
+                authors = self._get_authors_for_codelet(cursor, codelet_id)
+                symbols = self._get_symbols_for_code(cursor, row["code_id"])
+                yield Codelet(
+                    row["codelet_name"], row["code_code"], None,
+                    row["code_lang"], authors, url,
+                    row["codelet_date_created"], row["codelet_date_modified"],
+                    row["codelet_rank"], symbols, origin)
 
     def _decompose_url(self, cursor, url):
         """Break up a URL into an origin (with a URL base) and a suffix."""
@@ -68,13 +133,12 @@ class Database(object):
 
     def _insert_symbols(self, cursor, code_id, sym_type, symbols):
         """Insert a list of symbols of a given type into the database."""
-        sym_types = ["functions", "classes", "variables"]
         query1 = "INSERT INTO symbols VALUES (DEFAULT, ?, ?, ?)"
         query2 = """INSERT INTO symbol_locations VALUES
                     (DEFAULT, ?, ?, ?, ?, ?, ?)"""
 
         for (name, decls, uses) in symbols:
-            cursor.execute(query1, (code_id, sym_types.index(sym_type), name))
+            cursor.execute(query1, (code_id, Symbol.TYPES_INV[sym_type], name))
             sym_id = cursor.lastrowid
             params = ([tuple([sym_id, 0] + list(loc)) for loc in decls] +
                       [tuple([sym_id, 1] + list(loc)) for loc in uses])
@@ -112,16 +176,14 @@ class Database(object):
                 num_results = results[0][1] * (10 ** results[0][2])
                 ids = [res[0] for res in results]
             else:  # Cache miss
-                ## TODO: build and execute search query
-                results = cursor.fetchall()
-                ids = NotImplemented  ## TODO: extract ids from results
-                num_results = NotImplemented  ## TODO: num if results else 0
+                ids, num_results = self._search_with_query(cursor, query, page)
                 num_exp = max(len(str(num_results)) - 3, 0)
                 num_results = int(round(num_results, -num_exp))
                 num_mnt = num_results / (10 ** num_exp)
                 cursor.execute(query2, (cache_id, num_mnt, num_exp))
                 cursor.executemany(query3, [(cache_id, c_id) for c_id in ids])
-            return (num_results, self._get_codelets_from_ids(cursor, ids))
+            codelet_gen = self._get_codelets_from_ids(cursor, ids)
+            return (num_results, list(codelet_gen))
 
     def insert(self, codelet):
         """

@@ -21,7 +21,7 @@ def _lang(codelet):
 
     if codelet.filename is not None:
         try:
-            return pgl.guess_lexer_for_filename(codelet.filename, '').name
+            return pgl.guess_lexer_for_filename(codelet.filename, codelet.code).name
         except:
             raise UnsupportedFileError('Could not find a lexer for the codelet\'s filename')
 

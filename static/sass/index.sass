@@ -6,6 +6,10 @@
 @import variables
 
 $minSearchFieldsWidth: 490px
+$resultWidth: 1000px
+$sidebarWidth: 30px
+$codeWidth: 650px
+$hiddenInfoWidth: 250px
 
 .ui-datepicker
     font-size: 70%
@@ -282,13 +286,124 @@ div#results
     margin-right: auto
     width: 80%
 
+    /* TODO:
+        1) Sidebar
+            - Add way to cycle through hits in the code.
+        2) Hidden info
+            - Add links for authors.
+            - Remove language field.
+        3) Header
+            - Add an icon for the website.
+            - Add language tag.
+        4) Code body
+            - Add highlighting.
+        5) Display button
+            - unicode glyph */
     div.result
-        background-color: #F8F8F8
+        width: $resultWidth
+        height: 200px
+        margin-top: 2%
         margin-bottom: 10%
-        margin-top: 1%
-        padding: 1%
+
+
+        table
+            border-collapse: collapse
+            border: 1px solid $baseColor3
+            height: inherit
+
+            tr
+                height: inherit
 
         &.cascade
             @extend .t3
 
-            margin-bottom: 0%
+div#display-info
+    font-size: 1.3em
+    padding: 5px 0px 5px 5px
+    border: 1px dotted $baseColor3
+    border-bottom: none
+    width: 400px
+
+    a
+        text-decoration: none
+
+        &:hover
+            color: orange
+
+    #title
+        margin-right: 10px
+
+    #site
+        text-transform: capitalize
+
+    #language
+        font-size: 0.8em
+        font-weight: bold
+        margin-left: 100px
+        padding: 3px
+        @include vendor(border-radius, 2px)
+        background: #ddd
+        color: orange
+
+td#sidebar
+    width: $sidebarWidth
+    background-color: #eee
+    border-right: 1px solid $baseColor3
+    height: inherit
+
+td#code
+    width: $codeWidth
+    height: inherit
+    border-right: 1px solid $baseColor3
+    @include vendor(transition, width 0.2s ease-in-out)
+
+    .display-all &
+        width: 500px
+
+    #tablecontainer
+        overflow: scroll
+        width: 100%
+        height: inherit
+        background-color: #49483e
+
+        table
+            table-layout:fixed
+            border-collapse: collapse
+            border: none
+            font-family: monospace
+
+td#display-button
+    width: 25px
+    background: url(https://cdn1.iconfinder.com/data/icons/windows-8-metro-style/512/View_Details-.png)
+    background-size: 25px 25px
+    background-repeat: no-repeat
+    background-position: center
+
+    .display-all &
+        @include vendor(transform, rotateY(180deg))
+
+div#hidden-info
+    width: $hiddenInfoWidth
+    margin-left: -$hiddenInfoWidth
+    height: 100%
+    padding-top: 40px
+    font-size: 1.2em
+    line-height: 1.5em
+    @include vendor(transition, margin-left 0.2s ease-in-out)
+
+    .display-all &
+        margin-left: 0px
+        padding-left: 20px
+
+    #date-created
+        display: inline-block
+
+    #date-modified
+        display: block
+
+    #authors
+        a
+            text-decoration: none
+
+            &:hover
+                color: orange
