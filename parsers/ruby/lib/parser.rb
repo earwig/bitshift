@@ -3,6 +3,20 @@ require 'ruby_parser'
 require 'sexp_processor'
 
 module Bitshift
+    class Tuple
+        attr_accessor :objects
+
+        def initialize(arr)
+            @objects = arr
+        end
+
+        def inspect
+            s = "("
+            @objects.each {|o| s += "#{o},"}
+            s = s[0..-2] + ')'
+        end
+    end
+
     class Parser
         def initialize(source)
             @source = source
@@ -25,7 +39,7 @@ module Bitshift
         def initialize(offset, tree)
             super()
 
-            module_hash = Hash.new {|hash, key| hash[key] = { assignments: [], uses: [] }}
+            module_hash = Hash.new {|hash, key| hash[key] = { decls: [], uses: [] }}
             class_hash = module_hash.clone
             function_hash = module_hash.clone
             var_hash = module_hash.clone
@@ -50,7 +64,7 @@ module Bitshift
                 break if cur_exp == nil
             end
 
-            pos = [start_ln, -1, end_ln, -1]
+            pos = Tuple.new([start_ln, -1, end_ln, -1])
             return pos
         end
 
@@ -58,7 +72,7 @@ module Bitshift
             pos = Hash.new
             end_ln = start_ln = exp.line - offset
 
-            pos = [start_ln, -1, end_ln, -1]
+            pos = Tuple.new([start_ln, -1, end_ln, -1])
             return pos
         end
 
@@ -66,7 +80,7 @@ module Bitshift
             pos = block_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:modules][name][:assignments] << pos
+            symbols[:modules][name][:decls] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -75,7 +89,7 @@ module Bitshift
             pos = block_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:classes][name][:assignments] << pos
+            symbols[:classes][name][:decls] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -84,7 +98,7 @@ module Bitshift
             pos = block_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:functions][name][:assignments] << pos
+            symbols[:functions][name][:decls] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -103,7 +117,7 @@ module Bitshift
             pos = statement_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:vars][name][:assignments] << pos
+            symbols[:vars][name][:decls] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
@@ -112,14 +126,22 @@ module Bitshift
             pos = statement_position(exp)
             exp.shift
             name = exp.shift
-            symbols[:vars][name][:assignments] << pos
+            symbols[:vars][name][:decls] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
 
         def to_s
-            str = symbols.to_s
-            str = str.gsub(/:(\w*)=>/, '"\1":')
+            new_symbols = Hash.new {|hash, key| hash[key] = []}
+
+            symbols.each do |type, sym_list|
+                sym_list.each do |name, sym|
+                    new_symbols[type.to_s] << Tuple.new(["'#{name}'", sym[:decls], sym[:uses]])
+                end
+            end
+
+            str = new_symbols.to_s
+            str = str.gsub(/=>/, ":")
             return str
         end
     end
