@@ -100,10 +100,7 @@ class GitIndexer(threading.Thread):
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
-            try:
-                self._index_repository(repo)
-            except Exception as excep:
-                self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
+            self._index_repository(repo)
 
     def _index_repository(self, repo):
         """
@@ -121,10 +118,10 @@ class GitIndexer(threading.Thread):
             try:
                 self._insert_repository_codelets(repo)
             except Exception as excep:
-                self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
-
-        if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
-            shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
+                self._logger.exception("Exception raised while indexing:")
+            finally:
+                if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
+                    shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
 
     def _insert_repository_codelets(self, repo):
         """
