@@ -11,15 +11,16 @@ public class JavaSymbols extends Symbols {
     private HashMap<String, HashMap<String, Object>> _classes;
     private HashMap<String, HashMap<String, Object>> _interfaces;
     private HashMap<String, HashMap<String, Object>> _methods;
-    private HashMap<String, HashMap<String, Object>> _fields;
     private HashMap<String, HashMap<String, Object>> _vars;
+
+    private final String assignKey = "\"assignments\"";
+    private final String useKey = "\"uses\"";
 
     public JavaSymbols() {
         _packageName = null;
         _classes = new HashMap<String, HashMap<String, Object>>();
         _interfaces = new HashMap<String, HashMap<String, Object>>();
         _methods = new HashMap<String, HashMap<String, Object>>();
-        _fields = new HashMap<String, HashMap<String, Object>>();
         _vars = new HashMap<String, HashMap<String, Object>>();
     }
 
@@ -34,15 +35,23 @@ public class JavaSymbols extends Symbols {
         HashMap<String, Object> klass = new HashMap<String, Object>();
 
         assignments.add(data.get("coord"));
-        klass.put("assignments", assignments);
-        klass.put("uses", uses);
+        klass.put(assignKey, assignments);
+        klass.put(useKey, uses);
 
         this._classes.put(name, klass);
         return true;
     }
 
     public boolean insertInterfaceDeclaration(String name, HashMap<String, Object> data) {
-        this._interfaces.put(name, data);
+        ArrayList<Object> assignments = new ArrayList<Object>(10);
+        ArrayList<Object> uses = new ArrayList<Object>(10);
+        HashMap<String, Object> klass = new HashMap<String, Object>();
+
+        assignments.add(data.get("coord"));
+        klass.put(assignKey, assignments);
+        klass.put(useKey, uses);
+
+        this._interfaces.put(name, klass);
         return true;
     }
 
@@ -54,13 +63,13 @@ public class JavaSymbols extends Symbols {
             ArrayList<Object> uses = new ArrayList<Object>(10);
 
             assignments.add(data.get("coord"));
-            method.put("assignments", assignments);
-            method.put("uses", uses);
+            method.put(assignKey, assignments);
+            method.put(useKey, uses);
         } else {
-            ArrayList<Object> assignments = (ArrayList<Object>)method.get("assignments");
+            ArrayList<Object> assignments = (ArrayList<Object>)method.get(assignKey);
 
             assignments.add(data.get("coord"));
-            method.put("assignments", assignments);
+            method.put(assignKey, assignments);
         }
 
         this._methods.put(name, method);
@@ -74,21 +83,16 @@ public class JavaSymbols extends Symbols {
             ArrayList<Object> uses = new ArrayList<Object>(10);
 
             uses.add(data.get("coord"));
-            method.put("assignments", assignments);
-            method.put("uses", uses);
+            method.put(assignKey, assignments);
+            method.put(useKey, uses);
         } else {
-            ArrayList<Object> uses = (ArrayList<Object>)method.get("uses");
+            ArrayList<Object> uses = (ArrayList<Object>)method.get(useKey);
 
             uses.add(data.get("coord"));
-            method.put("uses", uses);
+            method.put(useKey, uses);
         }
 
         this._methods.put(name, method);
-        return true;
-    }
-
-    public boolean insertFieldDeclaration(String name, HashMap<String, Object> data) {
-        this._fields.put(name, data);
         return true;
     }
 
@@ -100,13 +104,13 @@ public class JavaSymbols extends Symbols {
             ArrayList<Object> uses = new ArrayList<Object>(10);
 
             assignments.add(data.get("coord"));
-            var.put("assignments", assignments);
-            var.put("uses", uses);
+            var.put(assignKey, assignments);
+            var.put(useKey, uses);
         } else {
-            ArrayList<Object> assignments = (ArrayList<Object>)var.get("assignments");
+            ArrayList<Object> assignments = (ArrayList<Object>)var.get(assignKey);
 
             assignments.add(data.get("coord"));
-            var.put("assignments", assignments);
+            var.put(assignKey, assignments);
         }
 
         this._vars.put(name, var);
@@ -120,13 +124,13 @@ public class JavaSymbols extends Symbols {
             ArrayList<Object> uses = new ArrayList<Object>(10);
 
             uses.add(data.get("coord"));
-            var.put("assignments", assignments);
-            var.put("uses", uses);
+            var.put(assignKey, assignments);
+            var.put(useKey, uses);
         } else {
-            ArrayList<Object> uses = (ArrayList<Object>)var.get("uses");
+            ArrayList<Object> uses = (ArrayList<Object>)var.get(useKey);
 
             uses.add(data.get("coord"));
-            var.put("uses", uses);
+            var.put(useKey, uses);
         }
 
         this._vars.put(name, var);
@@ -135,13 +139,14 @@ public class JavaSymbols extends Symbols {
 
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("classes:" + this._classes + ",");
-        builder.append("interfaces:" + this._interfaces + ",");
-        builder.append("methods:" + this._methods + ",");
-        builder.append("fields:" + this._fields + ",");
-        builder.append("vars:" + this._vars + ",");
+        builder.append("\"classes\":" + this._classes + ",");
+        builder.append("\"interfaces\":" + this._interfaces + ",");
+        builder.append("\"methods\":" + this._methods + ",");
+        builder.append("\"vars\":" + this._vars + ",");
 
-        return "{" + builder.toString() + "}";
+        String s = builder.toString().replaceAll("=", ":");
+        s = s.substring(0, s.length() - 1);
+        return "{" + s + "}";
     }
 }
 

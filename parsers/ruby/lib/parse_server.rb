@@ -14,7 +14,7 @@ end
 
 
 def start_server
-    server = TCPServer.new 5003
+    server = TCPServer.new 5065
 
     loop do
         # Start a new thread for each client accepted
