@@ -22,7 +22,7 @@ public class PackableMemory {
    // The most significant porion of the integer is stored in mem[loc].
    // Bytes are masked out of the integer and stored in the array, working
    // from right(least significant) to left (most significant).
-   void pack(int val, int loc)
+   public void pack(int val, int loc)
    {
       final int MASK = 0xff;
       for (int i = 3; i >= 0; i--)

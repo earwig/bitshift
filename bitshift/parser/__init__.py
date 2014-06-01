@@ -2,13 +2,24 @@ import json
 import sys
 import socket
 import struct
+import subprocess
 
+from os import path
 from pygments import lexers as pgl, util
 
 from ..languages import LANGS
 from .python import parse_py
 
-_all__ = ["parse", "UnsupportedFileError"]
+_all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
+
+PARSER_COMMANDS = [
+        ('Java', ['mvn', '-f',
+            path.join(path.dirname(__file__), "../../parsers/java/pom.xml"),
+            'exec:java', '-Dexec.args="%d"']),
+        ('Ruby', ['rake', '-f',
+            path.join(path.dirname(__file__), "../../parsers/ruby/Rakefile"),
+            "'start_server[%d]'"])
+]
 
 class UnsupportedFileError(Exception):
     pass
@@ -32,6 +43,7 @@ def _lang(codelet):
             lex = pgl.guess_lexer(codelet.code)
     except util.ClassNotFound:
         raise UnsupportedFileError(codelet.filename)
+
     return LANGS.index(lex.name)
 
 def _recv_data(server_socket):
@@ -71,6 +83,22 @@ def _recv_data(server_socket):
     server_socket.close()
     return ''.join(total_data)
 
+def start_parse_servers():
+    """
+    Starts all the parse servers for languages besides python.
+
+    :rtype: list
+    """
+
+    procs = []
+
+    for (lang, cmd) in PARSER_COMMANDS:
+        procs.append(
+                subprocess.Popen(' '.join(cmd) % (5001 + LANGS.index(lang)),
+                    shell=True))
+
+    return procs
+
 def parse(codelet):
     """
     Dispatches the codelet to the correct parser based on its language.
@@ -86,7 +114,7 @@ def parse(codelet):
     lang = _lang(codelet)
     source = codelet.code
     codelet.language = lang
-    server_socket_number = 5000 + lang
+    server_socket_number = 5001 + lang
 
     if lang == LANGS.index('Python'):
         parse_py(codelet)
@@ -97,4 +125,10 @@ def parse(codelet):
         server_socket.send("%d\n%s" % (len(source), source))
 
         symbols = json.loads(_recv_data(server_socket))
+        symbols = {key: [(name, [tuple(loc)
+            for loc in syms[name]['assignments']],
+            [tuple(loc) for loc in syms[name]['uses']])
+            for name in syms.keys()]
+            for key, syms in symbols.iteritems()}
+
         codelet.symbols = symbols

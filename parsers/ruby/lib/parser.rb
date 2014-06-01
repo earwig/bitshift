@@ -25,7 +25,8 @@ module Bitshift
         def initialize(offset, tree)
             super()
 
-            module_hash = Hash.new {|hash, key| hash[key] = { assignments: [], uses: [] }}
+            module_hash = Hash.new {|hash, key|
+                hash[key] = { assignments: [], uses: [] }}
             class_hash = module_hash.clone
             function_hash = module_hash.clone
             var_hash = module_hash.clone
@@ -118,8 +119,18 @@ module Bitshift
         end
 
         def to_s
-            str = symbols.to_s
-            str = str.gsub(/:(\w*)=>/, '"\1":')
+            new_symbols = Hash.new {|hash, key| hash[key] = Hash.new}
+
+            symbols.each do |type, sym_list|
+                sym_list.each do |name, sym|
+                    new_symbols[type.to_s][name.to_s] = {
+                        "assignments" => sym[:assignments],
+                        "uses" => sym[:uses]}
+                end
+            end
+
+            str = new_symbols.to_s
+            str = str.gsub(/=>/, ":")
             return str
         end
     end

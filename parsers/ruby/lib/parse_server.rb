@@ -13,8 +13,9 @@ def pack_int(i)
 end
 
 
-def start_server
-    server = TCPServer.new 5003
+def start_server(port_number)
+    server = TCPServer.new port_number
+    puts "Ruby Server listening on port #{port_number}\n"
 
     loop do
         # Start a new thread for each client accepted
