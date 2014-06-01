@@ -38,7 +38,7 @@ def _lang(codelet):
 
     try:
         if codelet.filename:
-            lex = pgl.get_lexer_for_filename(codelet.filename)
+            lex = pgl.guess_lexer_for_filename(codelet.filename, codelet.code)
         else:
             lex = pgl.guess_lexer(codelet.code)
     except util.ClassNotFound:
