@@ -162,8 +162,11 @@ class GitIndexer(threading.Thread):
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"],
                             repo.rank)
-            parse(codelet)
-            self.database.insert(codelet)
+            try:
+                parse(codelet)
+                self.database.insert(codelet)
+            except UnsupportedFileError as excep:
+                pass
 
     def _generate_file_url(self, filename, repo_url, framework_name):
         """
