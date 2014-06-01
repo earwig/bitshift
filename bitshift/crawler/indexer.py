@@ -121,7 +121,12 @@ class GitIndexer(threading.Thread):
                 self._logger.exception("Exception raised while indexing:")
             finally:
                 if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
-                    shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
+                    if len([obj for obj in os.listdir('.') if
+                            os.path.isdir(obj)]) <= 1:
+                        shutil.rmtree("%s/%s" % (
+                                GIT_CLONE_DIR, repo.name.split("/")[0]))
+                    else:
+                        shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
 
     def _insert_repository_codelets(self, repo):
         """
