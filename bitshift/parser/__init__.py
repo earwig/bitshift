@@ -125,4 +125,11 @@ def parse(codelet):
         server_socket.send("%d\n%s" % (len(source), source))
 
         symbols = json.loads(_recv_data(server_socket))
+        symbols = {key: [(name, [tuple(loc)
+            for loc in syms[name]['assignments']],
+            [tuple(loc) for loc in syms[name]['uses']])
+            for name in syms.keys()]
+            for key, syms in symbols.iteritems()}
+
+        print symbols
         codelet.symbols = symbols
