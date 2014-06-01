@@ -33,10 +33,13 @@ def crawl():
         thread.start()
 
 def _configure_logging():
-    LOG_FILE_DIR = "log"
+    # This isn't ideal, since it means the bitshift python package must be kept
+    # inside the app, but it works for now:
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    log_dir = os.path.join(root, "logs")
 
-    if not os.path.exists(LOG_FILE_DIR):
-        os.mkdir(LOG_FILE_DIR)
+    if not os.path.exists(log_dir):
+        os.mkdir(log_dir)
 
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -46,7 +49,7 @@ def _configure_logging():
             " %(message)s"), datefmt="%y-%m-%d %H:%M:%S")
 
     handler = logging.handlers.TimedRotatingFileHandler(
-            "%s/%s" % (LOG_FILE_DIR, "app.log"), when="H", interval=1,
+            "%s/%s" % (log_dir, "app.log"), when="H", interval=1,
             backupCount=20)
     handler.setFormatter(formatter)
 
