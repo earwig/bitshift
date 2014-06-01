@@ -159,16 +159,17 @@ def parse_py(codelet):
 
     def strip_encoding(lines):
         """Strips the encoding line from a file, which breaks the parser."""
+        it = iter(lines)
         try:
-            first = next(lines)
+            first = next(it)
             if not encoding_re.match(first):
                 yield first
-            second = next(lines)
+            second = next(it)
             if not encoding_re.match(second):
                 yield second
         except StopIteration:
             return
-        for line in lines:
+        for line in it:
             yield line
 
     try:
