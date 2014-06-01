@@ -103,8 +103,9 @@ class Database(object):
                    WHERE codelet_id = ?"""
 
         with self._conn.cursor(oursql.DictCursor) as dict_cursor:
-            dict_cursor.executemany(query, [(id,) for id in ids])
-            for row in dict_cursor.fetchone():
+            for codelet_id in ids:
+                dict_cursor.execute(query, (codelet_id,))
+                row = dict_cursor.fetchall()[0]
                 codelet_id = row["codelet_id"]
                 if row["origin_url_base"]:
                     url = row["codelet_url"]
