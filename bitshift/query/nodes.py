@@ -195,7 +195,7 @@ class Symbol(_Node):
     CLASS = 1
     VARIABLE = 2
     TYPES = {FUNCTION: "FUNCTION", CLASS: "CLASS", VARIABLE: "VARIABLE"}
-    TYPES_INV = ["functions", "classes", "variables"]
+    TYPES_INV = ["functions", "classes", "vars"]
 
     def __init__(self, type_, name):
         """

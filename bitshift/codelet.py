@@ -27,7 +27,7 @@ class Codelet(object):
     """
 
     def __init__(self, name, code, filename, language, authors, code_url,
-            date_created, date_modified, rank, symbols=None, origin=None):
+                 date_created, date_modified, rank, symbols=None, origin=None):
         """
         Create a Codelet instance.
 

@@ -1,4 +1,10 @@
-import json, pygments.lexers as pgl, sys, socket, struct
+import json
+import sys
+import socket
+import struct
+
+from pygments import lexers as pgl, util
+
 from ..languages import LANGS
 from .python import parse_py
 
@@ -19,13 +25,14 @@ def _lang(codelet):
         Modify function to incorporate tags from stackoverflow.
     """
 
-    if codelet.filename is not None:
-        try:
-            return pgl.guess_lexer_for_filename(codelet.filename, codelet.code).name
-        except:
-            raise UnsupportedFileError('Could not find a lexer for the codelet\'s filename')
-
-    return LANGS.index(pgl.guess_lexer(codelet.code))
+    try:
+        if codelet.filename:
+            lex = pgl.guess_lexer_for_filename(codelet.filename, codelet.code)
+        else:
+            lex = pgl.guess_lexer(codelet.code)
+    except util.ClassNotFound:
+        raise UnsupportedFileError(codelet.filename)
+    return LANGS.index(lex.name)
 
 def _recv_data(server_socket):
     """
@@ -39,8 +46,9 @@ def _recv_data(server_socket):
     """
 
     recv_size = 8192
-    total_data = []; size_data = cur_data = ''
-    total_size = 0; size = sys.maxint
+    total_data = []
+    size_data = cur_data = ''
+    total_size, size = 0, sys.maxint
 
     while total_size < size:
         cur_data = server_socket.recv(recv_size)
@@ -61,8 +69,7 @@ def _recv_data(server_socket):
         total_size = sum([len(s) for s in total_data])
 
     server_socket.close()
-    return ''.join(total_data);
-
+    return ''.join(total_data)
 
 def parse(codelet):
     """
@@ -76,7 +83,8 @@ def parse(codelet):
     :type code: Codelet
     """
 
-    lang = _lang(codelet); source = codelet.code
+    lang = _lang(codelet)
+    source = codelet.code
     codelet.language = lang
     server_socket_number = 5000 + lang
 
@@ -86,8 +94,7 @@ def parse(codelet):
     else:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.connect(("localhost", server_socket_number))
-        server_socket.send("%d\n%s" % (len(source), source));
+        server_socket.send("%d\n%s" % (len(source), source))
 
         symbols = json.loads(_recv_data(server_socket))
         codelet.symbols = symbols
-
