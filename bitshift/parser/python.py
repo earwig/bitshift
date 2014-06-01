@@ -1,4 +1,7 @@
 import ast
+import re
+
+encoding_re = re.compile(r"^\s*#.*coding[:=]\s*([-\w.]+)", re.UNICODE)
 
 class _CachedWalker(ast.NodeVisitor):
     """
@@ -154,7 +157,25 @@ def parse_py(codelet):
     :type code: Codelet
     """
 
-    tree = ast.parse(codelet.code)
+    def strip_encoding(lines):
+        """Strips the encoding line from a file, which breaks the parser."""
+        try:
+            first = next(lines)
+            if not encoding_re.match(first):
+                yield first
+            second = next(lines)
+            if not encoding_re.match(second):
+                yield second
+        except StopIteration:
+            return
+        for line in lines:
+            yield line
+
+    try:
+        tree = ast.parse("\n".join(strip_encoding(codelet.code.splitlines())))
+    except SyntaxError:
+        ## TODO: add some logging here?
+        return
     cutter = _CachedWalker()
     cutter.visit(tree)
     codelet.symbols = cutter.accum
