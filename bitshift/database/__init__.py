@@ -107,9 +107,9 @@ class Database(object):
                 dict_cursor.execute(query, (codelet_id,))
                 row = dict_cursor.fetchall()[0]
                 if row["origin_url_base"]:
-                    url = row["codelet_url"]
-                else:
                     url = row["origin_url_base"] + row["codelet_url"]
+                else:
+                    url = row["codelet_url"]
                 origin = (row["origin_name"], row["origin_url"],
                           row["origin_image"])
                 authors = self._get_authors_for_codelet(cursor, codelet_id)
