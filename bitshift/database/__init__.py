@@ -160,22 +160,25 @@ class Database(object):
         :return: The total number of results, and the *n*\ th page of results.
         :rtype: 2-tuple of (long, list of :py:class:`.Codelet`\ s)
         """
-        query1 = """SELECT cdata_codelet, cache_count_mnt, cache_count_exp
+        query1 = "SELECT 1 FROM cache WHERE cache_id = ?"
+        query2 = """SELECT cdata_codelet, cache_count_mnt, cache_count_exp
                     FROM cache
                     INNER JOIN cache_data ON cache_id = cdata_cache
                     WHERE cache_id = ?"""
-        query2 = "INSERT INTO cache VALUES (?, ?, ?, DEFAULT)"
-        query3 = "INSERT INTO cache_data VALUES (?, ?)"
+        query3 = "INSERT INTO cache VALUES (?, ?, ?, DEFAULT)"
+        query4 = "INSERT INTO cache_data VALUES (?, ?)"
 
         cache_id = mmh3.hash64(str(page) + ":" + query.serialize())[0]
 
         with self._conn.cursor() as cursor:
             cursor.execute(query1, (cache_id,))
-            results = cursor.fetchall()
-            if results:  # Cache hit
+            cache_hit = cursor.fetchall()
+            if cache_hit:
+                cursor.execute(query2, (cache_id,))
+                results = cursor.fetchall()
                 num_results = results[0][1] * (10 ** results[0][2])
                 ids = [res[0] for res in results]
-            else:  # Cache miss
+            else:
                 ids, num_results = self._search_with_query(cursor, query, page)
                 num_exp = max(len(str(num_results)) - 3, 0)
                 num_results = int(round(num_results, -num_exp))
