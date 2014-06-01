@@ -13,7 +13,7 @@ class Codelet(object):
     :ivar authors: (array of tuples (str, str or None)) An array of tuples
         containing an author's name and profile URL (on the service the code
         was pulled from).
-    :ivar code_url: (str) The url of the (page containing the) source code.
+    :ivar url: (str) The url of the (page containing the) source code.
     :ivar date_created: (:class:`datetime.datetime`, or None) The date the code
         was published.
     :ivar date_modified: (:class:`datetime.datetime`, or None) The date the
@@ -26,7 +26,7 @@ class Codelet(object):
         added by the database.
     """
 
-    def __init__(self, name, code, filename, language, authors, code_url,
+    def __init__(self, name, code, filename, language, authors, url,
                  date_created, date_modified, rank, symbols=None, origin=None):
         """
         Create a Codelet instance.
@@ -36,7 +36,7 @@ class Codelet(object):
         :param filename: see :attr:`self.filename`
         :param language: see :attr:`self.language`
         :param authors: see :attr:`self.authors`
-        :param code_url: see :attr:`self.code_url`
+        :param url: see :attr:`self.url`
         :param date_created: see :attr:`self.date_created`
         :param date_modified: see :attr:`self.date_modified`
         :param rank: see :attr:`self.rank`
@@ -48,7 +48,7 @@ class Codelet(object):
         :type filename: see :attr:`self.filename`
         :type language: see :attr:`self.language`
         :type authors: see :attr:`self.authors`
-        :type code_url: see :attr:`self.code_url`
+        :type url: see :attr:`self.url`
         :type date_created: see :attr:`self.date_created`
         :type date_modified: see :attr:`self.date_modified`
         :type rank: see :attr:`self.rank`
@@ -61,7 +61,7 @@ class Codelet(object):
         self.filename = filename
         self.language = language
         self.authors = authors
-        self.code_url = code_url
+        self.url = url
         self.date_created = date_created
         self.date_modified = date_modified
         self.rank = rank
@@ -77,7 +77,7 @@ class Codelet(object):
         """
         return {
             "name": self.name, "code": self.code, "lang": LANGS[self.language],
-            "authors": self.authors, "url": self.code_url,
+            "authors": self.authors, "url": self.url,
             "created": self.date_created.isoformat(),
             "modified": self.date_modified.isoformat(),
             "symbols": self.symbols, "origin": self.origin
