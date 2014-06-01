@@ -183,8 +183,8 @@ class Database(object):
                 num_exp = max(len(str(num_results)) - 3, 0)
                 num_results = int(round(num_results, -num_exp))
                 num_mnt = num_results / (10 ** num_exp)
-                cursor.execute(query2, (cache_id, num_mnt, num_exp))
-                cursor.executemany(query3, [(cache_id, c_id) for c_id in ids])
+                cursor.execute(query3, (cache_id, num_mnt, num_exp))
+                cursor.executemany(query4, [(cache_id, c_id) for c_id in ids])
             codelet_gen = self._get_codelets_from_ids(cursor, ids)
             return (num_results, list(codelet_gen))
 
