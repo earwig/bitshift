@@ -8,6 +8,7 @@ from flask import Flask, make_response, render_template, request
 
 from bitshift import assets
 from bitshift.database import Database
+from bitshift.languages import LANGS
 from bitshift.query import parse_query, QueryParseException
 
 app = Flask(__name__)
@@ -21,7 +22,7 @@ database = Database()
 
 @app.route("/")
 def index():
-    return render_template("index.html", typeahead_languages=languages.LANGS)
+    return render_template("index.html", typeahead_languages=LANGS)
 
 @app.route("/search.json")
 def search():
