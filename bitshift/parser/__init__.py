@@ -27,11 +27,12 @@ def _lang(codelet):
 
     try:
         if codelet.filename:
-            lex = pgl.guess_lexer_for_filename(codelet.filename, codelet.code)
+            lex = pgl.get_lexer_for_filename(codelet.filename)
         else:
             lex = pgl.guess_lexer(codelet.code)
     except util.ClassNotFound:
         raise UnsupportedFileError(codelet.filename)
+
     return LANGS.index(lex.name)
 
 def _recv_data(server_socket):

@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
         elif sys.argv[1] == 'ruby':
             file_name = "resources/parser.rb"
-            server_socket_number = 5003
+            server_socket_number = 5065
 
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.connect(("localhost", server_socket_number))
