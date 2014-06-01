@@ -7,6 +7,7 @@ Contains functions for initializing all subsidiary, threaded crawlers.
 import logging, logging.handlers, os, Queue
 
 from bitshift.crawler import crawler, indexer
+from bitshift.parser import parse, start_parse_servers
 
 __all__ = ["crawl"]
 
@@ -31,6 +32,8 @@ def crawl():
 
     for thread in threads:
         thread.start()
+
+    parse_servers = start_parse_servers()
 
 def _configure_logging():
     # This isn't ideal, since it means the bitshift python package must be kept
