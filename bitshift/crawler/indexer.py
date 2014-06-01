@@ -7,7 +7,7 @@ import bs4, datetime, logging, os, Queue, re, shutil, string, subprocess, time,\
         threading
 
 from ..database import Database
-from ..parser import parse
+from ..parser import parse, UnsupportedFileError
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp/bitshift"
@@ -151,11 +151,11 @@ class GitIndexer(threading.Thread):
                     source = self._decode(source_file.read())
                     if source is None:
                         continue
-            except IOError as exception:
+            except IOError:
                 continue
 
-            authors = [(self._decode(author), None) for author in \
-                    commits_meta[filename]["authors"]]
+            authors = [(self._decode(author), None) for author in
+                       commits_meta[filename]["authors"]]
             codelet = Codelet("%s:%s" % (repo.name, filename), source, filename,
                             None, authors, self._generate_file_url(filename,
                                     repo.url, repo.framework_name),
@@ -164,9 +164,9 @@ class GitIndexer(threading.Thread):
                             repo.rank)
             try:
                 parse(codelet)
-                self.database.insert(codelet)
-            except UnsupportedFileError as excep:
-                pass
+            except UnsupportedFileError:
+                continue
+            self.database.insert(codelet)
 
     def _generate_file_url(self, filename, repo_url, framework_name):
         """

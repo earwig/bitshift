@@ -8,7 +8,7 @@ from pygments import lexers as pgl, util
 from ..languages import LANGS
 from .python import parse_py
 
-_all__ = ["parse"]
+_all__ = ["parse", "UnsupportedFileError"]
 
 class UnsupportedFileError(Exception):
     pass
