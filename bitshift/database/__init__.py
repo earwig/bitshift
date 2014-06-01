@@ -106,7 +106,6 @@ class Database(object):
             for codelet_id in ids:
                 dict_cursor.execute(query, (codelet_id,))
                 row = dict_cursor.fetchall()[0]
-                codelet_id = row["codelet_id"]
                 if row["origin_url_base"]:
                     url = row["codelet_url"]
                 else:
