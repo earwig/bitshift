@@ -175,9 +175,9 @@ class Database(object):
             cache_hit = cursor.fetchall()
             if cache_hit:
                 cursor.execute(query2, (cache_id,))
-                results = cursor.fetchall()
-                num_results = results[0][1] * (10 ** results[0][2])
-                ids = [res[0] for res in results]
+                rows = cursor.fetchall()
+                num_results = rows[0][1] * (10 ** rows[0][2]) if rows else 0
+                ids = [row[0] for row in rows]
             else:
                 ids, num_results = self._search_with_query(cursor, query, page)
                 num_exp = max(len(str(num_results)) - 3, 0)
