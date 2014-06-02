@@ -33,6 +33,7 @@ div#search-field
     max-height: 100px
     right: 0
     position: absolute
+    z-index: 2
     top: 0
     width: 40%
 
@@ -102,7 +103,6 @@ div#search-field
 
     &.partly-visible
         margin-top: 0%
-        padding-bottom: 3%
         position: absolute
         width: 100%
 
@@ -311,7 +311,7 @@ div#results
 div#display-info
     font-size: 1.3em
     padding: 5px 0px 5px 5px
-    width: 400px
+    width: 100%
 
     a
         text-decoration: none
@@ -325,14 +325,13 @@ div#display-info
     #site
         text-transform: capitalize
 
-    #language
-        font-size: 0.8em
-        font-weight: bold
-        margin-left: 100px
-        padding: 3px
-        @include vendor(border-radius, 2px)
-        background: #eee
-        color: #aaa
+    #prev-match
+        font-size: 0.7em
+        margin-left: 125px
+
+    #next-match
+        font-size: 0.7em
+        margin-left: 20px
 
 td#code
     width: $codeWidth
@@ -348,6 +347,7 @@ td#code
         height: inherit
         background-color: #49483e
         position: relative
+        z-index: 1
 
         table
             table-layout:fixed
@@ -363,6 +363,8 @@ div#hidden-info
     font-size: 1.2em
     line-height: 1.5em
     @include vendor(transition, margin-left 0.2s ease-in-out)
+    position: relative
+    z-index: 0
 
     .display-all &
         margin-left: 0px

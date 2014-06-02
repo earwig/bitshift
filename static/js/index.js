@@ -155,6 +155,8 @@ function createResult(codelet) {
     //Level 3
     var title = document.createElement("span"),
         site = document.createElement("span"),
+        nextMatch = document.createElement("a"),
+        prevMatch = document.createElement("a"),
         dateModified = document.createElement("div"),
         language = document.createElement("div"),
         dateCreated = document.createElement("div"),
@@ -169,6 +171,10 @@ function createResult(codelet) {
 
     title.id = 'title';
     site.id = 'site';
+    nextMatch.id = 'next-match';
+    nextMatch.href = '#';
+    prevMatch.id = 'prev-match';
+    prevMatch.href = '#';
     dateModified.id = 'date-modified';
     language.id = 'language';
     dateCreated.id = 'date-created';
@@ -178,6 +184,8 @@ function createResult(codelet) {
     title.innerHTML = 'File <a href="' + codelet.url + '">'
                       + codelet.filename + '</a>';
     site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
+    nextMatch.innerHTML = 'next match';
+    prevMatch.innerHTML = 'prev match';
     language.innerHTML = 'Language: <span>' + codelet.language + '</span>';
     dateModified.innerHTML = 'Last modified: <span>' + codelet.date_modified + '</span>';
     // Needs to be changed from int to string on the server
@@ -200,28 +208,37 @@ function createResult(codelet) {
     });
 
     //Event binding
-    $(newDiv).hover(function(e) {
+    $(codeElt).hover(function(e) {
         $(row).addClass('display-all');
     });
 
     $(newDiv).on('transitionend', function(e) {
-        $(newDiv).one('mouseleave', function(e) {
+        $(codeElt).one('mouseleave', function(e) {
             $(row).removeClass('display-all');
         });
     });
 
-    var cur_match = 0;
-    $(newDiv).click(function(e) {
-        var $code = $(this).find('#tablecontainer'),
+    var cur_match = -1;
+    var newMatch = function(e) {
+        var $code = $(newDiv).find('#tablecontainer'),
             $match = $code.find('#match_' + cur_match);
 
         $code.scrollTop($code.scrollTop() - $code.height() / 2 +
             $match.position().top + $match.height() / 2);
 
         $match.effect("highlight", {}, 750)
+    }
 
-        cur_match = cur_match === codeElt.querySelectorAll('.hll').length - 1 ?
-            0 : cur_match + 1;
+    $(nextMatch).click(function(e) {
+        e.stopPropagation()
+        cur_match = cur_match >= matches.length - 1 ?  0 : cur_match + 1;
+        newMatch();
+    });
+
+    $(prevMatch).click(function(e) {
+        e.stopPropagation()
+        cur_match = cur_match <= 0 ?  matches.length - 1 : cur_match - 1;
+        newMatch();
     });
 
     //Finish and append elements to parent elements
@@ -238,6 +255,8 @@ function createResult(codelet) {
 
     displayInfo.appendChild(title);
     displayInfo.appendChild(site);
+    displayInfo.appendChild(prevMatch);
+    displayInfo.appendChild(nextMatch);
 
     newDiv.appendChild(displayInfo);
     newDiv.appendChild(table);
