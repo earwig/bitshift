@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 6
+VERSION = 7
 
 MIGRATIONS = [
     # 1 -> 2
@@ -88,6 +88,13 @@ MIGRATIONS = [
            DO
                DELETE FROM `cache`
                    WHERE `cache_created` < DATE_SUB(NOW(), INTERVAL 1 DAY);"""
+    ],
+    # 6 -> 7
+    [
+        """DELETE FROM `cache`""",
+        """ALTER TABLE `cache_data`
+           ADD COLUMN `cdata_index` TINYINT UNSIGNED NOT NULL
+               AFTER `cdata_codelet`"""
     ]
 ]
 

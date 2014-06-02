@@ -63,7 +63,7 @@ class Database(object):
         query, args = tree.build_query(page)
         cursor.execute(query, args)
         ids = [id for id, _ in cursor.fetchall()]
-        num_results = len(ids)  # TODO: NotImplemented
+        num_results = len(ids)  # TODO: This is not entirely correct
         return ids, num_results
 
     def _get_authors_for_codelet(self, cursor, codelet_id):
@@ -164,9 +164,10 @@ class Database(object):
         query2 = """SELECT cdata_codelet, cache_count_mnt, cache_count_exp
                     FROM cache
                     INNER JOIN cache_data ON cache_id = cdata_cache
-                    WHERE cache_id = ?"""
+                    WHERE cache_id = ?
+                    ORDER BY cdata_index ASC"""
         query3 = "INSERT INTO cache VALUES (?, ?, ?, DEFAULT)"
-        query4 = "INSERT INTO cache_data VALUES (?, ?)"
+        query4 = "INSERT INTO cache_data VALUES (?, ?, ?)"
 
         cache_id = mmh3.hash64(str(page) + ":" + query.serialize())[0]
 
@@ -184,7 +185,8 @@ class Database(object):
                 num_results = int(round(num_results, -num_exp))
                 num_mnt = num_results / (10 ** num_exp)
                 cursor.execute(query3, (cache_id, num_mnt, num_exp))
-                cursor.executemany(query4, [(cache_id, c_id) for c_id in ids])
+                cdata = [(cache_id, c_id, i) for i, c_id in enumerate(ids)]
+                cursor.executemany(query4, cdata)
             codelet_gen = self._get_codelets_from_ids(cursor, ids)
             return (num_results, list(codelet_gen))
 

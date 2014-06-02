@@ -1,4 +1,4 @@
--- Schema version 6
+-- Schema version 7
 
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
@@ -6,7 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (6);
+INSERT INTO `version` VALUES (7);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -98,6 +98,7 @@ CREATE TABLE `cache` (
 CREATE TABLE `cache_data` (
     `cdata_cache` BIGINT NOT NULL,
     `cdata_codelet` BIGINT UNSIGNED NOT NULL,
+    `cdata_index` TINYINT UNSIGNED NOT NULL,
     PRIMARY KEY (`cdata_cache`, `cdata_codelet`),
     FOREIGN KEY (`cdata_cache`)
         REFERENCES `cache` (`cache_id`)
