@@ -149,26 +149,22 @@ function createResult(codelet) {
         row = document.createElement("tr");
     //Level 2
     var displayInfo = document.createElement("div"),
-        sidebar = document.createElement("td"),
         codeElt = document.createElement("td"),
-        displayButton = document.createElement("td"),
         hiddenInfoContainer = document.createElement("td"),
         hiddenInfo = document.createElement("div");
     //Level 3
     var title = document.createElement("span"),
         site = document.createElement("span"),
-        dateModified = document.createElement("span"),
+        dateModified = document.createElement("div"),
         language = document.createElement("span"),
-        dateCreated = document.createElement("span"),
+        dateCreated = document.createElement("div"),
         authors = document.createElement("div");
 
     //Classes and ID's
     newDiv.classList.add('result');
 
     displayInfo.id = 'display-info';
-    sidebar.id = 'sidebar';
     codeElt.id = 'code';
-    displayButton.id = 'display-button';
     hiddenInfo.id = 'hidden-info';
 
     title.id = 'title';
@@ -183,20 +179,24 @@ function createResult(codelet) {
                       + codelet.filename + '</a>';
     site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
     language.innerHTML = codelet.language;
-    dateModified.innerHTML = 'Last modified ' + codelet.date_modified;
+    dateModified.innerHTML = 'Last modified: <span>' + codelet.date_modified + '</span>';
     // Needs to be changed from int to string on the server
-    dateCreated.innerHTML = 'Created ' + codelet.date_created;
-    authors.innerHTML = 'Authors: ';
-    $.each(codelet.authors, function(i, a) {
-        authors.innerHTML += '<a href=#>' + a + ' </a>';
-    });
+    dateCreated.innerHTML = 'Created: <span>' + codelet.date_created + '</span>';
 
-    sidebar.innerHTML = '';
+    var authorsHtml = 'Authors: <span>';
+    codelet.authors.forEach(function(a, i) {
+        if (i == codelet.authors.length - 1)
+            authorsHtml += '<a href=#>' + a + ' </a>';
+        else
+            authorsHtml += '<a href=#>' + a + ' </a>, ';
+    });
+    authors.innerHTML = authorsHtml;
+
     // Needs to be processed on the server
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
 
     //Event binding
-    $(displayButton).hover(function(e) {
+    $(newDiv).hover(function(e) {
         $(row).addClass('display-all');
     });
 
@@ -213,10 +213,8 @@ function createResult(codelet) {
 
     hiddenInfoContainer.appendChild(hiddenInfo);
 
-    row.appendChild(sidebar);
     row.appendChild(codeElt);
     row.appendChild(hiddenInfoContainer);
-    row.appendChild(displayButton);
     table.appendChild(row);
 
     displayInfo.appendChild(title);

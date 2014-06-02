@@ -7,7 +7,6 @@
 
 $minSearchFieldsWidth: 490px
 $resultWidth: 1000px
-$sidebarWidth: 30px
 $codeWidth: 650px
 $hiddenInfoWidth: 250px
 
@@ -287,18 +286,12 @@ div#results
     width: 80%
 
     /* TODO:
-        1) Sidebar
-            - Add way to cycle through hits in the code.
-        2) Hidden info
+        1) Hidden info
             - Add links for authors.
-            - Remove language field.
-        3) Header
-            - Add an icon for the website.
-            - Add language tag.
-        4) Code body
+            - Add language field.
+        2) Code body
             - Add highlighting.
-        5) Display button
-            - unicode glyph */
+            - Add scrolling hits*/
     div.result
         width: $resultWidth
         height: 200px
@@ -306,7 +299,6 @@ div#results
 
         table
             border-collapse: collapse
-            border: 1px solid $baseColor3
             height: inherit
 
             tr
@@ -319,8 +311,6 @@ div#results
 div#display-info
     font-size: 1.3em
     padding: 5px 0px 5px 5px
-    border: 1px dotted $baseColor3
-    border-bottom: none
     width: 400px
 
     a
@@ -341,19 +331,12 @@ div#display-info
         margin-left: 100px
         padding: 3px
         @include vendor(border-radius, 2px)
-        background: #ddd
-        color: orange
-
-td#sidebar
-    width: $sidebarWidth
-    background-color: #eee
-    border-right: 1px solid $baseColor3
-    height: inherit
+        background: #eee
+        color: #aaa
 
 td#code
     width: $codeWidth
     height: inherit
-    border-right: 1px solid $baseColor3
     @include vendor(transition, width 0.2s ease-in-out)
 
     .display-all &
@@ -371,19 +354,9 @@ td#code
             border: none
             font-family: monospace
 
-td#display-button
-    width: 25px
-    background: url(https://cdn1.iconfinder.com/data/icons/windows-8-metro-style/512/View_Details-.png)
-    background-size: 25px 25px
-    background-repeat: no-repeat
-    background-position: center
-
-    .display-all &
-        @include vendor(transform, rotateY(180deg))
-
 div#hidden-info
     width: $hiddenInfoWidth
-    margin-left: -$hiddenInfoWidth
+    margin-left: -$hiddenInfoWidth - 10px
     height: 100%
     padding-top: 40px
     font-size: 1.2em
@@ -394,14 +367,21 @@ div#hidden-info
         margin-left: 0px
         padding-left: 20px
 
+    span
+        font-family: monospace
+        color: #5CADFF
+        float: right
+
     #date-created
-        display: inline-block
+        display: block
+
 
     #date-modified
         display: block
 
     #authors
         a
+            font-family: monospace
             text-decoration: none
 
             &:hover
