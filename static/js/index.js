@@ -151,7 +151,8 @@ function createResult(codelet) {
     var displayInfo = document.createElement("div"),
         codeElt = document.createElement("td"),
         hiddenInfoContainer = document.createElement("td"),
-        hiddenInfo = document.createElement("div");
+        hiddenInfo = document.createElement("div"),
+        cycle = document.createElement("div");
     //Level 3
     var title = document.createElement("span"),
         site = document.createElement("span"),
@@ -168,6 +169,7 @@ function createResult(codelet) {
     displayInfo.id = 'display-info';
     codeElt.id = 'code';
     hiddenInfo.id = 'hidden-info';
+    cycle.id = 'cycle-matches'
 
     title.id = 'title';
     site.id = 'site';
@@ -256,11 +258,13 @@ function createResult(codelet) {
 
     displayInfo.appendChild(title);
     displayInfo.appendChild(site);
-    displayInfo.appendChild(prevMatch);
-    displayInfo.appendChild(nextMatch);
+
+    cycle.appendChild(prevMatch);
+    cycle.appendChild(nextMatch);
 
     newDiv.appendChild(displayInfo);
     newDiv.appendChild(table);
+    newDiv.appendChild(cycle);
 
     return newDiv;
 }

@@ -285,6 +285,12 @@ div#results
     margin-right: auto
     width: 80%
 
+    a
+        text-decoration: none
+
+        &:hover
+            color: orange
+
     /* TODO:
         1) Hidden info
             - Add links for authors.
@@ -306,32 +312,18 @@ div#results
 
         &.cascade
             @extend .t3
-            margin-bottom: 10%
+            margin-bottom: 15%
 
 div#display-info
     font-size: 1.3em
     padding: 5px 0px 5px 5px
     width: 100%
 
-    a
-        text-decoration: none
-
-        &:hover
-            color: orange
-
     #title
         margin-right: 10px
 
     #site
         text-transform: capitalize
-
-    #prev-match
-        font-size: 0.7em
-        margin-left: 125px
-
-    #next-match
-        font-size: 0.7em
-        margin-left: 20px
 
 td#code
     width: $codeWidth
@@ -381,7 +373,15 @@ div#hidden-info
     #authors
         a
             font-family: monospace
-            text-decoration: none
 
-            &:hover
-                color: orange
+div#cycle-matches
+    margin-left: 130px
+    margin-top: 20px
+
+    #prev-match
+        font-size: 1.1em
+        margin-left: 125px
+
+    #next-match
+        font-size: 1.1em
+        margin-left: 20px
