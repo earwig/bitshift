@@ -50,7 +50,7 @@ var codeExample = '<table class="highlighttable"><tr><td class="linenos"><div cl
 searchBar.onkeyup = typingTimer;
 
 var testCodelet = {
-    'code_url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
+    'url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
     'filename': 'app.py',
     'language': 'python',
     'date_created': 'May 10, 2014',
@@ -156,7 +156,7 @@ function createResult(codelet) {
     var title = document.createElement("span"),
         site = document.createElement("span"),
         dateModified = document.createElement("div"),
-        language = document.createElement("span"),
+        language = document.createElement("div"),
         dateCreated = document.createElement("div"),
         authors = document.createElement("div");
 
@@ -175,10 +175,10 @@ function createResult(codelet) {
     authors.id = 'authors';
 
     //Add the bulk of the html
-    title.innerHTML = 'File <a href="' + codelet.code_url + '">'
+    title.innerHTML = 'File <a href="' + codelet.url + '">'
                       + codelet.filename + '</a>';
     site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
-    language.innerHTML = codelet.language;
+    language.innerHTML = 'Language: <span>' + codelet.language + '</span>';
     dateModified.innerHTML = 'Last modified: <span>' + codelet.date_modified + '</span>';
     // Needs to be changed from int to string on the server
     dateCreated.innerHTML = 'Created: <span>' + codelet.date_created + '</span>';
@@ -209,6 +209,7 @@ function createResult(codelet) {
     //Finish and append elements to parent elements
     hiddenInfo.appendChild(dateCreated);
     hiddenInfo.appendChild(dateModified);
+    hiddenInfo.appendChild(language);
     hiddenInfo.appendChild(authors);
 
     hiddenInfoContainer.appendChild(hiddenInfo);
@@ -219,7 +220,6 @@ function createResult(codelet) {
 
     displayInfo.appendChild(title);
     displayInfo.appendChild(site);
-    displayInfo.appendChild(language);
 
     newDiv.appendChild(displayInfo);
     newDiv.appendChild(table);
