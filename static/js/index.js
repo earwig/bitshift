@@ -50,7 +50,7 @@ var codeExample = '<table class="highlighttable"><tr><td class="linenos"><div cl
 searchBar.onkeyup = typingTimer;
 
 var testCodelet = {
-    'code_url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
+    'url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
     'filename': 'app.py',
     'language': 'python',
     'date_created': 'May 10, 2014',
@@ -179,7 +179,7 @@ function createResult(codelet) {
     authors.id = 'authors';
 
     //Add the bulk of the html
-    title.innerHTML = 'File <a href="' + codelet.code_url + '">'
+    title.innerHTML = 'File <a href="' + codelet.url + '">'
                       + codelet.filename + '</a>';
     site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
     language.innerHTML = codelet.language;

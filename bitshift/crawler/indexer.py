@@ -7,6 +7,7 @@ import bs4, datetime, logging, os, Queue, re, shutil, string, subprocess, time,\
         threading
 
 from ..database import Database
+from ..parser import parse, UnsupportedFileError
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp/bitshift"
@@ -73,6 +74,7 @@ class GitIndexer(threading.Thread):
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
         self.git_cloner = _GitCloner(clone_queue, self.index_queue)
         self.git_cloner.start()
+        self.database = Database()
         self._logger = logging.getLogger("%s.%s" %
                 (__name__, self.__class__.__name__))
         self._logger.info("Starting.")
@@ -98,10 +100,7 @@ class GitIndexer(threading.Thread):
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
-            try:
-                self._index_repository(repo)
-            except Exception as excep:
-                self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
+            self._index_repository(repo)
 
     def _index_repository(self, repo):
         """
@@ -119,10 +118,15 @@ class GitIndexer(threading.Thread):
             try:
                 self._insert_repository_codelets(repo)
             except Exception as excep:
-                self._logger.warning("%s: %s.", excep.__class__.__name__, excep)
-
-        if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
-            shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
+                self._logger.exception("Exception raised while indexing:")
+            finally:
+                if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
+                    if len([obj for obj in os.listdir('.') if
+                            os.path.isdir(obj)]) <= 1:
+                        shutil.rmtree("%s/%s" % (
+                                GIT_CLONE_DIR, repo.name.split("/")[0]))
+                    else:
+                        shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
 
     def _insert_repository_codelets(self, repo):
         """
@@ -147,17 +151,22 @@ class GitIndexer(threading.Thread):
                     source = self._decode(source_file.read())
                     if source is None:
                         continue
-            except IOError as exception:
+            except IOError:
                 continue
 
-            authors = [(self._decode(author), None) for author in \
-                    commits_meta[filename]["authors"]]
+            authors = [(self._decode(author), None) for author in
+                       commits_meta[filename]["authors"]]
             codelet = Codelet("%s:%s" % (repo.name, filename), source, filename,
                             None, authors, self._generate_file_url(filename,
                                     repo.url, repo.framework_name),
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"],
                             repo.rank)
+            try:
+                parse(codelet)
+            except UnsupportedFileError:
+                continue
+            self.database.insert(codelet)
 
     def _generate_file_url(self, filename, repo_url, framework_name):
         """

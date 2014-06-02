@@ -2,13 +2,14 @@
 Module to contain all the project's Flask server plumbing.
 """
 
-from flask import Flask
-from flask import render_template, session
+from json import dumps
+
+from flask import Flask, make_response, render_template, request
 
 from bitshift import assets
-from bitshift import languages
-# from bitshift.database import Database
-# from bitshift.query import parse_query
+from bitshift.database import Database
+from bitshift.languages import LANGS
+from bitshift.query import parse_query, QueryParseException
 
 app = Flask(__name__)
 app.config.from_object("bitshift.config")
@@ -17,17 +18,33 @@ app_env = app.jinja_env
 app_env.line_statement_prefix = "="
 app_env.globals.update(assets=assets)
 
-# database = Database()
+database = Database()
 
 @app.route("/")
 def index():
-    return render_template("index.html", autocomplete_languages=languages.LANGS)
+    return render_template("index.html", autocomplete_languages=LANGS)
 
-@app.route("/search/<query>")
-def search(query):
-    # tree = parse_query(query)
-    # database.search(tree)
-    pass
+@app.route("/search.json")
+def search():
+    def reply(json):
+        resp = make_response(dumps(json))
+        resp.mimetype = "application/json"
+        return resp
+
+    query, page = request.args.get("q"), request.args.get("p", 1)
+    if not query:
+        return reply({"error": "No query given"})
+    try:
+        tree = parse_query(query)
+    except QueryParseException as exc:
+        return reply({"error": exc.args[0]})
+    try:
+        page = int(page)
+    except ValueError:
+        return reply({"error": u"Invalid page number: %s" % page})
+    count, codelets = database.search(tree, page)
+    results = [clt.serialize() for clt in codelets]
+    return reply({"count": count, "results": results})
 
 @app.route("/about")
 def about():

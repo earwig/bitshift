@@ -63,7 +63,7 @@ class Database(object):
         query, args = tree.build_query(page)
         cursor.execute(query, args)
         ids = [id for id, _ in cursor.fetchall()]
-        num_results = 0  # TODO: NotImplemented
+        num_results = len(ids)  # TODO: NotImplemented
         return ids, num_results
 
     def _get_authors_for_codelet(self, cursor, codelet_id):
@@ -103,13 +103,13 @@ class Database(object):
                    WHERE codelet_id = ?"""
 
         with self._conn.cursor(oursql.DictCursor) as dict_cursor:
-            dict_cursor.executemany(query, [(id,) for id in ids])
-            for row in dict_cursor.fetchone():
-                codelet_id = row["codelet_id"]
+            for codelet_id in ids:
+                dict_cursor.execute(query, (codelet_id,))
+                row = dict_cursor.fetchall()[0]
                 if row["origin_url_base"]:
-                    url = row["codelet_url"]
-                else:
                     url = row["origin_url_base"] + row["codelet_url"]
+                else:
+                    url = row["codelet_url"]
                 origin = (row["origin_name"], row["origin_url"],
                           row["origin_image"])
                 authors = self._get_authors_for_codelet(cursor, codelet_id)
@@ -160,28 +160,31 @@ class Database(object):
         :return: The total number of results, and the *n*\ th page of results.
         :rtype: 2-tuple of (long, list of :py:class:`.Codelet`\ s)
         """
-        query1 = """SELECT cdata_codelet, cache_count_mnt, cache_count_exp
+        query1 = "SELECT 1 FROM cache WHERE cache_id = ?"
+        query2 = """SELECT cdata_codelet, cache_count_mnt, cache_count_exp
                     FROM cache
                     INNER JOIN cache_data ON cache_id = cdata_cache
                     WHERE cache_id = ?"""
-        query2 = "INSERT INTO cache VALUES (?, ?, ?, DEFAULT)"
-        query3 = "INSERT INTO cache_data VALUES (?, ?)"
+        query3 = "INSERT INTO cache VALUES (?, ?, ?, DEFAULT)"
+        query4 = "INSERT INTO cache_data VALUES (?, ?)"
 
         cache_id = mmh3.hash64(str(page) + ":" + query.serialize())[0]
 
         with self._conn.cursor() as cursor:
             cursor.execute(query1, (cache_id,))
-            results = cursor.fetchall()
-            if results:  # Cache hit
-                num_results = results[0][1] * (10 ** results[0][2])
-                ids = [res[0] for res in results]
-            else:  # Cache miss
+            cache_hit = cursor.fetchall()
+            if cache_hit:
+                cursor.execute(query2, (cache_id,))
+                rows = cursor.fetchall()
+                num_results = rows[0][1] * (10 ** rows[0][2]) if rows else 0
+                ids = [row[0] for row in rows]
+            else:
                 ids, num_results = self._search_with_query(cursor, query, page)
                 num_exp = max(len(str(num_results)) - 3, 0)
                 num_results = int(round(num_results, -num_exp))
                 num_mnt = num_results / (10 ** num_exp)
-                cursor.execute(query2, (cache_id, num_mnt, num_exp))
-                cursor.executemany(query3, [(cache_id, c_id) for c_id in ids])
+                cursor.execute(query3, (cache_id, num_mnt, num_exp))
+                cursor.executemany(query4, [(cache_id, c_id) for c_id in ids])
             codelet_gen = self._get_codelets_from_ids(cursor, ids)
             return (num_results, list(codelet_gen))
 

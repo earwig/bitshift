@@ -13,7 +13,6 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
@@ -71,22 +70,6 @@ public class JavaParser extends Parser {
             this._cache = new Stack<HashMap<String, Object>>();
         }
 
-        public boolean visit(FieldDeclaration node) {
-            HashMap<String, Object> data = new HashMap<String, Object>();
-            int sl = this.root.getLineNumber(node.getStartPosition());
-            int sc = this.root.getColumnNumber(node.getStartPosition());
-
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
-            this._cache.push(data);
-            return true;
-        }
-
-        public void endVisit(FieldDeclaration node) {
-            HashMap<String, Object> data = this._cache.pop();
-            String name = (String)data.remove("name");
-            this.symbols.insertFieldDeclaration(name, data);
-        }
-
         public boolean visit(MethodDeclaration node) {
             HashMap<String, Object> data = new HashMap<String, Object>();
             Name nameObj = node.getName();
@@ -115,7 +98,7 @@ public class JavaParser extends Parser {
         public void endVisit(MethodDeclaration node) {
             HashMap<String, Object> data = this._cache.pop();
             String name = (String)data.remove("name");
-            this.symbols.insertMethodDeclaration(name, data);
+            this.symbols.insertMethodDeclaration("\"" + name + "\"", data);
         }
 
         public boolean visit(MethodInvocation node) {
@@ -136,7 +119,7 @@ public class JavaParser extends Parser {
         public void endVisit(MethodInvocation node) {
             HashMap<String, Object> data = this._cache.pop();
             String name = (String)data.remove("name");
-            this.symbols.insertMethodInvocation(name, data);
+            this.symbols.insertMethodInvocation("\"" + name + "\"", data);
         }
 
         public boolean visit(PackageDeclaration node) {
@@ -167,9 +150,9 @@ public class JavaParser extends Parser {
             String name = (String)data.remove("name");
 
             if (node.isInterface()) {
-                this.symbols.insertInterfaceDeclaration(name, data);
+                this.symbols.insertInterfaceDeclaration("\"" + name + "\"", data);
             } else {
-                this.symbols.insertClassDeclaration(name, data);
+                this.symbols.insertClassDeclaration("\"" + name + "\"", data);
             }
         }
 
@@ -186,7 +169,7 @@ public class JavaParser extends Parser {
         public void endVisit(VariableDeclarationFragment node) {
             HashMap<String, Object> data = this._cache.pop();
             String name = (String)data.remove("name");
-            this.symbols.insertVariableDeclaration(name, data);
+            this.symbols.insertVariableDeclaration("\"" + name + "\"", data);
         }
 
         public boolean visit(QualifiedName node) {
