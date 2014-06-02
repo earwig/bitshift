@@ -231,6 +231,7 @@ function createResult(codelet) {
 
     $(nextMatch).click(function(e) {
         e.stopPropagation()
+        e.preventDefault()
         cur_match = cur_match >= matches.length - 1 ?  0 : cur_match + 1;
         newMatch();
     });
