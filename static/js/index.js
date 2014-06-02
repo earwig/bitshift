@@ -212,8 +212,8 @@ function createResult(codelet) {
 
     var cur_match = 0;
     $(newDiv).click(function(e) {
-        var $match = $('#match_' + cur_match),
-            $code = $('#tablecontainer');
+        var $code = $(this).find('#tablecontainer'),
+            $match = $code.find('#match_' + cur_match);
 
         $code.scrollTop($code.scrollTop() - $code.height() / 2 +
             $match.position().top + $match.height() / 2);
