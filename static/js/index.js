@@ -194,6 +194,10 @@ function createResult(codelet) {
 
     // Needs to be processed on the server
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
+    var matches = codeElt.querySelectorAll('.hll');
+    $.each(matches, function(i, a) {
+        a.id = 'match_' + i;
+    });
 
     //Event binding
     $(newDiv).hover(function(e) {
@@ -204,6 +208,20 @@ function createResult(codelet) {
         $(newDiv).one('mouseleave', function(e) {
             $(row).removeClass('display-all');
         });
+    });
+
+    var cur_match = 0;
+    $(newDiv).click(function(e) {
+        var $match = $('#match_' + cur_match),
+            $code = $('#tablecontainer');
+
+        $code.scrollTop($code.scrollTop() - $code.height() / 2 +
+            $match.position().top + $match.height() / 2);
+
+        $match.effect("highlight", {}, 750)
+
+        cur_match = cur_match === codeElt.querySelectorAll('.hll').length - 1 ?
+            0 : cur_match + 1;
     });
 
     //Finish and append elements to parent elements

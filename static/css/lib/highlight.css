@@ -1,7 +1,7 @@
 td.linenos { background-color: #f0f0f0; padding-right: 10px; }
 span.lineno { background-color: #f0f0f0; padding: 0 5px 0 5px; }
 pre { line-height: 125% }
-.highlighttable { background-color: #49483e; width: inherit; }
+.highlighttable { background-color: #49483e; width: inherit; height: inherit; }
 .hll { display: block }
  { background: #272822; color: #f8f8f2 }
 .c { color: #75715e } /* Comment */
