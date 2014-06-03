@@ -120,6 +120,11 @@ div#search-field
             margin-right: auto
             width: 60%
 
+            input:hover
+                @extend .t3
+
+                border: 1px solid $baseColor1
+
 div#advanced-search
     background-color: white
     border: 1px solid $baseColor3
@@ -311,7 +316,7 @@ div#results
                 height: inherit
 
         &.cascade
-            @extend .t3
+            @extend .t1
             margin-bottom: 15%
 
 div#display-info
@@ -324,8 +329,6 @@ div#display-info
 
     #site
         text-transform: capitalize
-
-
 
 td#code
     width: $codeWidth
@@ -346,7 +349,6 @@ td#code
         z-index: 1
 
         table
-            table-layout:fixed
             border-collapse: collapse
             font-family: monospace
 
@@ -376,7 +378,7 @@ div#hidden-info
 
     span
         font-family: monospace
-        color: #5CADFF
+        color: $baseColor1
         float: right
 
     div

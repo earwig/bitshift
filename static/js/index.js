@@ -10,6 +10,7 @@ var searchBar = $("form#search-bar input[type='text']")[0];
 var resultsDiv = $("div#results")[0];
 
 var typingTimer, lastValue;
+var searchResultsPage = 1;
 /*
  * Set all page callbacks.
  */
@@ -123,6 +124,7 @@ function clearResults(){
  * with its response.
  */
 function populateResults(){
+    searchResultsPage = 1;
     var results = queryServer();
 
     for(var result = 0; result < results.length; result++){
@@ -183,9 +185,9 @@ function createResult(codelet) {
     authors.id = 'authors';
 
     //Add the bulk of the html
-    title.innerHTML = 'File <a href="' + codelet.url + '">'
+    title.innerHTML = ' &raquo; <a href="' + codelet.url + '">'
                       + codelet.filename + '</a>';
-    site.innerHTML = 'on <a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
+    site.innerHTML = '<a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
     nextMatch.innerHTML = 'next match';
     prevMatch.innerHTML = 'prev match';
     language.innerHTML = 'Language: <span>' + codelet.language + '</span>';
@@ -256,8 +258,8 @@ function createResult(codelet) {
     row.appendChild(hiddenInfoContainer);
     table.appendChild(row);
 
-    displayInfo.appendChild(title);
     displayInfo.appendChild(site);
+    displayInfo.appendChild(title);
 
     cycle.appendChild(prevMatch);
     cycle.appendChild(nextMatch);
@@ -276,10 +278,24 @@ function createResult(codelet) {
  *      elements, to fill `div#results`.
  */
 function queryServer(){
-    var resultDivs = []
+    var queryUrl = document.URL + "search.json?" + $.param({
+        "q" : searchBar.value,
+        "p" : searchResultsPage++
+    });
+    console.log(queryUrl);
+    var result = $.getJSON(queryUrl, function(result){
+        $.each(result, function(key, value){
+            if(key == "error")
+                errorMessage(value);
+            else
+                console.log("Success.");
+        });
+    });
+    // return [];
+    var resultDivs = [];
     for(var result = 0; result < 20; result++){
         var newDiv = createResult(testCodelet);
-        resultDivs.push(newDiv);
+        resultDivs.push(newDiv)
     }
 
     return resultDivs;
@@ -289,7 +305,7 @@ function queryServer(){
  * Adds more results to `div#results`.
  */
 function loadMoreResults(){
-    results = queryServer();
+    var results = queryServer();
     for(var result = 0; result < results.length; result++){
         var newDiv = results[result];
         resultsDiv.appendChild(newDiv);
@@ -301,6 +317,15 @@ function loadMoreResults(){
             }(newDiv)),
             result * 20);
     }
+}
+
+/*
+ * Displays a warning message in the UI.
+ *
+ * @param msg (str) The message string.
+ */
+function errorMessage(msg){
+    alert(msg);
 }
 
 loadMoreResults();

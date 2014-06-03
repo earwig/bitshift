@@ -4,8 +4,11 @@
 <html>
   <head>
     <title>
-      = block title
-      = endblock
+      bitshift &laquo;
+      = filter lower
+        = block title
+        = endblock
+      = endfilter
     </title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
