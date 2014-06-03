@@ -236,7 +236,7 @@ div#advanced-search
 
     #search-groups
         margin-top: 1%
-        max-height: 93%
+        max-height: 87%
         overflow-y: auto
         width: 75%
 
@@ -325,16 +325,20 @@ div#display-info
     #site
         text-transform: capitalize
 
+
+
 td#code
     width: $codeWidth
     height: inherit
+    padding: 0px
+
     @include vendor(transition, width 0.2s ease-in-out)
 
-    .display-all &
-        width: 500px
+    // .display-all &
+        // width: 500px
 
     #tablecontainer
-        overflow: scroll
+        overflow: hidden
         width: 100%
         height: inherit
         background-color: #49483e
@@ -344,8 +348,16 @@ td#code
         table
             table-layout:fixed
             border-collapse: collapse
-            border: none
             font-family: monospace
+
+            .linenos
+                padding-left: 1%
+
+                pre
+                    margin-top: 5px
+
+            .code pre
+                margin-top: 5px
 
 div#hidden-info
     width: $hiddenInfoWidth

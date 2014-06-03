@@ -37,6 +37,8 @@ var searchGroups = $("div#search-groups");
         searchGroups.append(
             searchGroup.append(createSearchGroupInput("language")));
         $("div#sidebar input[type=checkbox]#language").prop("checked", true);
+
+        searchGroups[0].scrollTop = searchGroups[0].scrollHeight;
     });
 
     // Remove the currently selected group if it's not the only one, and mark
@@ -82,6 +84,7 @@ var searchGroups = $("div#search-groups");
             else
                 $(this).prop("checked", true);
         }
+        searchGroups[0].scrollTop = searchGroups[0].scrollHeight;
     });
 
     var previousAdvancedQuery = "";
@@ -129,7 +132,8 @@ function assembleQuery(){
                 groupQuery.push(genFieldQueryString(
                         inputFields[field], regexCheckbox[field].checked));
 
-        groupQueries.push(groupQuery.join(" AND "));
+        if(groupQuery.length > 0)
+            groupQueries.push(groupQuery.join(" AND "));
     }
 
     return groupQueries.join(" OR ");

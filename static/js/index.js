@@ -302,3 +302,5 @@ function loadMoreResults(){
             result * 20);
     }
 }
+
+loadMoreResults();
