@@ -1,3 +1,9 @@
+from operator import concat
+
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters.html import HtmlFormatter
+
 from .languages import LANGS
 
 __all__ = ["Codelet"]
@@ -75,10 +81,15 @@ class Codelet(object):
         :return: The codelet as a dictionary.
         :rtype: str
         """
+        lang = LANGS[self.language]
+        lines = reduce(concat, [[loc[0] for loc in sym[1] + sym[2]] for sym in
+                                reduce(concat, self.symbols.values())])
+        formatter = HtmlFormatter(linenos=True, hl_lines=lines)
+        code = highlight(self.code, get_lexer_by_name(lang.lower()), formatter)
+
         return {
-            "name": self.name, "code": self.code, "lang": LANGS[self.language],
+            "name": self.name, "code": code, "lang": lang,
             "authors": self.authors, "url": self.url,
             "created": self.date_created.isoformat(),
-            "modified": self.date_modified.isoformat(),
-            "symbols": self.symbols, "origin": self.origin
+            "modified": self.date_modified.isoformat(), "origin": self.origin
         }
