@@ -46,6 +46,57 @@ var searchResultsPage = 1;
     searchBar.onkeyup = typingTimer;
 }());
 
+/*
+ * Set keyboard shortcut mappings.
+ */
+(function resultsHotkeys(){
+    /*
+     * If the currently viewed result is not the first, scroll to the previous
+     * result.
+     */
+    var previousResult = function(){
+        var currResult = $(".display-all");
+        if(currResult.length)
+            currResult.closest(".result").prev(".result").each(function(){
+                $('html,body').stop().animate({
+                    scrollTop: $(this).offset().top - (
+                        $(window).height() - $(this).outerHeight(true)) / 2
+                }, 140);
+            });
+    };
+
+    /*
+     * If the currently viewed result is not the last, scroll to the next
+     * result.
+     */
+    var nextResult = function(){
+        var currResult = $(".display-all");
+        if(currResult.length)
+            currResult.closest(".result").next(".result").each(function(){
+                $('html,body').stop().animate({
+                    scrollTop: $(this).offset().top - (
+                        $(window).height() - $(this).outerHeight(true)) / 2
+                }, 140);
+            });
+    };
+
+    var hotkeyActions = {
+        "k" : previousResult,
+        "j" : nextResult
+        "h" : previousSymbolMatch,
+        "l" : nextSymbolMatch
+    };
+
+    $(window).keypress(function(key){
+        for(var hotkey in hotkeyActions){
+            var keyChar = String.fromCharCode(key.keyCode);
+            console.log(keyChar);
+            if(keyChar == hotkey)
+                hotkeyActions[keyChar]();
+        }
+    });
+}());
+
 //Obtained by parsing python file with pygments
 var codeExample = '<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n36\n37\n38\n39\n40</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>\n<span class="sd">Module to contain all the project&#39;s Flask server plumbing.</span>\n<span class="sd">&quot;&quot;&quot;</span>\n\n<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>\n<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">session</span>\n\n<span class="kn">from</span> <span class="nn">bitshift</span> <span class="kn">import</span> <span class="n">assets</span>\n<span class="c"># from bitshift.database import Database</span>\n<span class="c"># from bitshift.query import parse_query</span>\n\n<span class="hll"><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>\n</span><span class="hll"><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="s">&quot;bitshift.config&quot;</span><span class="p">)</span>\n</span>\n<span class="hll"><span class="n">app_env</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span>\n</span><span class="hll"><span class="n">app_env</span><span class="o">.</span><span class="n">line_statement_prefix</span> <span class="o">=</span> <span class="s">&quot;=&quot;</span>\n</span><span class="hll"><span class="n">app_env</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">assets</span><span class="o">=</span><span class="n">assets</span><span class="p">)</span>\n</span>\n<span class="c"># database = Database()</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;index.html&quot;</span><span class="p">)</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/search/&lt;query&gt;&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>\n    <span class="c"># tree = parse_query(query)</span>\n    <span class="c"># database.search(tree)</span>\n    <span class="k">pass</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/about&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">about</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;about.html&quot;</span><span class="p">)</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/developers&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">developers</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;developers.html&quot;</span><span class="p">)</span>\n\n<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>\n<span class="hll">    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>\n</span></pre></div>\n</td></tr></table>'
 searchBar.onkeyup = typingTimer;
@@ -64,7 +115,8 @@ var testCodelet = {
 // Enable infinite scrolling down the results page.
 $(window).scroll(function() {
     var searchField = $("div#search-field");
-    if($(window).scrollTop() + $(window).height() == $(document).height() && searchField.hasClass('partly-visible')){
+    if($(window).scrollTop() + $(window).height() == $(document).height() &&
+        searchField.hasClass('partly-visible')){
         loadMoreResults();
     }
 });
