@@ -28,8 +28,8 @@ class Codelet(object):
         per available ratings (stars, forks, upvotes, etc.).
     :ivar symbols: (dict) Dictionary containing dictionaries of functions,
         classes, variable definitions, etc.
-    :ivar origin: (tuple) 3-tuple of (site_name, site_url, image_blob), as
-        added by the database.
+    :ivar origin: (tuple) 2-tuple of (site_name, site_url), as added by the
+        database.
     """
 
     def __init__(self, name, code, filename, language, authors, url,
@@ -72,7 +72,7 @@ class Codelet(object):
         self.date_modified = date_modified
         self.rank = rank
         self.symbols = symbols or {}
-        self.origin = origin or (None, None, None)
+        self.origin = origin or (None, None)
 
     def serialize(self):
         """

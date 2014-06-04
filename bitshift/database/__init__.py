@@ -120,8 +120,7 @@ class Database(object):
                     url = row["origin_url_base"] + row["codelet_url"]
                 else:
                     url = row["codelet_url"]
-                origin = (row["origin_name"], row["origin_url"],
-                          row["origin_image"])
+                origin = (row["origin_name"], row["origin_url"])
                 authors = self._get_authors_for_codelet(cursor, codelet_id)
                 symbols = self._get_symbols_for_code(cursor, code_id, tree)
                 yield Codelet(
