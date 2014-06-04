@@ -1,3 +1,5 @@
+from . import nodes
+
 __all__ = ["Tree"]
 
 QUERY_TEMPLATE = """SELECT codelet_id, (codelet_rank%s) AS score
@@ -32,6 +34,18 @@ class Tree(object):
         :rtype: str
         """
         return repr(self)
+
+    def walk(self, node_type=None):
+        """Walk through the query tree, returning nodes of a specific type."""
+        pending = [self._root]
+        while pending:
+            node = pending.pop()
+            if not node_type or isinstance(node, node_type):
+                yield node
+            if isinstance(node, nodes.UnaryOp):
+                pending.append(node.node)
+            elif isinstance(node, nodes.BinaryOp):
+                pending.extend([node.left, node.right])
 
     def build_query(self, page=1, page_size=10):
         """Convert the query tree into a parameterized SQL SELECT statement.
