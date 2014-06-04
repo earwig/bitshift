@@ -10,7 +10,13 @@ from pygments import lexers as pgl, util
 from ..languages import LANGS
 from .python import parse_py
 
-_all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
+__all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
+
+PARSERS = {
+    "Python": parse_py,
+    "Java": parse_via_server,
+    "Ruby": parse_via_server,
+}
 
 PARSER_COMMANDS = [
         ('Java', ['mvn', '-f',
@@ -99,6 +105,21 @@ def start_parse_servers():
 
     return procs
 
+def parse_via_server(codelet):
+    port = 5001 + codelet.language
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.connect(("localhost", port))
+    server_socket.send("%d\n%s" % (len(codelet.code), codelet.code))
+
+    symbols = json.loads(_recv_data(server_socket))
+    symbols = {key: [(name, [tuple(loc)
+        for loc in syms[name]['assignments']],
+        [tuple(loc) for loc in syms[name]['uses']])
+        for name in syms.keys()]
+        for key, syms in symbols.iteritems()}
+
+    codelet.symbols = symbols
+
 def parse(codelet):
     """
     Dispatches the codelet to the correct parser based on its language.
@@ -110,25 +131,7 @@ def parse(codelet):
 
     :type code: Codelet
     """
-
     lang = _lang(codelet)
-    source = codelet.code
     codelet.language = lang
-    server_socket_number = 5001 + lang
-
-    if lang == LANGS.index('Python'):
-        parse_py(codelet)
-
-    else:
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_socket.connect(("localhost", server_socket_number))
-        server_socket.send("%d\n%s" % (len(source), source))
-
-        symbols = json.loads(_recv_data(server_socket))
-        symbols = {key: [(name, [tuple(loc)
-            for loc in syms[name]['assignments']],
-            [tuple(loc) for loc in syms[name]['uses']])
-            for name in syms.keys()]
-            for key, syms in symbols.iteritems()}
-
-        codelet.symbols = symbols
+    if lang in PARSERS:
+        PARSERS[lang](codelet)
