@@ -104,7 +104,6 @@ var searchResultsPage = 1;
     $(window).keypress(function(key){
         for(var hotkey in hotkeyActions){
             var keyChar = String.fromCharCode(key.keyCode);
-            console.log(keyChar);
             if(keyChar == hotkey)
                 hotkeyActions[keyChar]();
         }
@@ -377,17 +376,16 @@ function queryServer(){
         "q" : searchBar.value,
         "p" : searchResultsPage++
     });
-    console.log(queryUrl);
-    var result = $.getJSON(queryUrl, function(result){
-        $.each(result, function(key, value){
-            if(key == "error")
-                errorMessage(value);
-            else
-                console.log("Success.");
-        });
-    });
-    // return [];
+
     var resultDivs = [];
+    $.getJSON(queryUrl, function(result){
+        if("error" in result)
+            errorMessage(result["error"]);
+        else
+            for(var codelet = 0; codelet < result["results"].length; codelet++)
+                resultDivs.push(result["results"][codelet]);
+    });
+
     for(var result = 0; result < 20; result++){
         var newDiv = createResult(testCodelet);
         resultDivs.push(newDiv)
