@@ -296,17 +296,13 @@ div#results
         &:hover
             color: orange
 
-    /* TODO:
-        1) Hidden info
-            - Add links for authors.
-            - Add language field.
-        2) Code body
-            - Add highlighting.
-            - Add scrolling hits*/
     div.result
         width: $resultWidth
         height: 200px
         margin-bottom: 100%
+
+        @include vendor(transition, opacity 0.2s ease-in-out)
+        @include vendor(opacity, 0.7)
 
         table
             border-collapse: collapse
@@ -318,6 +314,9 @@ div#results
         &.cascade
             @extend .t1
             margin-bottom: 15%
+
+        &.display-all
+            @include vendor(opacity, 1.0)
 
 div#display-info
     font-size: 1.3em
@@ -334,11 +333,9 @@ td#code
     width: $codeWidth
     height: inherit
     padding: 0px
+    border: 1px solid #bbb
 
     @include vendor(transition, width 0.2s ease-in-out)
-
-    // .display-all &
-        // width: 500px
 
     #tablecontainer
         overflow: hidden
@@ -361,6 +358,9 @@ td#code
             .code pre
                 margin-top: 5px
 
+            .hll
+                background: #FFFFD6
+
 div#hidden-info
     width: $hiddenInfoWidth
     margin-left: -$hiddenInfoWidth - 10px
@@ -368,9 +368,10 @@ div#hidden-info
     padding-top: 40px
     font-size: 1.2em
     line-height: 1.5em
-    @include vendor(transition, margin-left 0.2s ease-in-out)
     position: relative
     z-index: 0
+
+    @include vendor(transition, margin-left 0.2s ease-in-out)
 
     .display-all &
         margin-left: 0px
@@ -387,15 +388,3 @@ div#hidden-info
     #authors
         a
             font-family: monospace
-
-div#cycle-matches
-    margin-left: 130px
-    margin-top: 20px
-
-    #prev-match
-        font-size: 1.1em
-        margin-left: 125px
-
-    #next-match
-        font-size: 1.1em
-        margin-left: 20px

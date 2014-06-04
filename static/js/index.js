@@ -339,7 +339,7 @@ function previousSymbolMatch() {
             - scrollDiv.height() / 2
             + newMatch.position().top + newMatch.height() / 2);
 
-    newMatch.effect("highlight", {}, 750)
+    newMatch.effect("highlight", {color: '#FFFF00'}, 750)
     newMatch.addClass('current');
 };
 
@@ -362,7 +362,7 @@ function nextSymbolMatch() {
             - scrollDiv.height() / 2
             + newMatch.position().top + newMatch.height() / 2);
 
-    newMatch.effect("highlight", {}, 750);
+    newMatch.effect("highlight", {color: '#FFFF22'}, 750)
     newMatch.addClass('current');
 };
 
