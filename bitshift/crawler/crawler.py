@@ -4,12 +4,13 @@
 Contains all website/framework-specific Class crawlers.
 """
 
-import logging, requests, time, threading
+import logging
+import time
+import threading
 
-from bitshift.crawler import indexer
+import requests
 
-from ..codelet import Codelet
-from ..database import Database
+from . import indexer
 
 class GitHubCrawler(threading.Thread):
     """
@@ -30,7 +31,7 @@ class GitHubCrawler(threading.Thread):
         "client_secret" : "8deeefbc2439409c5b7a092fd086772fe8b1f24e"
     }
 
-    def __init__(self, clone_queue):
+    def __init__(self, clone_queue, run_event):
         """
         Create an instance of the singleton `GitHubCrawler`.
 
@@ -40,6 +41,7 @@ class GitHubCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
+        self.run_event = run_event
         self._logger = logging.getLogger("%s.%s" %
                 (__name__, self.__class__.__name__))
         self._logger.info("Starting.")
@@ -59,14 +61,13 @@ class GitHubCrawler(threading.Thread):
         next_api_url = "https://api.github.com/repositories"
         api_request_interval = 5e3 / 60 ** 2
 
-        while len(next_api_url) > 0:
+        while next_api_url and self.run_event.is_set():
             start_time = time.time()
 
             try:
                 resp = requests.get(next_api_url, params=self.AUTHENTICATION)
-            except ConnectionError as excep:
-                self._logger.warning("API %s call failed: %s: %s",
-                        next_api_url, excep.__class__.__name__, excep)
+            except requests.ConnectionError:
+                self._logger.exception("API %s call failed:" % next_api_url)
                 time.sleep(0.5)
                 continue
 
@@ -169,7 +170,7 @@ class BitbucketCrawler(threading.Thread):
     :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
-    def __init__(self, clone_queue):
+    def __init__(self, clone_queue, run_event):
         """
         Create an instance of the singleton `BitbucketCrawler`.
 
@@ -179,6 +180,7 @@ class BitbucketCrawler(threading.Thread):
         """
 
         self.clone_queue = clone_queue
+        self.run_event = run_event
         self._logger = logging.getLogger("%s.%s" %
                 (__name__, self.__class__.__name__))
         self._logger.info("Starting.")
@@ -186,7 +188,7 @@ class BitbucketCrawler(threading.Thread):
 
     def run(self):
         """
-        Query  the Bitbucket API for data about every public repository.
+        Query the Bitbucket API for data about every public repository.
 
         Query the Bitbucket API's "/repositories" endpoint and read its
         paginated responses in a loop; any "git" repositories have their
@@ -196,13 +198,12 @@ class BitbucketCrawler(threading.Thread):
 
         next_api_url = "https://api.bitbucket.org/2.0/repositories"
 
-        while True:
+        while self.run_event.is_set():
             try:
                 response = requests.get(next_api_url).json()
-            except ConnectionError as exception:
+            except requests.ConnectionError:
+                self._logger.exception("API %s call failed:", next_api_url)
                 time.sleep(0.5)
-                self._logger.warning("API %s call failed: %s: %s",
-                        next_api_url, excep.__class__.__name__, excep)
                 continue
 
             queue_percent_full = (float(self.clone_queue.qsize()) /
@@ -220,16 +221,15 @@ class BitbucketCrawler(threading.Thread):
                     clone_url = (clone_links[0]["href"] if
                             clone_links[0]["name"] == "https" else
                             clone_links[1]["href"])
-                    links.append("clone_url")
 
                     try:
                         watchers = requests.get(
                                 repo["links"]["watchers"]["href"])
                         rank = len(watchers.json()["values"]) / 100
-                    except ConnectionError as exception:
+                    except requests.ConnectionError:
+                        err = "API %s call failed:" % next_api_url
+                        self._logger.exception(err)
                         time.sleep(0.5)
-                        self._logger.warning("API %s call failed: %s: %s",
-                                next_api_url, excep.__class__.__name__, excep)
                         continue
 
                     self.clone_queue.put(indexer.GitRepository(

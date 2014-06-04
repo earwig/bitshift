@@ -3,8 +3,17 @@
     repositories.
 """
 
-import bs4, datetime, logging, os, Queue, re, shutil, string, subprocess, time,\
-        threading
+import datetime
+import logging
+import os
+import Queue
+import shutil
+import string
+import subprocess
+import time
+import threading
+
+import bs4
 
 from ..database import Database
 from ..parser import parse, UnsupportedFileError
@@ -60,7 +69,7 @@ class GitIndexer(threading.Thread):
     :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
-    def __init__(self, clone_queue):
+    def __init__(self, clone_queue, run_event):
         """
         Create an instance of the singleton `GitIndexer`.
 
@@ -72,7 +81,8 @@ class GitIndexer(threading.Thread):
         MAX_INDEX_QUEUE_SIZE = 10
 
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
-        self.git_cloner = _GitCloner(clone_queue, self.index_queue)
+        self.run_event = run_event
+        self.git_cloner = _GitCloner(clone_queue, self.index_queue, run_event)
         self.git_cloner.start()
         self.database = Database()
         self._logger = logging.getLogger("%s.%s" %
@@ -94,7 +104,7 @@ class GitIndexer(threading.Thread):
         the queue.
         """
 
-        while True:
+        while self.run_event.is_set():
             while self.index_queue.empty():
                 time.sleep(THREAD_QUEUE_SLEEP)
 
@@ -114,10 +124,10 @@ class GitIndexer(threading.Thread):
         :type repo_url: :class:`GitRepository`
         """
 
-        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.name)) as repository_dir:
+        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
             try:
                 self._insert_repository_codelets(repo)
-            except Exception as excep:
+            except Exception:
                 self._logger.exception("Exception raised while indexing:")
             finally:
                 if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
@@ -192,16 +202,16 @@ class GitIndexer(threading.Thread):
 
         try:
             if framework_name == "GitHub":
-                    default_branch = subprocess.check_output("git branch"
-                            " --no-color", shell=True)[2:-1]
-                    return ("%s/blob/%s/%s" % (repo_url, default_branch,
-                            filename)).replace("//", "/")
+                default_branch = subprocess.check_output("git branch"
+                    " --no-color", shell=True)[2:-1]
+                return ("%s/blob/%s/%s" % (repo_url, default_branch,
+                        filename)).replace("//", "/")
             elif framework_name == "Bitbucket":
-                    commit_hash = subprocess.check_output("git rev-parse HEAD",
-                            shell=True).replace("\n", "")
-                    return ("%s/src/%s/%s" % (repo_url, commit_hash,
-                            filename)).replace("//", "/")
-        except subprocess.CalledProcessError as exception:
+                commit_hash = subprocess.check_output("git rev-parse HEAD",
+                    shell=True).replace("\n", "")
+                return ("%s/src/%s/%s" % (repo_url, commit_hash,
+                        filename)).replace("//", "/")
+        except subprocess.CalledProcessError:
             return None
 
     def _get_git_commits(self):
@@ -360,7 +370,7 @@ class GitIndexer(threading.Thread):
                 non_ascii = file_snippet.translate(null_trans, ascii_characters)
                 return not float(len(non_ascii)) / len(file_snippet) > 0.30
 
-        except IOError as exception:
+        except IOError:
             return False
 
 class _GitCloner(threading.Thread):
@@ -377,7 +387,7 @@ class _GitCloner(threading.Thread):
     :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
-    def __init__(self, clone_queue, index_queue):
+    def __init__(self, clone_queue, index_queue, run_event):
         """
         Create an instance of the singleton :class:`_GitCloner`.
 
@@ -390,6 +400,7 @@ class _GitCloner(threading.Thread):
 
         self.clone_queue = clone_queue
         self.index_queue = index_queue
+        self.run_event = run_event
         self._logger = logging.getLogger("%s.%s" %
                 (__name__, self.__class__.__name__))
         self._logger.info("Starting.")
@@ -405,7 +416,7 @@ class _GitCloner(threading.Thread):
         for the `GitIndexer` to clone; otherwise, it is discarded.
         """
 
-        while True:
+        while self.run_event.is_set():
             while self.clone_queue.empty():
                 time.sleep(THREAD_QUEUE_SLEEP)
             repo = self.clone_queue.get()
@@ -413,7 +424,7 @@ class _GitCloner(threading.Thread):
 
             try:
                 self._clone_repository(repo)
-            except Exception as exception:
+            except Exception:
                 pass
 
     def _clone_repository(self, repo):
@@ -439,7 +450,7 @@ class _GitCloner(threading.Thread):
             try:
                 exit_code = subprocess.call(command % (GIT_CLONE_TIMEOUT,
                         repo.url, GIT_CLONE_DIR, repo.name), shell=True)
-            except Exception as exception:
+            except Exception:
                 time.sleep(1)
                 command_attempt += 1
                 if command_attempt == 20:
