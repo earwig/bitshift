@@ -7,7 +7,7 @@ Contains functions for initializing all subsidiary, threaded crawlers.
 import logging, logging.handlers, os, Queue
 
 from bitshift.crawler import crawler, indexer
-from bitshift.parser import parse, start_parse_servers
+from bitshift.parser import start_parse_servers
 
 __all__ = ["crawl"]
 
