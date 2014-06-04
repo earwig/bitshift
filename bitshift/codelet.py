@@ -83,7 +83,7 @@ class Codelet(object):
         """
         lang = LANGS[self.language]
         lines = reduce(concat, [[loc[0] for loc in sym[1] + sym[2]] for sym in
-                                reduce(concat, self.symbols.values())])
+                                reduce(concat, self.symbols.values(), [])], [])
         formatter = HtmlFormatter(linenos=True, hl_lines=lines)
         code = highlight(self.code, get_lexer_by_name(lang.lower()), formatter)
 
