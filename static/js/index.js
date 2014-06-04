@@ -56,13 +56,20 @@ var searchResultsPage = 1;
      */
     var previousResult = function(){
         var currResult = $(".display-all");
-        if(currResult.length)
-            currResult.closest(".result").prev(".result").each(function(){
-                $('html,body').stop().animate({
-                    scrollTop: $(this).offset().top - (
-                        $(window).height() - $(this).outerHeight(true)) / 2
-                }, 140);
-            });
+        if(currResult.length) {
+            currResult.removeClass('display-all');
+            currResult = currResult.closest(".result").prev(".result");
+        } else {
+            currResult = $(document.querySelectorAll('.result')[0]);
+        }
+
+        currResult.addClass('display-all');
+        currResult.each(function(){
+            $('html,body').stop().animate({
+                scrollTop: $(this).offset().top - (
+                    $(window).height() - $(this).outerHeight(true)) / 2
+            }, 140);
+        });
     };
 
     /*
@@ -71,13 +78,20 @@ var searchResultsPage = 1;
      */
     var nextResult = function(){
         var currResult = $(".display-all");
-        if(currResult.length)
-            currResult.closest(".result").next(".result").each(function(){
-                $('html,body').stop().animate({
-                    scrollTop: $(this).offset().top - (
-                        $(window).height() - $(this).outerHeight(true)) / 2
-                }, 140);
-            });
+        if(currResult.length) {
+            currResult.removeClass('display-all');
+            currResult = currResult.closest(".result").next(".result");
+        } else {
+            currResult = $(document.querySelectorAll('.result')[0]);
+        }
+
+        currResult.addClass('display-all');
+        currResult.each(function(){
+            $('html,body').stop().animate({
+                scrollTop: $(this).offset().top - (
+                    $(window).height() - $(this).outerHeight(true)) / 2
+            }, 140);
+        });
     };
 
     var hotkeyActions = {
@@ -260,24 +274,26 @@ function createResult(codelet) {
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
 
     //Event binding
-    $(codeElt).hover(function(e) {
-        $(row).addClass('display-all');
+    $(newDiv).hover(function(e) {
+        $(this).addClass('display-all');
     });
 
     $(newDiv).on('transitionend', function(e) {
-        $(codeElt).one('mouseleave', function(e) {
-            $(row).removeClass('display-all');
+        $(this).on('mouseleave', function(e) {
+            $(this).removeClass('display-all');
         });
     });
 
     $(nextMatch).click(function(e) {
         e.stopPropagation();
         e.preventDefault();
+        nextSymbolMatch();
     });
 
     $(prevMatch).click(function(e) {
         e.stopPropagation();
         e.preventDefault();
+        previousSymbolMatch();
     });
 
     //Finish and append elements to parent elements
@@ -300,7 +316,6 @@ function createResult(codelet) {
 
     newDiv.appendChild(displayInfo);
     newDiv.appendChild(table);
-    newDiv.appendChild(cycle);
 
     return newDiv;
 }
@@ -311,11 +326,10 @@ function previousSymbolMatch() {
         matches = currResult.find(".hll"),
         scrollDiv = currResult.find('#tablecontainer');
 
-    if (currMatch.length == 0) {
+    if (currMatch.length == 0)
         currMatch = matches[0];
-        $(currMatch).addClass('current');
-    }
-    currMatch.removeClass('current');
+    else
+        currMatch.removeClass('current');
 
     var index = matches.index(currMatch.get(0)) - 1;
     index = index <= 0 ? matches.length - 1 : index;
@@ -335,11 +349,10 @@ function nextSymbolMatch() {
         matches = currResult.find(".hll"),
         scrollDiv = currResult.find('#tablecontainer');
 
-    if (currMatch.length == 0) {
+    if (currMatch.length == 0)
         currMatch = $(matches[0]);
-        $(currMatch).addClass('current');
-    }
-    currMatch.removeClass('current');
+    else
+        currMatch.removeClass('current');
 
     var index = matches.index(currMatch.get(0)) + 1;
     index = index >= matches.length ? 0 : index;
