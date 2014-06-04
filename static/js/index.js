@@ -82,7 +82,7 @@ var searchResultsPage = 1;
 
     var hotkeyActions = {
         "k" : previousResult,
-        "j" : nextResult
+        "j" : nextResult,
         "h" : previousSymbolMatch,
         "l" : nextSymbolMatch
     };
@@ -258,10 +258,6 @@ function createResult(codelet) {
 
     // Needs to be processed on the server
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
-    var matches = codeElt.querySelectorAll('.hll');
-    $.each(matches, function(i, a) {
-        a.id = 'match_' + i;
-    });
 
     //Event binding
     $(codeElt).hover(function(e) {
@@ -274,28 +270,14 @@ function createResult(codelet) {
         });
     });
 
-    var cur_match = -1;
-    var newMatch = function(e) {
-        var $code = $(newDiv).find('#tablecontainer'),
-            $match = $code.find('#match_' + cur_match);
-
-        $code.scrollTop($code.scrollTop() - $code.height() / 2 +
-            $match.position().top + $match.height() / 2);
-
-        $match.effect("highlight", {}, 750)
-    }
-
     $(nextMatch).click(function(e) {
-        e.stopPropagation()
-        e.preventDefault()
-        cur_match = cur_match >= matches.length - 1 ?  0 : cur_match + 1;
-        newMatch();
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     $(prevMatch).click(function(e) {
-        e.stopPropagation()
-        cur_match = cur_match <= 0 ?  matches.length - 1 : cur_match - 1;
-        newMatch();
+        e.stopPropagation();
+        e.preventDefault();
     });
 
     //Finish and append elements to parent elements
@@ -322,6 +304,54 @@ function createResult(codelet) {
 
     return newDiv;
 }
+
+function previousSymbolMatch() {
+    var currResult = $(".display-all"),
+        currMatch = currResult.find(".hll.current"),
+        matches = currResult.find(".hll"),
+        scrollDiv = currResult.find('#tablecontainer');
+
+    if (currMatch.length == 0) {
+        currMatch = matches[0];
+        $(currMatch).addClass('current');
+    }
+    currMatch.removeClass('current');
+
+    var index = matches.index(currMatch.get(0)) - 1;
+    index = index <= 0 ? matches.length - 1 : index;
+    var newMatch = $(matches[index]);
+
+    scrollDiv.scrollTop(scrollDiv.scrollTop()
+            - scrollDiv.height() / 2
+            + newMatch.position().top + newMatch.height() / 2);
+
+    newMatch.effect("highlight", {}, 750)
+    newMatch.addClass('current');
+};
+
+function nextSymbolMatch() {
+    var currResult = $(".display-all"),
+        currMatch = currResult.find(".hll.current"),
+        matches = currResult.find(".hll"),
+        scrollDiv = currResult.find('#tablecontainer');
+
+    if (currMatch.length == 0) {
+        currMatch = $(matches[0]);
+        $(currMatch).addClass('current');
+    }
+    currMatch.removeClass('current');
+
+    var index = matches.index(currMatch.get(0)) + 1;
+    index = index >= matches.length ? 0 : index;
+    var newMatch = $(matches[index]);
+
+    scrollDiv.scrollTop(scrollDiv.scrollTop()
+            - scrollDiv.height() / 2
+            + newMatch.position().top + newMatch.height() / 2);
+
+    newMatch.effect("highlight", {}, 750);
+    newMatch.addClass('current');
+};
 
 /*
  * AJAX the current query string to the server, and return its response.
