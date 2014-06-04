@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 7
+VERSION = 8
 
 MIGRATIONS = [
     # 1 -> 2
@@ -95,6 +95,11 @@ MIGRATIONS = [
         """ALTER TABLE `cache_data`
            ADD COLUMN `cdata_index` TINYINT UNSIGNED NOT NULL
                AFTER `cdata_codelet`"""
+    ],
+    # 7 -> 8
+    [
+        """ALTER TABLE `origins`
+           DROP COLUMN `origin_image`"""
     ]
 ]
 
