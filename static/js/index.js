@@ -28,7 +28,8 @@ var searchResultsPage = 1;
             results.classList.add('disable-hover')
 
         scrollTimer = setTimeout(function(){
-            results.classList.remove('disable-hover');
+            if (results.classList.contains('disable-hover'))
+                results.classList.remove('disable-hover');
         }, 200);
     });
 
@@ -115,10 +116,6 @@ var searchResultsPage = 1;
         for(var hotkey in hotkeyActions){
             var keyChar = String.fromCharCode(key.keyCode);
             if(keyChar == hotkey) {
-                var results = $('#results').get(0);
-                if (!results.classList.contains('disable-hover'))
-                    results.classList.add('disable-hover')
-
                 hotkeyActions[keyChar]();
             }
         }
@@ -344,7 +341,7 @@ function previousSymbolMatch() {
     var currResult = $(".display-all"),
         currMatch = currResult.find(".hll.current"),
         matches = currResult.find(".hll"),
-        scrollDiv = currResult.find('#tablecontainer');
+        scrollDiv = currResult.find("#tablecontainer");
 
     if (currMatch.length == 0)
         currMatch = matches[0];
@@ -359,7 +356,7 @@ function previousSymbolMatch() {
             - scrollDiv.height() / 2
             + newMatch.position().top + newMatch.height() / 2);
 
-    newMatch.effect("highlight", {color: '#FFFF00'}, 750)
+    newMatch.effect("highlight", {color: '#FFF'}, 750)
     newMatch.addClass('current');
 };
 
