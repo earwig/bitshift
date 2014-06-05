@@ -119,9 +119,11 @@ module Bitshift
         end
 
         def to_s
-            new_symbols = Hash.new {|hash, key| hash[key] = Hash.new}
+            new_symbols = Hash.new
 
             symbols.each do |type, sym_list|
+                new_symbols[type.to_s] = Hash.new
+
                 sym_list.each do |name, sym|
                     new_symbols[type.to_s][name.to_s] = {
                         "assignments" => sym[:assignments],

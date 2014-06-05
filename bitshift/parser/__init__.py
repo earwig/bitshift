@@ -12,12 +12,6 @@ from .python import parse_py
 
 __all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
 
-PARSERS = {
-    "Python": parse_py,
-    "Java": parse_via_server,
-    "Ruby": parse_via_server,
-}
-
 PARSER_COMMANDS = [
         ('Java', ['mvn', '-f',
             path.join(path.dirname(__file__), "../../parsers/java/pom.xml"),
@@ -120,6 +114,12 @@ def parse_via_server(codelet):
 
     codelet.symbols = symbols
 
+PARSERS = {
+    "Python": parse_py,
+    "Java": parse_via_server,
+    "Ruby": parse_via_server,
+}
+
 def parse(codelet):
     """
     Dispatches the codelet to the correct parser based on its language.
@@ -132,6 +132,7 @@ def parse(codelet):
     :type code: Codelet
     """
     lang = _lang(codelet)
+    lang_string = LANGS[lang]
     codelet.language = lang
-    if lang in PARSERS:
-        PARSERS[lang](codelet)
+    if lang_string in PARSERS:
+        PARSERS[lang_string](codelet)
