@@ -80,8 +80,6 @@ public class JavaParser extends Parser {
 
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
-            Integer el = -1;
-            Integer ec = -1;
 
             if (statements.size() > 0) {
                 Statement last = statements.get(statements.size() - 1);
@@ -89,7 +87,7 @@ public class JavaParser extends Parser {
                 ec = this.root.getColumnNumber(last.getStartPosition());
             }
 
-            data.put("coord", Symbols.createCoord(sl, sc, el, ec));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, sc));
             data.put("name", name);
             this._cache.push(data);
             return true;
@@ -110,7 +108,7 @@ public class JavaParser extends Parser {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, sc));
             data.put("name", name);
             this._cache.push(data);
             return true;
@@ -140,7 +138,7 @@ public class JavaParser extends Parser {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, sc));
             this._cache.push(data);
             return true;
         }
@@ -161,7 +159,7 @@ public class JavaParser extends Parser {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, sc));
             this._cache.push(data);
             return true;
         }

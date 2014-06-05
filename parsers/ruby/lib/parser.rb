@@ -51,7 +51,7 @@ module Bitshift
                 break if cur_exp == nil
             end
 
-            pos = [start_ln, -1, end_ln, -1]
+            pos = [start_ln, 1, end_ln, 1]
             return pos
         end
 
@@ -59,7 +59,7 @@ module Bitshift
             pos = Hash.new
             end_ln = start_ln = exp.line - offset
 
-            pos = [start_ln, -1, end_ln, -1]
+            pos = [start_ln, 1, end_ln, 1]
             return pos
         end
 

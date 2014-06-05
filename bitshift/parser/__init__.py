@@ -129,6 +129,7 @@ def parse(codelet):
     lang = _lang(codelet)
     lang_string = LANGS[lang]
     codelet.language = lang
+
     if lang_string in PARSERS:
         symbols = PARSERS[lang_string](codelet)
         symbols = {
@@ -138,3 +139,6 @@ def parse(codelet):
                   for name in syms]
             for key, syms in symbols.iteritems()}
         codelet.symbols = symbols
+
+    else:
+        codelet.symbols = {}
