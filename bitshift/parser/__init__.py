@@ -70,7 +70,8 @@ def _recv_data(server_socket):
                 size_data += cur_data
                 size = struct.unpack('>i', size_data[:4])[0]
                 recv_size = size
-                if recv_size > sys.maxint: recv_size = sys.maxint
+                if recv_size > sys.maxint:
+                    recv_size = sys.maxint
                 total_data.append(size_data[4:])
             else:
                 size_data += cur_data
@@ -130,12 +131,10 @@ def parse(codelet):
     codelet.language = lang
     if lang_string in PARSERS:
         symbols = PARSERS[lang_string](codelet)
-        symbols = {key: [(name, [tuple(loc)
-            for loc in syms[name]['assignments']],
-            [tuple(loc) for loc in syms[name]['uses']])
-            for name in syms.keys()]
+        symbols = {
+            key: [(name,
+                   [tuple(loc) for loc in syms[name]["assignments"]],
+                   [tuple(loc) for loc in syms[name]["uses"]])
+                  for name in syms]
             for key, syms in symbols.iteritems()}
-
         codelet.symbols = symbols
-
-    codelet.symbols = symbols

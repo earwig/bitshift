@@ -196,9 +196,8 @@ class Symbol(_Node):
     VARIABLE = 2
     MODULE = 3
     INTERFACE = 4
-    TYPES = {FUNCTION: "FUNCTION", CLASS: "CLASS", VARIABLE: "VARIABLE",
-            MODULE: "MODULE", INTERFACE: "INTERFACE"}
-    TYPES_INV = ["functions", "classes", "vars", "modules", "interfaces"]
+    TYPES = ["functions", "classes", "vars", "modules", "interfaces"]
+    TYPE_REPR = ["FUNCTION", "CLASS", "VARIABLE", "MODULE", "INTERFACE"]
 
     def __init__(self, type_, name):
         """
@@ -209,7 +208,7 @@ class Symbol(_Node):
         self.name = name
 
     def __repr__(self):
-        type_ = self.TYPES.get(self.type, "ALL")
+        type_ = self.TYPE_REPR[self.type] if self.type >= 0 else "ALL"
         return "Symbol({0}, {1})".format(type_, self.name)
 
     def sortkey(self):
@@ -222,7 +221,7 @@ class Symbol(_Node):
         else:
             cond, name = "symbol_name = ?", self.name.string
             if self.type == self.ALL:
-                types = ", ".join(str(type_) for type_ in self.TYPES)
+                types = ", ".join(str(typ) for typ in xrange(len(self.TYPES)))
                 cond += " AND symbol_type IN (%s)" % types
         if self.type != self.ALL:
             cond += " AND symbol_type = %d" % self.type

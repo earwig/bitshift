@@ -92,10 +92,10 @@ class Database(object):
             return {}
         cond = " OR ".join(conds)
 
-        symbols = {type_: {} for type_ in Symbol.TYPES_INV}
+        symbols = {type_: {} for type_ in Symbol.TYPES}
         cursor.execute(query % cond, tuple(args))
         for type_, name, loc_type, row, col, erow, ecol in cursor.fetchall():
-            sdict = symbols[Symbol.TYPES_INV[type_]]
+            sdict = symbols[Symbol.TYPES[type_]]
             if name not in sdict:
                 sdict[name] = ([], [])
             sdict[name][loc_type].append((row, col, erow, ecol))
@@ -146,10 +146,11 @@ class Database(object):
         query2 = """INSERT INTO symbol_locations VALUES
                     (DEFAULT, ?, ?, ?, ?, ?, ?)"""
 
-        for (name, decls, uses) in symbols:
-            cursor.execute(query1, (code_id, Symbol.TYPES_INV.index(sym_type), name))
+        type_id = Symbol.TYPES.index(sym_type)
+        for (name, assigns, uses) in symbols:
+            cursor.execute(query1, (code_id, type_id, name))
             sym_id = cursor.lastrowid
-            params = ([tuple([sym_id, 0] + list(loc)) for loc in decls] +
+            params = ([tuple([sym_id, 0] + list(loc)) for loc in assigns] +
                       [tuple([sym_id, 1] + list(loc)) for loc in uses])
             cursor.executemany(query2, params)
 
