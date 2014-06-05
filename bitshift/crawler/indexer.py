@@ -196,21 +196,20 @@ class GitIndexer(threading.Thread):
 
         .. warning::
             Various Git subprocesses will occasionally fail, and, seeing as the
-            information they provide is a crucial component of some repository file
-            urls, None may be returned.
+            information they provide is a crucial component of some repository
+            file urls, None may be returned.
         """
 
         try:
             if framework_name == "GitHub":
                 default_branch = subprocess.check_output("git branch"
                     " --no-color", shell=True)[2:-1]
-                return ("%s/blob/%s/%s" % (repo_url, default_branch,
-                        filename)).replace("//", "/")
+                parts = [repo_url, "blob", default_branch, filename]
             elif framework_name == "Bitbucket":
                 commit_hash = subprocess.check_output("git rev-parse HEAD",
                     shell=True).replace("\n", "")
-                return ("%s/src/%s/%s" % (repo_url, commit_hash,
-                        filename)).replace("//", "/")
+                parts = [repo_url, "src", commit_hash, filename]
+            return "/".join(s.strip("/") for s in parts)
         except subprocess.CalledProcessError:
             return None
 
