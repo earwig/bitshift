@@ -106,13 +106,7 @@ def parse_via_server(codelet):
     server_socket.send("%d\n%s" % (len(codelet.code), codelet.code))
 
     symbols = json.loads(_recv_data(server_socket))
-    symbols = {key: [(name, [tuple(loc)
-        for loc in syms[name]['assignments']],
-        [tuple(loc) for loc in syms[name]['uses']])
-        for name in syms.keys()]
-        for key, syms in symbols.iteritems()}
-
-    codelet.symbols = symbols
+    return symbols
 
 PARSERS = {
     "Python": parse_py,
@@ -135,4 +129,13 @@ def parse(codelet):
     lang_string = LANGS[lang]
     codelet.language = lang
     if lang_string in PARSERS:
-        PARSERS[lang_string](codelet)
+        symbols = PARSERS[lang_string](codelet)
+        symbols = {key: [(name, [tuple(loc)
+            for loc in syms[name]['assignments']],
+            [tuple(loc) for loc in syms[name]['uses']])
+            for name in syms.keys()]
+            for key, syms in symbols.iteritems()}
+
+        codelet.symbols = symbols
+
+    codelet.symbols = symbols

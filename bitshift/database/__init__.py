@@ -32,7 +32,7 @@ class Database(object):
     def _migrate(self, cursor, current):
         """Migrate the database to the latest schema version."""
         for version in xrange(current, VERSION):
-            print "Migrating to %d..." % version + 1
+            print "Migrating to %d..." % (version + 1)
             for query in MIGRATIONS[version - 1]:
                 cursor.execute(query)
             cursor.execute("UPDATE version SET version = ?", (version + 1,))
@@ -97,7 +97,7 @@ class Database(object):
         for type_, name, loc_type, row, col, erow, ecol in cursor.fetchall():
             sdict = symbols[Symbol.TYPES_INV[type_]]
             if name not in sdict:
-                sdict[name] = ((), ())
+                sdict[name] = ([], [])
             sdict[name][loc_type].append((row, col, erow, ecol))
         for type_, sdict in symbols.items():
             symbols[type_] = [(n, d, u) for n, (d, u) in sdict.iteritems()]
@@ -147,7 +147,7 @@ class Database(object):
                     (DEFAULT, ?, ?, ?, ?, ?, ?)"""
 
         for (name, decls, uses) in symbols:
-            cursor.execute(query1, (code_id, Symbol.TYPES_INV[sym_type], name))
+            cursor.execute(query1, (code_id, Symbol.TYPES_INV.index(sym_type), name))
             sym_id = cursor.lastrowid
             params = ([tuple([sym_id, 0] + list(loc)) for loc in decls] +
                       [tuple([sym_id, 1] + list(loc)) for loc in uses])
