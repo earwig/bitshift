@@ -139,6 +139,3 @@ def parse(codelet):
                   for name in syms]
             for key, syms in symbols.iteritems()}
         codelet.symbols = symbols
-
-    else:
-        codelet.symbols = {}
