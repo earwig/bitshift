@@ -296,29 +296,33 @@ div#results
         &:hover
             color: orange
 
-    div.result
-        @extend .t3
+    &.disable-hover
+        pointer-events: none
 
-        width: $resultWidth
-        height: 200px
-        margin-bottom: 100%
+div.result
+    @extend .t3
 
-        table
-            border-collapse: collapse
+    width: $resultWidth
+    height: 200px
+    margin-bottom: 100%
+    pointer-events: auto
+
+    table
+        border-collapse: collapse
+        height: inherit
+
+        tr
+            @extend .t3
+            @include opaque(0.8)
+
             height: inherit
 
-            tr
-                @extend .t3
-                @include opaque(0.8)
+    &.cascade
+        @extend .t1
+        margin-bottom: 15%
 
-                height: inherit
-
-        &.cascade
-            @extend .t1
-            margin-bottom: 15%
-
-        &.display-all table tr
-            @include opaque(1.0)
+    &.display-all table tr
+        @include opaque(1.0)
 
 div#display-info
     font-size: 1.3em

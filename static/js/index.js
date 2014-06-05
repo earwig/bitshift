@@ -9,17 +9,27 @@ FINISH_TYPING_INTERVAL = 650;
 var searchBar = $("form#search-bar input[type='text']")[0];
 var resultsDiv = $("div#results")[0];
 
-var typingTimer, lastValue;
+var typingTimer, scrollTimer, lastValue;
 var searchResultsPage = 1;
 /*
  * Set all page callbacks.
  */
 (function setHomePageCallbabacks(){
+    var results = $('#results').get(0);
+
     // Enable infinite scrolling down the results page.
     $(window).scroll(function(){
         if($(window).scrollTop() + $(window).height() == $(document).height() &&
                 resultsDiv.querySelectorAll(".result").length > 0)
             loadMoreResults();
+
+        clearTimeout(scrollTimer);
+        if (!results.classList.contains('disable-hover'))
+            results.classList.add('disable-hover')
+
+        scrollTimer = setTimeout(function(){
+            results.classList.remove('disable-hover');
+        }, 200);
     });
 
     // Toggle the advanced-search form's visibility.
@@ -57,13 +67,13 @@ var searchResultsPage = 1;
     var previousResult = function(){
         var currResult = $(".display-all");
         if(currResult.length) {
-            currResult.removeClass('display-all');
+            currResult.removeClass("display-all");
             currResult = currResult.closest(".result").prev(".result");
         } else {
-            currResult = $(document.querySelectorAll('.result')[0]);
+            currResult = $(document.querySelectorAll(".result")[0]);
         }
 
-        currResult.addClass('display-all');
+        currResult.addClass("display-all");
         currResult.each(function(){
             $('html,body').stop().animate({
                 scrollTop: $(this).offset().top - (
@@ -79,10 +89,10 @@ var searchResultsPage = 1;
     var nextResult = function(){
         var currResult = $(".display-all");
         if(currResult.length) {
-            currResult.removeClass('display-all');
+            currResult.removeClass("display-all");
             currResult = currResult.closest(".result").next(".result");
         } else {
-            currResult = $(document.querySelectorAll('.result')[0]);
+            currResult = $(document.querySelectorAll(".result")[0]);
         }
 
         currResult.addClass('display-all');
@@ -104,8 +114,13 @@ var searchResultsPage = 1;
     $(window).keypress(function(key){
         for(var hotkey in hotkeyActions){
             var keyChar = String.fromCharCode(key.keyCode);
-            if(keyChar == hotkey)
+            if(keyChar == hotkey) {
+                var results = $('#results').get(0);
+                if (!results.classList.contains('disable-hover'))
+                    results.classList.add('disable-hover')
+
                 hotkeyActions[keyChar]();
+            }
         }
     });
 }());
@@ -273,14 +288,20 @@ function createResult(codelet) {
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
 
     //Event binding
-    $(newDiv).hover(function(e) {
-        $(this).addClass('display-all');
+    $(newDiv).on('mousemove', function(e) {
+        var holdCondition = $('.disable-hover');
+
+        if(holdCondition.length == 0) {
+            $(this).siblings().removeClass('display-all');
+            $(this).addClass('display-all');
+        }
     });
 
-    $(newDiv).on('transitionend', function(e) {
-        $(this).on('mouseleave', function(e) {
+    $(newDiv).on('mouseleave', function(e) {
+        var holdCondition = $('.disable-hover');
+
+        if(holdCondition.length == 0)
             $(this).removeClass('display-all');
-        });
     });
 
     $(nextMatch).click(function(e) {
@@ -346,12 +367,12 @@ function nextSymbolMatch() {
     var currResult = $(".display-all"),
         currMatch = currResult.find(".hll.current"),
         matches = currResult.find(".hll"),
-        scrollDiv = currResult.find('#tablecontainer');
+        scrollDiv = currResult.find("#tablecontainer");
 
     if (currMatch.length == 0)
         currMatch = $(matches[0]);
     else
-        currMatch.removeClass('current');
+        currMatch.removeClass("current");
 
     var index = matches.index(currMatch.get(0)) + 1;
     index = index >= matches.length ? 0 : index;
@@ -361,8 +382,8 @@ function nextSymbolMatch() {
             - scrollDiv.height() / 2
             + newMatch.position().top + newMatch.height() / 2);
 
-    newMatch.effect("highlight", {color: '#FFF'}, 750)
-    newMatch.addClass('current');
+    newMatch.effect("highlight", {color: "#FFF"}, 750)
+    newMatch.addClass("current");
 };
 
 /*
