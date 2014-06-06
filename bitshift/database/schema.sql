@@ -108,7 +108,7 @@ CREATE TABLE `cache_data` (
 ) ENGINE=InnoDB;
 
 DELIMITER //
-CREATE PROCEDURE `empty_database`
+CREATE PROCEDURE `empty_database`()
     BEGIN
         DELETE FROM `codelets`;
         DELETE FROM `code`;
@@ -117,7 +117,7 @@ CREATE PROCEDURE `empty_database`
         ALTER TABLE `authors` AUTO_INCREMENT = 1;
         ALTER TABLE `symbols` AUTO_INCREMENT = 1;
         ALTER TABLE `symbol_locations` AUTO_INCREMENT = 1;
-    END
+    END//
 DELIMITER ;
 
 CREATE EVENT `flush_cache`
