@@ -22,6 +22,54 @@ $hiddenInfoWidth: 250px
     >li.ui-menu-item a.ui-state-focus
         @include vendor(transition, background-color 0.3s ease-out)
 
+div#body
+    @extend .t3
+
+    &.faded
+        @include opaque(0.8)
+
+div#hotkey-help
+    $width: 40%
+
+    background-color: white
+    border: 1px solid $baseColor3
+    left: 50% - $width / 2
+    min-width: 400px
+    padding: 35px
+    position: fixed
+    top: 30%
+    width: $width
+    z-index: 200
+
+    &.hidden
+        display: none
+
+    div
+        border-bottom: 1px solid $baseColor2
+        color: $baseColor1
+        font-size: 130%
+        padding-bottom: 8px
+        text-align: center
+
+    ul
+        list-style: none
+        margin-left: auto
+        margin-right: auto
+        position: relative
+        width: 300px
+
+        li
+            margin-bottom: 4px
+
+            span.hotkey
+                color: $baseColor1
+                font-family: monospace
+                font-size: 130%
+                font-weight: bold
+
+            span.seperator
+                color: $baseColor2
+
 div#search-field
     @extend .t2
 

@@ -106,11 +106,24 @@ var searchResultsPage = 1;
         });
     };
 
+    var displayHotkeyHelp = function(){
+        var help = $("div#hotkey-help");
+        console.log("H");
+        if(help.hasClass("hidden"))
+            help.fadeIn(420);
+        else
+            help.fadeOut(420);
+
+        $("div#body").toggleClass("faded");
+        help.toggleClass("hidden");
+    }
+
     var hotkeyActions = {
         "k" : previousResult,
         "j" : nextResult,
         "h" : previousSymbolMatch,
-        "l" : nextSymbolMatch
+        "l" : nextSymbolMatch,
+        "?" : displayHotkeyHelp
     };
 
     $(window).keypress(function(key){

@@ -99,3 +99,15 @@
   {{ assets.tag("index.js") }}
   {{ assets.tag("index.advanced-search-form.js") }}
 = endblock
+
+= block after_body
+  <div id="hotkey-help" class="hidden">
+    <div>Hotkeys</div>
+    <ul>
+      <li><span class="hotkey">k</span> <span class="seperator">:</span> move window up to the previous result</li>
+      <li><span class="hotkey">j</span> <span class="seperator">:</span> move window down to the next result</li>
+      <li><span class="hotkey">h</span> <span class="seperator">:</span> move to the previous symbol match</li>
+      <li><span class="hotkey">l</span> <span class="seperator">:</span> move to the next symbol match</li>
+    </ul>
+  </div>
+= endblock
