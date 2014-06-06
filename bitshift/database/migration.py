@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 9
+VERSION = 10
 
 MIGRATIONS = [
     # 1 -> 2
@@ -115,6 +115,13 @@ MIGRATIONS = [
                 ALTER TABLE `symbol_locations` AUTO_INCREMENT = 1;
             END//
         DELIMITER ;"""
+    ],
+    # 9 -> 10
+    [
+        """ALTER TABLE `symbol_locations`
+           MODIFY COLUMN `sloc_col` INT UNSIGNED DEFAULT NULL,
+           MODIFY COLUMN `sloc_end_row` INT UNSIGNED DEFAULT NULL,
+           MODIFY COLUMN `sloc_end_col` INT UNSIGNED DEFAULT NULL"""
     ]
 ]
 

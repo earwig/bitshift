@@ -1,4 +1,4 @@
--- Schema version 9
+-- Schema version 10
 
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
@@ -6,7 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (9);
+INSERT INTO `version` VALUES (10);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -77,9 +77,9 @@ CREATE TABLE `symbol_locations` (
     `sloc_symbol` BIGINT UNSIGNED NOT NULL,
     `sloc_type` TINYINT UNSIGNED NOT NULL,
     `sloc_row` INT UNSIGNED NOT NULL,
-    `sloc_col` INT UNSIGNED NOT NULL,
-    `sloc_end_row` INT UNSIGNED NOT NULL,
-    `sloc_end_col` INT UNSIGNED NOT NULL,
+    `sloc_col` INT UNSIGNED DEFAULT NULL,
+    `sloc_end_row` INT UNSIGNED DEFAULT NULL,
+    `sloc_end_col` INT UNSIGNED DEFAULT NULL,
     PRIMARY KEY (`sloc_id`),
     FOREIGN KEY (`sloc_symbol`)
         REFERENCES `symbols` (`symbol_id`)
