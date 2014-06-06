@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 8
+VERSION = 9
 
 MIGRATIONS = [
     # 1 -> 2
@@ -100,6 +100,21 @@ MIGRATIONS = [
     [
         """ALTER TABLE `origins`
            DROP COLUMN `origin_image`"""
+    ],
+    # 8 -> 9
+    [
+        """DELIMITER //
+        CREATE PROCEDURE `empty_database`
+            BEGIN
+                DELETE FROM `codelets`;
+                DELETE FROM `code`;
+                DELETE FROM `cache`;
+                ALTER TABLE `codelets` AUTO_INCREMENT = 1;
+                ALTER TABLE `authors` AUTO_INCREMENT = 1;
+                ALTER TABLE `symbols` AUTO_INCREMENT = 1;
+                ALTER TABLE `symbol_locations` AUTO_INCREMENT = 1;
+            END
+        DELIMITER ;"""
     ]
 ]
 

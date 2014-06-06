@@ -1,4 +1,4 @@
--- Schema version 8
+-- Schema version 9
 
 CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
 USE `bitshift`;
@@ -6,7 +6,7 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (8);
+INSERT INTO `version` VALUES (9);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -106,6 +106,19 @@ CREATE TABLE `cache_data` (
         REFERENCES `codelets` (`codelet_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
+
+DELIMITER //
+CREATE PROCEDURE `empty_database`
+    BEGIN
+        DELETE FROM `codelets`;
+        DELETE FROM `code`;
+        DELETE FROM `cache`;
+        ALTER TABLE `codelets` AUTO_INCREMENT = 1;
+        ALTER TABLE `authors` AUTO_INCREMENT = 1;
+        ALTER TABLE `symbols` AUTO_INCREMENT = 1;
+        ALTER TABLE `symbol_locations` AUTO_INCREMENT = 1;
+    END
+DELIMITER ;
 
 CREATE EVENT `flush_cache`
     ON SCHEDULE EVERY 1 HOUR
