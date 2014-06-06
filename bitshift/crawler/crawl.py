@@ -78,5 +78,4 @@ def _configure_logging():
     root_logger.setLevel(logging.NOTSET)
 
 if __name__ == "__main__":
-    _configure_logging()
     crawl()
