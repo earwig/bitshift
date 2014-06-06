@@ -1,14 +1,13 @@
 = extends "layout.html"
 
 = block title
-  Home
+  home
 = endblock
 
 = block head
   {{ assets.tag("lib/jqueryui.custom.min.css") }}
   {{ assets.tag("lib/jquery.min.js") }}
   {{ assets.tag("lib/jquery-ui.min.js") }}
-  {{ assets.tag("lib/typeahead.bundle.min.js") }}
   {{ assets.tag("lib/highlight.css") }}
 
   {{ assets.tag("index.css") }}
@@ -30,7 +29,7 @@
 
     <form id="search-bar">
       <input type="text" name="query"
-      ><button id="advanced-search" title="advanced search">
+      ><button id="advanced-search" title="advanced search" type="button">
         <img src="static/img/search_bar_magnifying_glass.png">
       </button>
 
@@ -99,4 +98,16 @@
 
   {{ assets.tag("index.js") }}
   {{ assets.tag("index.advanced-search-form.js") }}
+= endblock
+
+= block after_body
+  <div id="hotkey-help" class="hidden">
+    <div>Hotkeys</div>
+    <ul>
+      <li><span class="hotkey">k</span> <span class="seperator">:</span> move window up to the previous result</li>
+      <li><span class="hotkey">j</span> <span class="seperator">:</span> move window down to the next result</li>
+      <li><span class="hotkey">h</span> <span class="seperator">:</span> move to the previous symbol match</li>
+      <li><span class="hotkey">l</span> <span class="seperator">:</span> move to the next symbol match</li>
+    </ul>
+  </div>
 = endblock

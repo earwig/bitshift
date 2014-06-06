@@ -22,7 +22,7 @@ database = Database()
 
 @app.route("/")
 def index():
-    return render_template("index.html", typeahead_languages=LANGS)
+    return render_template("index.html", autocomplete_languages=LANGS)
 
 @app.route("/search.json")
 def search():
