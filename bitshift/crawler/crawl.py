@@ -8,6 +8,7 @@ import logging
 import logging.handlers
 import os
 import Queue
+import sys
 import time
 from threading import Event
 
@@ -37,9 +38,9 @@ def crawl():
                crawler.BitbucketCrawler(repo_clone_queue, run_event),
                indexer.GitIndexer(repo_clone_queue, run_event)]
 
+    parse_servers = start_parse_servers()
     for thread in threads:
         thread.start()
-    parse_servers = start_parse_servers()
 
     try:
         while 1:
@@ -77,5 +78,4 @@ def _configure_logging():
     root_logger.setLevel(logging.NOTSET)
 
 if __name__ == "__main__":
-    _configure_logging()
     crawl()

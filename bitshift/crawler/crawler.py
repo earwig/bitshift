@@ -86,8 +86,8 @@ class GitHubCrawler(threading.Thread):
                     time.sleep(1)
 
                 self.clone_queue.put(indexer.GitRepository(
-                        repo["html_url"], repo["full_name"].replace("/", ""),
-                        "GitHub", repo_ranks[repo["full_name"]]))
+                        repo["html_url"], repo["full_name"], "GitHub",
+                        repo_ranks[repo["full_name"]]))
 
             if int(resp.headers["x-ratelimit-remaining"]) == 0:
                 time.sleep(int(resp.headers["x-ratelimit-reset"]) -
