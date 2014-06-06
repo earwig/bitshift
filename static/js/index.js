@@ -11,6 +11,7 @@ var resultsDiv = $("div#results")[0];
 
 var typingTimer, scrollTimer, lastValue;
 var searchResultsPage = 1;
+
 /*
  * Set all page callbacks.
  */
@@ -115,9 +116,9 @@ var searchResultsPage = 1;
     $(window).keypress(function(key){
         for(var hotkey in hotkeyActions){
             var keyChar = String.fromCharCode(key.keyCode);
-            if(keyChar == hotkey) {
+            if(keyChar == hotkey &&
+                !($(key.target).is("textarea") || $(key.target).is("input")))
                 hotkeyActions[keyChar]();
-            }
         }
     });
 }());
