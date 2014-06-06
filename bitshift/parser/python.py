@@ -58,7 +58,7 @@ class _CachedWalker(ast.NodeVisitor):
         """
 
         line, col = node.lineno, node.col_offset
-        pos = (line, col, line, col)
+        pos = (line, col, -1, -1)
 
         self.cache.append({'nodes': []})
         self.generic_visit(node)
@@ -107,7 +107,7 @@ class _CachedWalker(ast.NodeVisitor):
         """
 
         line, col = node.lineno, node.col_offset
-        pos = (line, col, line, col)
+        pos = (line, col, -1, -1)
 
         if isinstance(node.func, ast.Name):
             name = node.func.id
@@ -154,7 +154,7 @@ def parse_py(codelet):
 
     :param codelet: The codelet object to parsed.
 
-    :type code: list
+    :type code: Codelet
     """
 
     def strip_encoding(lines):

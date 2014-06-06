@@ -17,6 +17,7 @@ import bs4
 
 from ..database import Database
 from ..parser import parse, UnsupportedFileError
+from ..languages import LANGS
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp/bitshift"

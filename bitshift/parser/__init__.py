@@ -15,10 +15,10 @@ __all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
 PARSER_COMMANDS = [
         ('Java', ['mvn', '-f',
             path.join(path.dirname(__file__), "../../parsers/java/pom.xml"),
-            'exec:java', '-Dexec.args="%d"']),
+            'exec:java', '-Dexec.args=%d']),
         ('Ruby', ['rake', '-f',
             path.join(path.dirname(__file__), "../../parsers/ruby/Rakefile"),
-            "'start_server[%d]'"])
+            'start_server[%d]'])
 ]
 
 class UnsupportedFileError(Exception):
@@ -94,9 +94,8 @@ def start_parse_servers():
     procs = []
 
     for (lang, cmd) in PARSER_COMMANDS:
-        procs.append(
-                subprocess.Popen(' '.join(cmd) % (5001 + LANGS.index(lang)),
-                    shell=True))
+        cmd[-1] = cmd[-1] % (5001 + LANGS.index(lang))
+        procs.append(subprocess.Popen(cmd))
 
     return procs
 
@@ -130,12 +129,20 @@ def parse(codelet):
     lang_string = LANGS[lang]
     codelet.language = lang
 
+    def loc_helper(l):
+        for i in l:
+            if i == -1:
+                yield None
+            else:
+                yield i
+
+
     if lang_string in PARSERS:
         symbols = PARSERS[lang_string](codelet)
         symbols = {
             key: [(name,
-                   [tuple(loc) for loc in syms[name]["assignments"]],
-                   [tuple(loc) for loc in syms[name]["uses"]])
+                   [tuple(loc_helper(loc)) for loc in syms[name]["assignments"]],
+                   [tuple(loc_helper(loc)) for loc in syms[name]["uses"]])
                   for name in syms]
             for key, syms in symbols.iteritems()}
         codelet.symbols = symbols
