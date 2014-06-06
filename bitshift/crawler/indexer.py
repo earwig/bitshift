@@ -33,6 +33,7 @@ class GitRepository(object):
         repository belongs to (eg, GitHub, BitBucket).
     :ivar rank: (float) The rank of the repository, as assigned by
         :class:`crawler.GitHubCrawler`.
+    :ivar dirname: (str) The repository's on-disk directory name.
     """
 
     def __init__(self, url, name, framework_name, rank):
@@ -54,6 +55,7 @@ class GitRepository(object):
         self.name = name
         self.framework_name = framework_name
         self.rank = rank
+        self.dirname = name.replace("-", "--").replace("/", "-")
 
 class GitIndexer(threading.Thread):
     """
@@ -125,19 +127,14 @@ class GitIndexer(threading.Thread):
         :type repo_url: :class:`GitRepository`
         """
 
-        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
+        with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.dirname)):
             try:
                 self._insert_repository_codelets(repo)
             except Exception:
                 self._logger.exception("Exception raised while indexing:")
             finally:
-                if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
-                    if len([obj for obj in os.listdir('.') if
-                            os.path.isdir(obj)]) <= 1:
-                        shutil.rmtree("%s/%s" % (
-                                GIT_CLONE_DIR, repo.name.split("/")[0]))
-                    else:
-                        shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
+                if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.dirname)):
+                    shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.dirname))
 
     def _insert_repository_codelets(self, repo):
         """
@@ -167,9 +164,9 @@ class GitIndexer(threading.Thread):
 
             authors = [(self._decode(author), None) for author in
                        commits_meta[filename]["authors"]]
-            codelet = Codelet("%s:%s" % (repo.name, filename), source, filename,
-                            None, authors, self._generate_file_url(filename,
-                                    repo.url, repo.framework_name),
+            url = self._generate_file_url(filename, repo.url, repo.framework_name)
+            codelet = Codelet("%s: %s" % (repo.name, filename), source,
+                            filename, None, authors, url,
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"],
                             repo.rank)
@@ -439,18 +436,19 @@ class _GitCloner(threading.Thread):
         GIT_CLONE_TIMEOUT = 500
 
         queue_percent_full = (float(self.index_queue.qsize()) /
-                self.index_queue.maxsize) * 100
+                              self.index_queue.maxsize) * 100
 
         exit_code = None
-        command = ("perl -e 'alarm shift @ARGV; exec @ARGV' %d git clone"
-        " --single-branch %s %s/%s || pkill -f git")
+        command = ["perl", "-e", "alarm shift @ARGV; exec @ARGV",
+                   str(GIT_CLONE_TIMEOUT), "git", "clone", "--single-branch",
+                   repo.url, GIT_CLONE_DIR + "/" + repo.dirname, "||", "pkill",
+                   "-f", "git"]
 
         command_attempt = 0
         while exit_code is None:
             try:
-                exit_code = subprocess.call(command % (GIT_CLONE_TIMEOUT,
-                        repo.url, GIT_CLONE_DIR, repo.name), shell=True)
-            except Exception:
+                exit_code = subprocess.call(command)
+            except Exception:  # TODO: subprocess.CalledProcessError instead?
                 time.sleep(1)
                 command_attempt += 1
                 if command_attempt == 20:
@@ -461,8 +459,8 @@ class _GitCloner(threading.Thread):
                 break
 
         if exit_code != 0:
-            if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.name)):
-                shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.name))
+            if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.dirname)):
+                shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.dirname))
             return
 
         while self.index_queue.full():

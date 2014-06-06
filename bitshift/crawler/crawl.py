@@ -40,6 +40,7 @@ def crawl():
     for thread in threads:
         thread.start()
     parse_servers = start_parse_servers()
+    time.sleep(5)
 
     try:
         while 1:
