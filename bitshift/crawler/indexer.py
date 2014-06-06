@@ -434,38 +434,20 @@ class _GitCloner(threading.Thread):
         """
 
         GIT_CLONE_TIMEOUT = 500
-
         queue_percent_full = (float(self.index_queue.qsize()) /
                               self.index_queue.maxsize) * 100
 
-        exit_code = None
         command = ["perl", "-e", "alarm shift @ARGV; exec @ARGV",
                    str(GIT_CLONE_TIMEOUT), "git", "clone", "--single-branch",
-                   repo.url, GIT_CLONE_DIR + "/" + repo.dirname, "||", "pkill",
-                   "-f", "git"]
-
-        command_attempt = 0
-        while exit_code is None:
-            try:
-                exit_code = subprocess.call(command)
-            except Exception:  # TODO: subprocess.CalledProcessError instead?
-                time.sleep(1)
-                command_attempt += 1
-                if command_attempt == 20:
-                    break
-                else:
-                    continue
-            else:
-                break
-
-        if exit_code != 0:
+                   repo.url, GIT_CLONE_DIR + "/" + repo.dirname]
+        if subprocess.call(command) != 0:
+            subprocess.call(["pkill", "-f", "git"])  # This makes Ben K upset
             if os.path.isdir("%s/%s" % (GIT_CLONE_DIR, repo.dirname)):
                 shutil.rmtree("%s/%s" % (GIT_CLONE_DIR, repo.dirname))
             return
 
         while self.index_queue.full():
             time.sleep(THREAD_QUEUE_SLEEP)
-
         self.index_queue.put(repo)
 
 class _ChangeDir(object):
