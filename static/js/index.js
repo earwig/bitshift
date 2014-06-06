@@ -398,7 +398,7 @@ function queryServer(){
     var resultDivs = [];
     $.getJSON(queryUrl, function(result){
         if("error" in result)
-            errorMessage(result["error"]);
+            insertErrorMessage(result["error"]);
         else
             for(var codelet = 0; codelet < result["results"].length; codelet++)
                 resultDivs.push(result["results"][codelet]);
@@ -435,8 +435,10 @@ function loadMoreResults(){
  *
  * @param msg (str) The message string.
  */
-function errorMessage(msg){
-    alert(msg);
+function insertErrorMessage(msg){
+    var error = $("<div id='error'><span>Error: </span></div>");
+    error.append(msg);
+    resultsDiv.appendChild(error[0]);
 }
 
-loadMoreResults();
+// loadMoreResults();
