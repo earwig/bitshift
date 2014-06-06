@@ -80,6 +80,8 @@ public class JavaParser extends Parser {
 
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
+            int el = sl;
+            int ec = sc;
 
             if (statements.size() > 0) {
                 Statement last = statements.get(statements.size() - 1);
