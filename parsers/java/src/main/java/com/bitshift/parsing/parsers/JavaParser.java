@@ -80,7 +80,7 @@ public class JavaParser extends Parser {
 
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
-            Integer el = -1;
+            Integer el = sl;
             Integer ec = -1;
 
             if (statements.size() > 0) {
@@ -110,7 +110,7 @@ public class JavaParser extends Parser {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, -1));
             data.put("name", name);
             this._cache.push(data);
             return true;
@@ -140,7 +140,7 @@ public class JavaParser extends Parser {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, -1));
             this._cache.push(data);
             return true;
         }
@@ -161,7 +161,7 @@ public class JavaParser extends Parser {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, -1, -1));
+            data.put("coord", Symbols.createCoord(sl, sc, sl, -1));
             this._cache.push(data);
             return true;
         }
