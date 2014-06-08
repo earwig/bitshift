@@ -111,7 +111,7 @@ class _CachedWalker(ast.NodeVisitor):
 
         if isinstance(node.func, ast.Name):
             name = node.func.id
-        elif isinstance(node.func, ast.Attr):
+        elif isinstance(node.func, ast.Attribute):
             name = node.func.attr
         else:  # Dynamically selected functions, etc:
             return
