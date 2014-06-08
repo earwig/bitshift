@@ -1,45 +1,35 @@
-<!DOCTYPE html>
-<!-- Global layout template, to be inherited by other project HTML files. -->
+= extends "layout.html"
 
-<html>
-  <head>
-    <title>
-      bitshift &laquo;
-      = filter lower
-        = block title
-        = endblock
-      = endfilter
-    </title>
+= block head
+  {{ assets.tag("lib/jquery.min.js") }}
+  {{ assets.tag("main.css") }}
+  {{ assets.tag("about.css") }}
+  {{ assets.tag("about.js") }}
+= endblock
 
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-    <meta name="description" content="bitshift is a source code search engine."/>
-    <meta name="keywords" content="source code language search engine"/>
-    <meta name="author" content="Benjamin Attal Ben Kurtovic Severyn Kozak"/>
+= block after_body
+  <div id="img-1" class="bg"></div>
+  <div id="img-2" class="bg"></div>
+  <div id="img-3" class="bg"></div>
 
-    {{ assets.tag("lib/jquery.min.js") }}
-    {{ assets.tag("main.css") }}
-    {{ assets.tag("about.css") }}
-    {{ assets.tag("about.js") }}
-
-    = block head
-    = endblock
-  </head>
-  <body>
-    <div id="img-1" class="bg"></div>
-    <div id="img-2" class="bg"></div>
-    <div id="img-3" class="bg"></div>
-
-    <div id="top" class="section">
-      <h1>Section one</h1>
-      Having done this, our code is complete. If you test the file you’ll see it working. To change the speed, we need to change the fraction in the function; smaller fractions reduce the speed and higher fractions increase it. You can see the final result of this code in this pen I created.
+  <div id="top" class="section">
+    <div class="centered">
+      <h1>What?</h1>
+      Lorizzle dolor sit fo shizzle my nizzle, consectetuer adipiscing gizzle. Nullizzle sapizzle velizzle, dizzle dang, the bizzle dang, doggy own yo', dawg. Pellentesque egizzle tortizzle. Fo shizzle mah nizzle fo rizzle, mah home g-dizzle eros. Away hizzle dolizzle dapibus izzle tempizzle tempizzle. Maurizzle pellentesque nibh et turpis. Sure ass fo shizzle. Pellentesque eleifend rhoncus nisi. In rizzle i saw beyonces tizzles and my pizzle went crizzle break it down dictumst. Donec dapibizzle. Curabitizzle tellus sizzle, pretizzle gizzle, mattizzle , we gonna chung vitae, nunc. Sure suscipizzle. Integizzle owned velit check out this yo mamma.
     </div>
-    <div class="section">
-      <h1>Section two</h1>
-      Having done this, our code is complete. If you test the file you’ll see it working. To change the speed, we need to change the fraction in the function; smaller fractions reduce the speed and higher fractions increase it. You can see the final result of this code in this pen I created.
+  </div>
+
+  <div class="section">
+    <div class="centered">
+      <h1>How?</h1>
+      Curabitizzle et dizzle that's the shizzle nisi fo mollizzle. Fo shizzle potenti. Morbi odio. Crackalackin neque. Izzle ma nizzle. You son of a bizzle mauris rizzle, ma nizzle, feugiat doggy amizzle, phat in, pede. Pellentesque fo shizzle mah nizzle fo rizzle, mah home g-dizzle. Vestibulizzle shut the shizzle up mi, volutpat in, yo mamma sizzle, adipiscing sempizzle, velizzle. Crizzle hizzle ipsizzle. Gangster volutpizzle felis vizzle fo shizzle. Shizzlin dizzle for sure justo in fo shizzle sodales fizzle. Own yo' venenatis my shizz check out this i'm in the shizzle. Nunc funky fresh. Suspendisse venenatis fo shizzle boom shackalack. Curabitur fo shizzle ante. Nunc shut the shizzle up, fo shizzle eu ass hendrerizzle, dawg felizzle elementizzle sizzle, fizzle aliquizzle magna felis luctus pede. Nam a pot. Class fo shizzle taciti shizzle my nizzle crocodizzle ad litora for sure bizzle conubia fizzle, dang inceptos shit. Aliquam interdizzle, nizzle nizzle elementizzle nonummy, da bomb fo shizzle stuff leo, shizzlin dizzle semper shiznit arcu crazy sem.
     </div>
-    <div class="section">
-      <h1>Section three</h1>
-      Having done this, our code is complete. If you test the file you’ll see it working. To change the speed, we need to change the fraction in the function; smaller fractions reduce the speed and higher fractions increase it. You can see the final result of this code in this pen I created.
+  </div>
+
+  <div class="section">
+    <div class="centered">
+      <h1>Who?</h1>
+      Praesent gangster fo shizzle sizzle maurizzle posuere funky fresh. Aliquam lacinia viverra fo shizzle my nizzle. Crizzle crazy dawg leo sodales shizzlin dizzle. Fo shizzle mah nizzle fo rizzle, mah home g-dizzle crackalackin, crunk vitae boofron convallizzle, nulla ligula shizzlin dizzle metizzle, gangsta venenatis augue dui izzle arcu. Shut the shizzle up gravida lacizzle izzle bling bling. Vivamus arcu magna, cool ghetto, faucibizzle mah nizzle, placerat izzle, maurizzle. Sizzle vehicula laorizzle my shizz. Bow wow wow erizzle dizzle, hendrerizzle pizzle, condimentizzle ac, shiz away, arcu. Morbi aliquizzle placerat nulla. Maecenas uhuh ... yih! funky fresh mammasay mammasa mamma oo sa da bomb. Fusce metus sizzle, egestas eu, get down get down quizzle, elementum eget, we gonna chung. Shizznit dawg nunc a for sure shizzle my nizzle crocodizzle go to hizzle. Fusce sagittizzle, nulla eget sollicitudin mollis, lacizzle quam tellivizzle erizzle, vitae vehicula boofron we gonna chung vitae arcu. Phat vehicula gangster. Shiz sizzle mi. Pizzle eu turpis. Vestibulum a magna. Away fizzle erat, tellivizzle funky fresh, tempizzle fo shizzle, facilisizzle in, pede. For sure tellizzle. Black nisi erizzle, crazy mammasay mammasa mamma oo sa amizzle, ultricies izzle, dope nizzle, augue.
     </div>
-  </body>
-</html>
+  </div>
+= endblock

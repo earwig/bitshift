@@ -1,8 +1,7 @@
-body
-    // background-color: red
+@import variables
 
 .bg
-    $img-height: 600px
+    $img-height: 650px
 
     position: fixed
     width: 100%
@@ -12,26 +11,34 @@ body
     &#img-1
         background: url("../img/about/bg1.png") no-repeat
         background-size: cover
-        height: $img-height
+        height: 400px
         top: 0px
 
     &#img-2
         background: url("../img/about/bg2.png") no-repeat
-        height: $img-height + 200
-        top: $img-height
+        height: $img-height
+        top: 480px
 
     &#img-3
         background: url("../img/about/bg3.png") no-repeat
         background-size: cover
-        height: $img-height + 100
-        top: 2 * $img-height + 200
+        height: $img-height + 200
+        top: 1200px
 
 div.section
     background-color: white
-    color: black
-    height: 250px
-    font-family: arial
-    margin-bottom: 35px
-    margin-top: 365px
-    line-height: 20px
-    font-size: 16px
+    border: 1px solid $baseColor2
+    height: 300px
+    margin-top: 300px
+    padding: 20px
+
+    &#top
+        margin-top: 0px
+
+    div.centered
+        margin-left: auto
+        margin-right: auto
+        width: 50%
+
+        h1
+            color: $baseColor1
