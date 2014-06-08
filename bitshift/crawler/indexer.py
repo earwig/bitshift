@@ -127,6 +127,7 @@ class GitIndexer(threading.Thread):
         :type repo_url: :class:`GitRepository`
         """
 
+        self._logger.info(u"Indexing repo: %s", repo.name)
         with _ChangeDir("%s/%s" % (GIT_CLONE_DIR, repo.dirname)):
             try:
                 self._insert_repository_codelets(repo)
@@ -170,6 +171,7 @@ class GitIndexer(threading.Thread):
                             commits_meta[filename]["time_created"],
                             commits_meta[filename]["time_last_modified"],
                             repo.rank)
+            self._logger.debug("Indexing file: %s", codelet.name)
             try:
                 parse(codelet)
             except UnsupportedFileError:

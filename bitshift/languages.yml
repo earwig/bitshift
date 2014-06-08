@@ -9,7 +9,6 @@ languages:
         - Python console session
         - Python Traceback
         - NumPy
-        - PyPy Log
     - C
     - Java
     - Ruby:
@@ -276,6 +275,7 @@ languages:
     - Properties
     - Protocol Buffer
     - Puppet
+    - PyPy Log
     - QBasic
     - QML
     - Racket

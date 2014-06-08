@@ -79,7 +79,7 @@ class GitHubCrawler(threading.Thread):
                     queue_percent_full)))
 
             repo_names = [repo["full_name"] for repo in resp.json()]
-            repo_ranks = self._get_repository_ranks(repo_names)
+            repo_ranks = self.get_ranks(repo_names)
 
             for repo in resp.json():
                 while self.clone_queue.full():
@@ -99,7 +99,8 @@ class GitHubCrawler(threading.Thread):
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
-    def _get_repository_ranks(self, repo_names):
+    @classmethod
+    def get_ranks(cls, repo_names):
         """
         Return the ranks for several repositories.
 
@@ -132,7 +133,7 @@ class GitHubCrawler(threading.Thread):
             query_url = "%s?q=%s" % (API_URL,
                 "+".join("repo:%s" % name for name in names))
 
-            params = self.AUTHENTICATION
+            params = cls.AUTHENTICATION
             resp = requests.get(query_url,
                     params=params,
                     headers={
