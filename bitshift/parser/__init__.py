@@ -7,7 +7,7 @@ import subprocess
 from os import path
 from pygments import lexers as pgl, util
 
-from ..languages import LANGS
+from ..languages import LANGS, LANGS_ALL
 from .python import parse_py
 
 __all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
@@ -41,10 +41,9 @@ def _lang(codelet):
             lex = pgl.guess_lexer_for_filename(codelet.filename, codelet.code)
         else:
             lex = pgl.guess_lexer(codelet.code)
-    except util.ClassNotFound:
+        return LANGS_ALL[lex.name]
+    except (util.ClassNotFound, KeyError):
         raise UnsupportedFileError(codelet.filename)
-
-    return LANGS.index(lex.name)
 
 def _recv_data(server_socket):
     """
