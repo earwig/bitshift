@@ -111,8 +111,10 @@ class _CachedWalker(ast.NodeVisitor):
 
         if isinstance(node.func, ast.Name):
             name = node.func.id
-        else:
+        elif isinstance(node.func, ast.Attr):
             name = node.func.attr
+        else:  # Dynamically selected functions, etc:
+            return
 
         if not self.accum['functions'].has_key(name):
             self.accum['functions'][name] = {'assignments': [], 'uses': []}
