@@ -1,0 +1,37 @@
+body
+    // background-color: red
+
+.bg
+    $img-height: 600px
+
+    position: fixed
+    width: 100%
+    left: 0
+    z-index: -1
+
+    &#img-1
+        background: url("../img/about/bg1.png") no-repeat
+        background-size: cover
+        height: $img-height
+        top: 0px
+
+    &#img-2
+        background: url("../img/about/bg2.png") no-repeat
+        height: $img-height + 200
+        top: $img-height
+
+    &#img-3
+        background: url("../img/about/bg3.png") no-repeat
+        background-size: cover
+        height: $img-height + 100
+        top: 2 * $img-height + 200
+
+div.section
+    background-color: white
+    color: black
+    height: 250px
+    font-family: arial
+    margin-bottom: 35px
+    margin-top: 365px
+    line-height: 20px
+    font-size: 16px

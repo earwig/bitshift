@@ -1,11 +1,45 @@
-= extends "layout.html"
+<!DOCTYPE html>
+<!-- Global layout template, to be inherited by other project HTML files. -->
 
-= block title
-  About
-= endblock
+<html>
+  <head>
+    <title>
+      bitshift &laquo;
+      = filter lower
+        = block title
+        = endblock
+      = endfilter
+    </title>
 
-= block body
-  <div>
-    About us, son.
-  </div>
-= endblock
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+    <meta name="description" content="bitshift is a source code search engine."/>
+    <meta name="keywords" content="source code language search engine"/>
+    <meta name="author" content="Benjamin Attal Ben Kurtovic Severyn Kozak"/>
+
+    {{ assets.tag("lib/jquery.min.js") }}
+    {{ assets.tag("main.css") }}
+    {{ assets.tag("about.css") }}
+    {{ assets.tag("about.js") }}
+
+    = block head
+    = endblock
+  </head>
+  <body>
+    <div id="img-1" class="bg"></div>
+    <div id="img-2" class="bg"></div>
+    <div id="img-3" class="bg"></div>
+
+    <div id="top" class="section">
+      <h1>Section one</h1>
+      Having done this, our code is complete. If you test the file you’ll see it working. To change the speed, we need to change the fraction in the function; smaller fractions reduce the speed and higher fractions increase it. You can see the final result of this code in this pen I created.
+    </div>
+    <div class="section">
+      <h1>Section two</h1>
+      Having done this, our code is complete. If you test the file you’ll see it working. To change the speed, we need to change the fraction in the function; smaller fractions reduce the speed and higher fractions increase it. You can see the final result of this code in this pen I created.
+    </div>
+    <div class="section">
+      <h1>Section three</h1>
+      Having done this, our code is complete. If you test the file you’ll see it working. To change the speed, we need to change the fraction in the function; smaller fractions reduce the speed and higher fractions increase it. You can see the final result of this code in this pen I created.
+    </div>
+  </body>
+</html>
