@@ -134,7 +134,9 @@ class _CachedWalker(ast.NodeVisitor):
         start_line, start_col, end_line, end_col = self.block_position(node)
 
         pos = (start_line, start_col, end_line, end_col)
-        self.accum['classes'][node.name] = pos
+        if node.name not in self.accum['classes']:
+            self.accum['classes'][node.name] = {'assignments': [], 'uses': []}
+        self.accum['classes'][node.name]['assignments'].append(pos)
 
         self.generic_visit(node)
 
