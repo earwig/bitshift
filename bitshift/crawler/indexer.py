@@ -418,7 +418,7 @@ class _GitCloner(threading.Thread):
         """
 
         while True:
-            while self.index_queue.empty() and self.run_event.is_set():
+            while self.clone_queue.empty() and self.run_event.is_set():
                 time.sleep(THREAD_QUEUE_SLEEP)
             if not self.run_event.is_set():
                 break
