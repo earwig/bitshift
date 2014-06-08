@@ -107,9 +107,11 @@ class GitIndexer(threading.Thread):
         the queue.
         """
 
-        while self.run_event.is_set():
-            while self.index_queue.empty():
+        while True:
+            while self.index_queue.empty() and self.run_event.is_set():
                 time.sleep(THREAD_QUEUE_SLEEP)
+            if not self.run_event.is_set():
+                break
 
             repo = self.index_queue.get()
             self.index_queue.task_done()
@@ -415,9 +417,11 @@ class _GitCloner(threading.Thread):
         for the `GitIndexer` to clone; otherwise, it is discarded.
         """
 
-        while self.run_event.is_set():
-            while self.clone_queue.empty():
+        while True:
+            while self.index_queue.empty() and self.run_event.is_set():
                 time.sleep(THREAD_QUEUE_SLEEP)
+            if not self.run_event.is_set():
+                break
             repo = self.clone_queue.get()
             self.clone_queue.task_done()
 
