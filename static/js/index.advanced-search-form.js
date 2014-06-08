@@ -37,6 +37,8 @@ var searchGroups = $("div#search-groups");
         searchGroups.append(
             searchGroup.append(createSearchGroupInput("language")));
         $("div#sidebar input[type=checkbox]#language").prop("checked", true);
+
+        searchGroups[0].scrollTop = searchGroups[0].scrollHeight;
     });
 
     // Remove the currently selected group if it's not the only one, and mark
@@ -67,7 +69,7 @@ var searchGroups = $("div#search-groups");
         })
     });
 
-    // Add an input field to the currently selected search group.
+    // Toggle the presence of an input field.
     $("div#sidebar input[type=checkbox]").click(function(){
         var fieldId = $(this).prop("id");
         if($(this).is(":checked")){
@@ -76,8 +78,13 @@ var searchGroups = $("div#search-groups");
             if(fieldId.slice(0, 4) == "date")
                 $(".search-group#selected ." + fieldId).datepicker();
         }
-        else
-            $("div.search-group#selected #" + fieldId).remove()
+        else {
+            if($(".search-group#selected").children("div").length > 1)
+                $(".search-group#selected #" + fieldId).remove()
+            else
+                $(this).prop("checked", true);
+        }
+        searchGroups[0].scrollTop = searchGroups[0].scrollHeight;
     });
 
     var previousAdvancedQuery = "";
@@ -125,7 +132,8 @@ function assembleQuery(){
                 groupQuery.push(genFieldQueryString(
                         inputFields[field], regexCheckbox[field].checked));
 
-        groupQueries.push(groupQuery.join(" AND "));
+        if(groupQuery.length > 0)
+            groupQueries.push(groupQuery.join(" AND "));
     }
 
     return groupQueries.join(" OR ");
@@ -140,8 +148,5 @@ function assembleQuery(){
 function genFieldQueryString(field, hasRegex){
     var terms = field.value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
     var query = field.getAttribute("name") + ":" + (hasRegex?"re:":"") + terms;
-    if(field.value.indexOf('"') >= 0){
-        return '"' + query + '"';
-    }
-    return query;
+    return '"' + query + '"';
 }

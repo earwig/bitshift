@@ -6,9 +6,8 @@
 @import variables
 
 $minSearchFieldsWidth: 490px
-$resultWidth: 830px
-$sidebarWidth: 30px
-$codeWidth: 500px
+$resultWidth: 1000px
+$codeWidth: 650px
 $hiddenInfoWidth: 250px
 
 .ui-datepicker
@@ -23,6 +22,54 @@ $hiddenInfoWidth: 250px
     >li.ui-menu-item a.ui-state-focus
         @include vendor(transition, background-color 0.3s ease-out)
 
+div#body
+    @extend .t3
+
+    &.faded
+        @include opaque(0.8)
+
+div#hotkey-help
+    $width: 40%
+
+    background-color: white
+    border: 1px solid $baseColor3
+    left: 50% - $width / 2
+    min-width: 400px
+    padding: 35px
+    position: fixed
+    top: 30%
+    width: $width
+    z-index: 200
+
+    &.hidden
+        display: none
+
+    div
+        border-bottom: 1px solid $baseColor2
+        color: $baseColor1
+        font-size: 130%
+        padding-bottom: 8px
+        text-align: center
+
+    ul
+        list-style: none
+        margin-left: auto
+        margin-right: auto
+        position: relative
+        width: 300px
+
+        li
+            margin-bottom: 4px
+
+            span.hotkey
+                color: $baseColor1
+                font-family: monospace
+                font-size: 130%
+                font-weight: bold
+
+            span.seperator
+                color: $baseColor2
+
 div#search-field
     @extend .t2
 
@@ -34,6 +81,7 @@ div#search-field
     max-height: 100px
     right: 0
     position: absolute
+    z-index: 2
     top: 0
     width: 40%
 
@@ -103,7 +151,6 @@ div#search-field
 
     &.partly-visible
         margin-top: 0%
-        padding-bottom: 3%
         position: absolute
         width: 100%
 
@@ -120,6 +167,11 @@ div#search-field
             margin-left: auto
             margin-right: auto
             width: 60%
+
+            input:hover
+                @extend .t3
+
+                border: 1px solid $baseColor1
 
 div#advanced-search
     background-color: white
@@ -237,7 +289,7 @@ div#advanced-search
 
     #search-groups
         margin-top: 1%
-        max-height: 93%
+        max-height: 87%
         overflow-y: auto
         width: 75%
 
@@ -286,112 +338,116 @@ div#results
     margin-right: auto
     width: 80%
 
-    /* TODO:
-        1) Sidebar
-            - Add way to cycle through hits in the code.
-        2) Hidden info
-            - Add links for authors.
-            - Remove language field.
-        3) Header
-            - Add an icon for the website.
-            - Add language tag.
-        4) Code body
-            - Add highlighting.*/
-    div.result
-        width: $resultWidth
-        height: 200px
-        margin-top: 2%
-        margin-bottom: 6%
+    a
+        text-decoration: none
 
-        #display-info
-            font-size: 1.2em
+        &:hover
+            color: orange
 
-            a
-                text-decoration: none
+    div#error
+        font-size: 170%
+        margin-top: 22%
+        text-align: center
 
-                &:hover
-                    color: orange
+        span
+            color: $baseColor1
+            font-size: 150%
 
-            #title
-                margin-right: 10px
+    &.disable-hover
+        pointer-events: none
 
-            #site
-                text-transform: capitalize
+div.result
+    @extend .t3
+
+    width: $resultWidth
+    height: 200px
+    margin-bottom: 100%
+    pointer-events: auto
+
+    table
+        border-collapse: collapse
+        height: inherit
+
+        tr
+            @extend .t3
+            @include opaque(0.8)
+
+            height: inherit
+
+    &.cascade
+        @extend .t1
+        margin-bottom: 15%
+
+    &.display-all table tr
+        @include opaque(1.0)
+
+div#display-info
+    font-size: 1.3em
+    padding: 5px 0px 5px 5px
+    width: 100%
+
+    #title
+        margin-right: 10px
+
+    #site
+        text-transform: capitalize
+
+td#code
+    @include vendor(transition, width 0.2s ease-in-out)
+
+    width: $codeWidth
+    height: inherit
+    padding: 0px
+    border: 1px solid #bbb
+
+    #tablecontainer
+        overflow: hidden
+        width: 100%
+        height: inherit
+        background-color: #49483e
+        position: relative
+        z-index: 1
 
         table
             border-collapse: collapse
-            border: 1px solid $baseColor3
-            height: inherit
+            font-family: monospace
 
-            tr
-                height: inherit
+            .linenos
+                padding-left: 1%
 
-                #sidebar
-                    width: $sidebarWidth
-                    background-color: #eee
-                    border-right: 1px solid $baseColor3
-                    height: inherit
+                pre
+                    margin-top: 5px
 
-                #code
-                    width: $codeWidth
-                    height: inherit
-                    border-right: 1px solid $baseColor3
+            .code pre
+                margin-top: 5px
 
-                    #tablecontainer
-                        overflow: scroll
-                        width: 100%
-                        height: inherit
-                        background-color: #49483e
+            .hll
+                background: #5B5A51
 
-                        table
-                            table-layout:fixed
-                            border-collapse: collapse
-                            border: none
-                            font-family: monospace
+div#hidden-info
+    width: $hiddenInfoWidth
+    margin-left: -$hiddenInfoWidth - 10px
+    height: 100%
+    padding-top: 40px
+    font-size: 1.2em
+    line-height: 1.5em
+    position: relative
+    z-index: 0
 
-                #display-button
-                    width: 25px
-                    background: url(http://icons.iconarchive.com/icons/visualpharm/icons8-metro-style/512/Image-Edition-Tools-Arrow-icon.png)
-                    background-size: 25px 25px
-                    background-repeat: no-repeat
-                    background-position: center
+    @include vendor(transition, margin-left 0.2s ease-in-out)
 
-                    &:hover
-                        background-color: #eee
+    .display-all &
+        margin-left: 0px
+        padding-left: 20px
 
-                    &.active
-                        @include vendor(transform, rotateY(180deg))
+    span
+        font-family: monospace
+        color: $baseColor1
+        float: right
 
-                #hidden-info
-                    width: $hiddenInfoWidth
-                    margin-left: -$hiddenInfoWidth
-                    height: 100%
-                    padding-top: 50px
-                    text-align: center
-                    font-size: 1em
-                    line-height: 1.5em
-                    @include vendor(transition, margin-left 0.2s ease-in-out)
+    div
+        display: block
 
-                    &.visible
-                        margin-left: 0px
-
-                    #date-created
-                        display: inline-block
-
-                    #date-modified
-                        display: block
-
-                    #language
-                        display: inline-block
-                        font-weight: bold
-                        color: orange
-
-                    #authors
-                        a
-                            text-decoration: none
-
-                            &:hover
-                                color: orange
-
-        &.cascade
-            @extend .t3
+    #authors
+        a
+            font-family: monospace

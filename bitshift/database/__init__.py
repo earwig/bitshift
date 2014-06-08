@@ -131,7 +131,7 @@ class Database(object):
 
     def _decompose_url(self, cursor, url):
         """Break up a URL into an origin (with a URL base) and a suffix."""
-        query = """SELECT origin_id, SUBSTR(?, LENGTH(origin_url_base))
+        query = """SELECT origin_id, SUBSTR(?, LENGTH(origin_url_base) + 1)
                    FROM origins
                    WHERE origin_url_base IS NOT NULL
                    AND ? LIKE CONCAT(origin_url_base, "%")"""

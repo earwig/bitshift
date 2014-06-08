@@ -8,7 +8,8 @@ def _load_langs():
     filename = path.join(path.dirname(__file__), "languages.yml")
     with open(filename) as fp:
         data = yaml.load(fp)["languages"]
-        langs = [it.keys()[0] if isinstance(it, dict) else it for it in data]
+        langs = [(it.keys()[0] if isinstance(it, dict) else it).encode("utf8")
+                 for it in data]
         all_langs = {}
         for i, lang in enumerate(data):
             if isinstance(lang, dict):

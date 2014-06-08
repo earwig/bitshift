@@ -10,6 +10,11 @@
     -o-#{$property}: $value
     #{$property}: $value
 
+// Add portable opacity style.
+@mixin opaque($opacity)
+    @include vendor(opacity, $opacity)
+    filter: alpha(opacity=$opacity)
+
 .t1
     @include vendor(transition, all 0.1s ease-out)
 

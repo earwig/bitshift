@@ -1,5 +1,5 @@
 static/css/*
-!static/css/lib/*
+!lib
 
 *.swp
 .sass-cache

@@ -39,6 +39,7 @@ def crawl():
                indexer.GitIndexer(repo_clone_queue, run_event)]
 
     parse_servers = start_parse_servers()
+    time.sleep(5)
     for thread in threads:
         thread.start()
 
