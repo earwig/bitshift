@@ -32,6 +32,7 @@ def crawl():
 
     _configure_logging()
     parse_servers = start_parse_servers()
+    time.sleep(5)
 
     repo_clone_queue = Queue.Queue(maxsize=MAX_URL_QUEUE_SIZE)
     run_event = Event()
@@ -49,7 +50,6 @@ def crawl():
         threads += [GitHubCrawler(repo_clone_queue, run_event),
                     BitbucketCrawler(repo_clone_queue, run_event)]
 
-    time.sleep(5)
     for thread in threads:
         thread.start()
 
