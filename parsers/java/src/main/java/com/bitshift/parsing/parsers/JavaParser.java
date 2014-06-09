@@ -56,7 +56,6 @@ public class JavaParser extends Parser {
     @Override
     public void run() {
         JavaSymbols symbols = (JavaSymbols) this.genSymbols();
-        System.out.println(symbols.toString());
         writeToClient(symbols.toString());
     }
 
