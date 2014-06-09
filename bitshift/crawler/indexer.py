@@ -13,7 +13,7 @@ import subprocess
 import time
 import threading
 
-from bs4 import UnicodeDammmit
+from bs4 import UnicodeDammit
 import git
 
 from ..database import Database
@@ -161,7 +161,7 @@ class GitIndexer(threading.Thread):
         for filename, data in commits_meta.iteritems():
             authors = [(author, None) for author in data["authors"]]
             encoded_source = data["blob"].data_stream.read()
-            source = UnicodeDammmit(encoded_source).unicode_markup
+            source = UnicodeDammit(encoded_source).unicode_markup
             url = self._generate_file_url(filename, repo)
             codelet = Codelet("%s: %s" % (repo.name, filename), source,
                             filename, None, authors, url, data["time_created"],
