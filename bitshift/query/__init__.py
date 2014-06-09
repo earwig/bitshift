@@ -33,7 +33,11 @@ class _QueryParser(object):
             self._parse_symbol: ["s", "sym", "symb", "symbol"],
             self._parse_function: ["f", "fn", "fun", "func", "function"],
             self._parse_class: ["cl", "class", "clss"],
-            self._parse_variable: ["v", "var", "variable"]
+            self._parse_variable: ["v", "var", "variable"],
+            self._parse_namespace: ["n", "ns", "namespace", "module"],
+            self._parse_interface: ["in", "inter", "interface", "implements"],
+            self._parse_import: ["im", "imp", "import", "include", "require",
+                                 "imports", "requires"]
         }
 
     def _scan_query(self, query, markers):
@@ -186,6 +190,18 @@ class _QueryParser(object):
     def _parse_variable(self, term):
         """Parse part of a query into a variable node and return it."""
         return self._parse_symbol(term, Symbol.VARIABLE)
+
+    def _parse_namespace(self, term):
+        """Parse part of a query into a namespace node and return it."""
+        return self._parse_symbol(term, Symbol.NAMESPACE)
+
+    def _parse_interface(self, term):
+        """Parse part of a query into a interface node and return it."""
+        return self._parse_symbol(term, Symbol.INTERFACE)
+
+    def _parse_import(self, term):
+        """Parse part of a query into a import node and return it."""
+        return self._parse_symbol(term, Symbol.IMPORT)
 
     def _parse_term(self, term):
         """Parse a query term into a tree node and return it."""

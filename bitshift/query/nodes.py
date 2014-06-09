@@ -194,10 +194,13 @@ class Symbol(_Node):
     FUNCTION = 0
     CLASS = 1
     VARIABLE = 2
-    MODULE = 3
+    NAMESPACE = 3
     INTERFACE = 4
-    TYPES = ["functions", "classes", "vars", "modules", "interfaces"]
-    TYPE_REPR = ["FUNCTION", "CLASS", "VARIABLE", "MODULE", "INTERFACE"]
+    IMPORT = 5
+    TYPES = ["functions", "classes", "vars", "namespaces", "interfaces",
+             "imports"]
+    TYPE_REPR = ["FUNCTION", "CLASS", "VARIABLE", "NAMESPACE", "INTERFACE",
+                 "IMPORT"]
 
     def __init__(self, type_, name):
         """
