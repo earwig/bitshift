@@ -186,7 +186,7 @@ class GitIndexer(threading.Thread):
         """
 
         if repo.framework_name == "GitHub":
-            default_branch = repo.repo.active_branch
+            default_branch = repo.repo.active_branch.name
             parts = [repo.url, "blob", default_branch, filename]
         elif repo.framework_name == "Bitbucket":
             try:
