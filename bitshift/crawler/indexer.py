@@ -219,22 +219,23 @@ class GitIndexer(threading.Thread):
             return {}
 
         files = {}
-        for item in tree.traverse():
-            if item.type == "blob" and self._is_ascii(item.data_stream):
-                log = repo.git.log("--follow", '--format=%an %ct', item.path)
-                lines = log.splitlines()
-                authors = {line.rsplit(" ", 1)[0] for line in lines}
-                last_mod = int(lines[0].rsplit(" ", 1)[1])
-                created = int(lines[-1].rsplit(" ", 1)[1])
-
-                files[item.path] = {
-                    "blob": item,
-                    "authors" : authors,
-                    "time_last_modified": datetime.fromtimestamp(last_mod),
-                    "time_created": datetime.fromtimestamp(created)
-                }
-
         self._logger.debug("Building file metadata")
+        for item in tree.traverse():
+            if item.type != "blob" or not self._is_ascii(item.data_stream):
+                continue
+            log = repo.git.log("--follow", '--format=%an %ct', "--", item.path)
+            lines = log.splitlines()
+            authors = {line.rsplit(" ", 1)[0] for line in lines}
+            last_mod = int(lines[0].rsplit(" ", 1)[1])
+            created = int(lines[-1].rsplit(" ", 1)[1])
+
+            files[item.path] = {
+                "blob": item,
+                "authors" : authors,
+                "time_last_modified": datetime.fromtimestamp(last_mod),
+                "time_created": datetime.fromtimestamp(created)
+            }
+
         return files
 
     def _is_ascii(self, source):
