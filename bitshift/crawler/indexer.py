@@ -199,7 +199,7 @@ class GitIndexer(threading.Thread):
     def _walk_history(self, files, head):
         """Walk a repository's history for metadata."""
         def update_entry(commit, entry, new_file):
-            entry.add(commit.author.name)
+            entry["authors"].add(commit.author.name)
             commit_ts = datetime.utcfromtimestamp(commit.committed_date)
             if commit_ts > entry["time_last_modified"]:
                 entry["time_last_modified"] = commit_ts
