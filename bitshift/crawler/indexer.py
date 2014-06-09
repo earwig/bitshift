@@ -9,7 +9,6 @@ import os
 import Queue
 import shutil
 import string
-import subprocess
 import time
 import threading
 
@@ -18,11 +17,11 @@ import git
 
 from ..database import Database
 from ..parser import parse, UnsupportedFileError
-from ..languages import LANGS
 from ..codelet import Codelet
 
 GIT_CLONE_DIR = "/tmp/bitshift"
 THREAD_QUEUE_SLEEP = 0.5
+MAX_INDEX_QUEUE_SIZE = 10
 
 class GitRepository(object):
     """
@@ -84,8 +83,6 @@ class GitIndexer(threading.Thread):
 
         :type index_queue: see :attr:`self.index_queue`
         """
-
-        MAX_INDEX_QUEUE_SIZE = 10
 
         self.index_queue = Queue.Queue(maxsize=MAX_INDEX_QUEUE_SIZE)
         self.run_event = run_event
@@ -188,15 +185,15 @@ class GitIndexer(threading.Thread):
         :rtype: str, or None
         """
 
-        if framework_name == "GitHub":
+        if repo.framework_name == "GitHub":
             default_branch = repo.repo.active_branch
-            parts = [repo_url, "blob", default_branch, filename]
-        elif framework_name == "Bitbucket":
+            parts = [repo.url, "blob", default_branch, filename]
+        elif repo.framework_name == "Bitbucket":
             try:
                 commit_hash = repo.repo.head.commit.hexsha
             except ValueError:  # No commits
                 return None
-            parts = [repo_url, "src", commit_hash, filename]
+            parts = [repo.url, "src", commit_hash, filename]
         return "/".join(s.strip("/") for s in parts)
 
     def _walk_history(self, files, head):
@@ -269,7 +266,7 @@ class GitIndexer(threading.Thread):
         self._walk_history(files, repo.repo.head.commit)
         return files
 
-    def _is_ascii(self, fp):
+    def _is_ascii(self, source):
         """
         Heuristically determine whether a file is ASCII text or binary.
 
@@ -279,9 +276,9 @@ class GitIndexer(threading.Thread):
         operator, and is the de-facto method for in : passdetermining whether a
         file is ASCII.
 
-        :param fp: The file object to test.
+        :param source: The file object to test.
 
-        :type fp: `file`
+        :type source: `file`
 
         :return: Whether the file is probably ASCII.
         :rtype: Boolean
