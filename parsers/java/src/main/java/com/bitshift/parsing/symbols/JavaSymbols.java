@@ -141,7 +141,7 @@ public class JavaSymbols extends Symbols {
         StringBuilder builder = new StringBuilder();
         builder.append("\"classes\":" + this._classes + ",");
         builder.append("\"interfaces\":" + this._interfaces + ",");
-        builder.append("\"methods\":" + this._methods + ",");
+        builder.append("\"functions\":" + this._methods + ",");
         builder.append("\"vars\":" + this._vars + ",");
 
         String s = builder.toString().replaceAll("=", ":");
