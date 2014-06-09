@@ -2,6 +2,7 @@ package com.bitshift.parsing.parsers;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Stack;
 
@@ -55,6 +56,7 @@ public class JavaParser extends Parser {
     @Override
     public void run() {
         JavaSymbols symbols = (JavaSymbols) this.genSymbols();
+        System.out.println(symbols.toString());
         writeToClient(symbols.toString());
     }
 
@@ -76,7 +78,12 @@ public class JavaParser extends Parser {
             String name = nameObj.isQualifiedName() ?
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
-            List<Statement> statements = node.getBody().statements();
+            List<Statement> statements;
+
+            if (node.getBody() != null)
+                statements = node.getBody().statements();
+            else
+                statements = new ArrayList<Statement>(0);
 
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition());

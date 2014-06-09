@@ -13,8 +13,7 @@ module Bitshift
             tree = parser.parse(@source)
             return '{}' if tree.nil?
 
-            offset = tree.line - 1
-            processor = CachedWalker.new offset, tree
+            processor = CachedWalker.new tree
             processor.process(tree)
             return processor.to_s
         end
@@ -22,19 +21,19 @@ module Bitshift
 
     class CachedWalker < SexpProcessor
         attr_accessor :symbols
-        attr_accessor :offset
 
-        def initialize(offset, tree)
+        def initialize(tree)
             super()
 
-            module_hash = Hash.new {|hash, key|
-                hash[key] = { assignments: [], uses: [] }}
+            module_hash = Hash.new {
+                |hash, key|
+                hash[key] = { assignments: [], uses: [] }
+            }
             class_hash = module_hash.clone
             function_hash = module_hash.clone
             var_hash = module_hash.clone
 
             @require_empty = false
-            @offset = offset
             @symbols = {
                 modules: module_hash,
                 classes: class_hash,
@@ -44,11 +43,11 @@ module Bitshift
         end
 
         def block_position(exp)
-            end_ln = (start_ln = exp.line - offset)
+            end_ln = (start_ln = exp.line)
             cur_exp = exp
 
             while cur_exp.is_a? Sexp
-                end_ln = cur_exp.line - offset
+                end_ln = cur_exp.line
                 cur_exp = cur_exp.last
                 break if cur_exp == nil
             end
@@ -59,7 +58,7 @@ module Bitshift
 
         def statement_position(exp)
             pos = Hash.new
-            end_ln = start_ln = exp.line - offset
+            end_ln = start_ln = exp.line
 
             pos = [start_ln, -1, end_ln, -1]
             return pos
@@ -68,7 +67,10 @@ module Bitshift
         def process_module(exp)
             pos = block_position(exp)
             exp.shift
-            name = exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
             symbols[:modules][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
@@ -77,7 +79,10 @@ module Bitshift
         def process_class(exp)
             pos = block_position(exp)
             exp.shift
-            name = exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
             symbols[:classes][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
@@ -86,7 +91,10 @@ module Bitshift
         def process_defn(exp)
             pos = block_position(exp)
             exp.shift
-            name = exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
             symbols[:functions][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
@@ -96,7 +104,10 @@ module Bitshift
             pos = statement_position(exp)
             exp.shift
             exp.shift
-            name = exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
             symbols[:functions][name][:uses] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
@@ -105,7 +116,10 @@ module Bitshift
         def process_iasgn(exp)
             pos = statement_position(exp)
             exp.shift
-            name = exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
             symbols[:vars][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
@@ -114,8 +128,35 @@ module Bitshift
         def process_lasgn(exp)
             pos = statement_position(exp)
             exp.shift
-            name = exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
             symbols[:vars][name][:assignments] << pos
+            exp.each_sexp {|s| process(s)}
+            return exp.clear
+        end
+
+        def process_attrasgn(exp)
+            pos = statement_position(exp)
+            exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
+            symbols[:vars][((name.to_s)[0..-2]).to_sym][:assignments] << pos
+            exp.each_sexp {|s| process(s)}
+            return exp.clear
+        end
+
+        def process_lvar(exp)
+            pos = statement_position(exp)
+            exp.shift
+
+            while (name = exp.shift).is_a? Sexp
+            end
+
+            symbols[:vars][name][:uses] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
