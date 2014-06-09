@@ -35,7 +35,7 @@ module Bitshift
 
             @require_empty = false
             @symbols = {
-                modules: module_hash,
+                namespaces: module_hash,
                 classes: class_hash,
                 functions: function_hash,
                 vars: var_hash
@@ -71,7 +71,7 @@ module Bitshift
             while (name = exp.shift).is_a? Sexp
             end
 
-            symbols[:modules][name][:assignments] << pos
+            symbols[:namespaces][name][:assignments] << pos
             exp.each_sexp {|s| process(s)}
             return exp.clear
         end
