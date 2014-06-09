@@ -215,12 +215,12 @@ class GitIndexer(threading.Thread):
 
             for parent in commit.parents:
                 for diff in parent.diff(commit, create_patch=True):
-                    pth = diff.renamed_to if diff.renamed else diff.b_blob.path
+                    pth = diff.rename_to if diff.renamed else diff.b_blob.path
                     if pth not in paths:
                         continue
                     update_entry(commit, files[paths[pth]], diff.new_file)
                     if diff.renamed:
-                        paths[diff.renamed_from] = paths[pth]
+                        paths[diff.rename_from] = paths[pth]
                         del paths[pth]
 
         pending = [(head, {path: path for path in files})]
