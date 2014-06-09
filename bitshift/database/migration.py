@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 10
+VERSION = 11
 
 MIGRATIONS = [
     # 1 -> 2
@@ -122,6 +122,11 @@ MIGRATIONS = [
            MODIFY COLUMN `sloc_col` INT UNSIGNED DEFAULT NULL,
            MODIFY COLUMN `sloc_end_row` INT UNSIGNED DEFAULT NULL,
            MODIFY COLUMN `sloc_end_col` INT UNSIGNED DEFAULT NULL"""
+    ],
+    # 10 -> 11
+    [
+        """ALTER DATABASE `bitshift`
+           CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci"""
     ]
 ]
 
