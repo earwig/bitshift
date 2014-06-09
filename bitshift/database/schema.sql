@@ -1,12 +1,14 @@
--- Schema version 10
+-- Schema version 11
 
-CREATE DATABASE `bitshift` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+CREATE DATABASE `bitshift`
+    DEFAULT CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
 USE `bitshift`;
 
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (10);
+INSERT INTO `version` VALUES (11);
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
