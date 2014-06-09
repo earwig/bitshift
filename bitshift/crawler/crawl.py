@@ -78,8 +78,8 @@ def _configure_logging():
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
     formatter = logging.Formatter(
-            fmt=("%(asctime)s %(levelname)s %(name)s:%(funcName)s"
-            " %(message)s"), datefmt="%y-%m-%d %H:%M:%S")
+            fmt=("%(asctime)s %(levelname)s %(name)s %(message)s"),
+            datefmt="%y-%m-%d %H:%M:%S")
 
     file_handler = logging.handlers.TimedRotatingFileHandler(
             "%s/%s" % (log_dir, "app.log"), when="H", interval=1,
