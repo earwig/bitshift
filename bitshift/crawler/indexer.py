@@ -151,11 +151,11 @@ class GitIndexer(threading.Thread):
         :type repo_url: :class:`GitRepository`
         """
 
-        commits_meta = self._get_commits_metadata(repo)
-        if commits_meta is None:
+        file_meta = self._get_file_metadata(repo)
+        if file_meta is None:
             return
 
-        for filename, data in commits_meta.iteritems():
+        for filename, data in file_meta.iteritems():
             authors = [(author, None) for author in data["authors"]]
             encoded_source = data["blob"].data_stream.read()
             source = UnicodeDammit(encoded_source).unicode_markup
@@ -199,12 +199,23 @@ class GitIndexer(threading.Thread):
     def _walk_history(self, files, head):
         """Walk a repository's history for metadata."""
         def update_entry(commit, entry, new_file):
-            entry["authors"].add(commit.author.name)
+            if commit.author.name not in entry["authors"]:
+                entry["authors"].append(commit.author.name)
             commit_ts = datetime.utcfromtimestamp(commit.committed_date)
             if commit_ts > entry["time_last_modified"]:
                 entry["time_last_modified"] = commit_ts
             if new_file:
                 entry["time_created"] = commit_ts
+
+        def get_diffs(commit, parent):
+            cache_key = parent.binsha + commit.binsha
+            if cache_key in diff_cache:
+                return diff_cache[cache_key]
+            diffs = parent.diff(commit, create_patch=True)
+            for diff in diffs:
+                del diff.diff
+            diff_cache[cache_key] = diffs
+            return diffs
 
         def handle_commit(commit, paths):
             if not commit.parents:
@@ -214,7 +225,9 @@ class GitIndexer(threading.Thread):
                 return
 
             for parent in commit.parents:
-                for diff in parent.diff(commit, create_patch=True):
+                for diff in get_diffs(commit, parent):
+                    if not diff.b_blob:  # Happens when file modes are changed
+                        continue
                     pth = diff.rename_to if diff.renamed else diff.b_blob.path
                     if pth not in paths:
                         continue
@@ -224,14 +237,23 @@ class GitIndexer(threading.Thread):
                         del paths[pth]
 
         pending = [(head, {path: path for path in files})]
+        diff_cache = {}
+        processed = {}
         while pending:
             commit, paths = pending.pop()
             handle_commit(commit, paths)
+            hash_key = hash(frozenset(paths.items()))
             for parent in commit.parents:
                 new_paths = paths.copy() if len(commit.parents) > 1 else paths
-                pending.append((parent, new_paths))
+                if parent.binsha in processed:
+                    if hash_key not in processed[parent.binsha]:
+                        pending.append((parent, new_paths))
+                        processed[parent.binsha].append(hash_key)
+                else:
+                    pending.append((parent, new_paths))
+                    processed[parent.binsha] = [hash_key]
 
-    def _get_commits_metadata(self, repo):
+    def _get_file_metadata(self, repo):
         """
         Return a dictionary containing every valuable tracked file's metadata.
 
@@ -241,7 +263,7 @@ class GitIndexer(threading.Thread):
                 sample_returned_dict = {
                     "my_file" : {
                         "blob": (GitPython Blob) <object>,
-                        "authors" : (str set) {"author1", "author2"},
+                        "authors" : (str list) ["author1", "author2"],
                         "time_created" : (`datetime.datetime`) <object>,
                         "time_last_modified" : (`datetime.datetime`) <object>
                     }
@@ -258,11 +280,12 @@ class GitIndexer(threading.Thread):
             if item.type == "blob" and self._is_ascii(item.data_stream):
                 files[item.path] = {
                     "blob": item,
-                    "authors" : set(),
+                    "authors" : [],
                     "time_last_modified": datetime.utcfromtimestamp(0),
                     "time_created": datetime.utcfromtimestamp(0)
                 }
 
+        self._logger.debug("Building file metadata")
         self._walk_history(files, repo.repo.head.commit)
         return files
 
