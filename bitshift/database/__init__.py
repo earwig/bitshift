@@ -3,6 +3,7 @@ Subpackage with classes and functions to handle communication with the MySQL
 database backend, which manages the search index.
 """
 
+import codecs
 import os
 
 import mmh3
@@ -24,10 +25,17 @@ class Database(object):
 
     def _connect(self):
         """Establish a connection to the database."""
+        try:
+            codecs.lookup("utf8mb4")
+        except LookupError:
+            utf8 = codecs.lookup("utf8")
+            codecs.register(lambda name: utf8 if name == "utf8mb4" else None)
+
         root = os.path.dirname(os.path.abspath(__file__))
         default_file = os.path.join(root, ".my.cnf")
-        return oursql.connect(db="bitshift", read_default_file=default_file,
-                              autoping=True, autoreconnect=True)
+        return oursql.connect(
+            db="bitshift", read_default_file=default_file, autoping=True,
+            autoreconnect=True, charset="utf8mb4")
 
     def _migrate(self, cursor, current):
         """Migrate the database to the latest schema version."""
