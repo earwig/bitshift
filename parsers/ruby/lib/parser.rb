@@ -25,17 +25,17 @@ module Bitshift
         def initialize(tree)
             super()
 
-            module_hash = Hash.new {
+            ns_hash = Hash.new {
                 |hash, key|
                 hash[key] = { assignments: [], uses: [] }
             }
-            class_hash = module_hash.clone
-            function_hash = module_hash.clone
-            var_hash = module_hash.clone
+            class_hash = ns_hash.clone
+            function_hash = ns_hash.clone
+            var_hash = ns_hash.clone
 
             @require_empty = false
             @symbols = {
-                namespaces: module_hash,
+                namespaces: ns_hash,
                 classes: class_hash,
                 functions: function_hash,
                 vars: var_hash
