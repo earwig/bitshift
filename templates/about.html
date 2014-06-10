@@ -1,11 +1,55 @@
 = extends "layout.html"
 
 = block title
-  About
+  about
 = endblock
 
-= block body
-  <div>
-    About us, son.
+= block head
+  {{ assets.tag("lib/jquery.min.js") }}
+  {{ assets.tag("main.css") }}
+  {{ assets.tag("about.css") }}
+  {{ assets.tag("about.js") }}
+= endblock
+
+= block after_body
+    <div id="img-1" class="bg" speed="-1.25"></div>
+  <div id="img-2" class="bg" speed="1.8"></div>
+  <div id="img-3" class="bg" speed="1.6"></div>
+  <div id="img-4" class="bg" speed="3.8"></div>
+
+  <div id="top" class="section">
+    <div class="centered">
+      <h1><span>&raquo;</span> What</h1>
+        <span id="title">bitshift</span> is an <a href="https://github.com/earwig/bitshift">open-source</a>
+        online source-code search engine, developed by programmers, for programmers. The engine currently aggregates
+        publicly-available code from two online frameworks &#8211; <a href="https://github.com/">GitHub</a> and <a
+        href="https://bitbucket.org/">Bitbucket</a> &#8211; but has the necessary infrastructure to quickly incorporate
+        others, like <a href="http://stackoverflow.com/">StackOverflow</a> and <a href="https://gitorious.org/">Gitorious</a>
+        <span id="title">bitshift</span> supports a robust query language, which allows users to search for specific
+        languages, files, dates of creation and last modifcation, and symbols (function, class, and variable names),
+        amongst other attributes.
+    </div>
+  </div>
+
+  <div class="section">
+    <div id="how" class="centered">
+      <h1><span>&raquo;</span> How</h1>
+      <span id="title">bitshift</span> has an extensive back-end, roughly divided into three sections:
+      <ul>
+        <li><span>indexer</span> : finds and downloads code on online frameworks</li>
+        <li><span>parser</span> : parses newly crawled code, identifying its symbols</li>
+        <li><span>database</span> : interprets and compiles user searches into database queries</li>
+      </ul>
+
+      The engine was developed over the span of four months, and is primarily implemented in <b>Python</b>, but has
+      parser in <b>Ruby</b>, <b>Java</b>, and a number of other languages.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="centered">
+      <h1><span>&raquo;</span> Who</h1>
+      Who who? <b>Us who.</b> <span style="font-size:70%;">More stuffs to come (photos and bios).</span>
+    </div>
   </div>
 = endblock

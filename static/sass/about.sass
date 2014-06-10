@@ -1,0 +1,88 @@
+/*
+ Stylesheet for `templates/about.html`
+ */
+
+@import mixins
+@import variables
+
+div.bg
+    $img-height: 650px
+
+    position: fixed
+    width: 100%
+    left: 0
+    z-index: -1
+
+    &#img-1
+        background: url(../img/about/bg1.png) no-repeat
+        background-size: cover
+        height: 400px
+        top: -210px
+
+    &#img-2
+        background: url(../img/about/bg2.png) no-repeat
+        height: $img-height + 530
+        top: 550px
+
+    &#img-3
+        background: url(../img/about/bg3.png) no-repeat
+        background-size: cover
+        height: $img-height + 250
+        top: 1600px
+
+    &#img-4
+        background: url(../img/about/bg4.png) no-repeat
+        background-size: cover
+        height: $img-height + 300
+        top: 5450px
+
+div.section
+    background-color: white
+    border: 1px solid $baseColor2
+    height: 300px
+    margin-bottom: 200px
+    margin-top: 300px
+    padding-bottom: 50px
+    padding-top: 20px
+
+    &#top
+        margin-top: 0px
+
+    div.centered
+        font-size: 110%
+        line-height: 150%
+        margin-left: auto
+        margin-right: auto
+        width: 50%
+
+        &#how
+            b
+                font-family: monospace
+                font-size: 110%
+
+            ul
+                list-style: none
+
+                span
+                    color: $baseColor1
+                    font-weight: bold
+
+        h1
+            color: $baseColor1
+
+            span
+                color: $baseColor2
+
+        a
+            color: #727070
+            font-style: italic
+            text-decoration: none
+
+            &:hover
+                @extend .t3
+
+                color: #575757
+
+        span#title
+            color: $baseColor1
+            font-weight: bold

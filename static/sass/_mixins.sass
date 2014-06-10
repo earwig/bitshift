@@ -15,6 +15,10 @@
     @include vendor(opacity, $opacity)
     filter: alpha(opacity=$opacity)
 
+@mixin delay($time)
+    transition-delay: $time
+    -webkit-transition-delay: $time
+
 .t1
     @include vendor(transition, all 0.1s ease-out)
 

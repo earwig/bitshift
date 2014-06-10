@@ -30,14 +30,20 @@ div#container
 
     div#footer
         @extend .t3
+        @include delay(1s)
 
         background-color: $baseColor1
-        bottom: 0
+        bottom: -30px
         height: 60px
-        padding-top: 12px
-        position: absolute
+        padding-top: 15px
+        position: fixed
         text-align: center
         width: 100%
+
+        &:hover
+            @include delay(0s)
+
+            bottom: 0
 
         *
             color: white
