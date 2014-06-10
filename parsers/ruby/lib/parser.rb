@@ -1,6 +1,5 @@
-require 'socket'
-require 'ruby_parser'
-require 'sexp_processor'
+require 'ripper'
+require 'pp'
 
 module Bitshift
     class Parser
@@ -9,156 +8,119 @@ module Bitshift
         end
 
         def parse
-            parser = RubyParser.new
-            tree = parser.parse(@source)
-            return '{}' if tree.nil?
-
-            processor = CachedWalker.new tree
-            processor.process(tree)
-            return processor.to_s
+            # new stuff
+            walker = TreeWalker.new(@source)
+            walker.parse
+            return walker.to_s
         end
     end
 
-    class CachedWalker < SexpProcessor
+    class TreeWalker < Ripper::SexpBuilder
         attr_accessor :symbols
 
-        def initialize(tree)
-            super()
-
+        def initialize(source)
             ns_hash = Hash.new {
                 |hash, key|
-                hash[key] = { assignments: [], uses: [] }
+                hash[key] = {
+                    :assignments => [], :uses => []
+                }
             }
             class_hash = ns_hash.clone
             function_hash = ns_hash.clone
             var_hash = ns_hash.clone
 
-            @require_empty = false
             @symbols = {
-                namespaces: ns_hash,
-                classes: class_hash,
-                functions: function_hash,
-                vars: var_hash
+                :namespaces => ns_hash,
+                :classes    => class_hash,
+                :functions  => function_hash,
+                :vars       => var_hash
             }
+
+            super(source)
         end
 
-        def block_position(exp)
-            end_ln = (start_ln = exp.line)
-            cur_exp = exp
-
-            while cur_exp.is_a? Sexp
-                end_ln = cur_exp.line
-                cur_exp = cur_exp.last
-                break if cur_exp == nil
+        def block_position(node)
+            last_node = node[0]
+            while last_node.is_a? Array
+                sp = last_node
+                while not (last_el = last_node[last_node.count - 1]) or
+                    (last_el.is_a? Array and last_el[last_el.count - 1].nil?)
+                    last_node = last_node[0..last_node.count - 2]
+                end
+                last_node = last_el
             end
 
-            pos = [start_ln, -1, end_ln, -1]
-            return pos
-        end
-
-        def statement_position(exp)
-            pos = Hash.new
-            end_ln = start_ln = exp.line
-
-            pos = [start_ln, -1, end_ln, -1]
-            return pos
-        end
-
-        def process_module(exp)
-            pos = block_position(exp)
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
+            last_node = node[0]
+            while last_node.is_a? Array
+                ep = last_node
+                while not (last_el = last_node[last_node.count - 1]) or
+                    (last_el.is_a? Array and last_el[last_el.count - 1].nil?)
+                    last_node = last_node[0..last_node.count - 2]
+                end
+                last_node = last_el
             end
 
+            if sp == ep
+                return sp + [sp[0], -1]
+            end
+            return sp + ep
+        end
+
+        def on_module(*node)
+            pos = block_position(node)
+            name = node[0][1][1]
             symbols[:namespaces][name][:assignments] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
+            return node
         end
 
-        def process_class(exp)
-            pos = block_position(exp)
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
-            end
-
+        def on_class(*node)
+            pos = block_position(node)
+            name = node[0][1][1]
             symbols[:classes][name][:assignments] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
+            return node
         end
 
-        def process_defn(exp)
-            pos = block_position(exp)
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
-            end
-
+        def on_def(*node)
+            pos = block_position(node)
+            name = node[0][1]
             symbols[:functions][name][:assignments] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
+            return node
         end
 
-        def process_call(exp)
-            pos = statement_position(exp)
-            exp.shift
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
-            end
-
+        def on_call(*node)
+            pos = block_position(node)
+            name = node[node.count - 1][1]
             symbols[:functions][name][:uses] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
+            return node
         end
 
-        def process_iasgn(exp)
-            pos = statement_position(exp)
-            exp.shift
+        def on_vcall(*node)
+            pos = block_position(node)
+            name = node[0][1]
+            symbols[:functions][name][:uses] << pos
+            return node
+        end
 
-            while (name = exp.shift).is_a? Sexp
-            end
-
+        def on_assign(*node)
+            pos = block_position(node)
+            return node if not node[0][0].is_a? Array
+            name = node[0][0][1]
             symbols[:vars][name][:assignments] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
+            return node
         end
 
-        def process_lasgn(exp)
-            pos = statement_position(exp)
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
-            end
-
-            symbols[:vars][name][:assignments] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
-        end
-
-        def process_attrasgn(exp)
-            pos = statement_position(exp)
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
-            end
-
-            symbols[:vars][((name.to_s)[0..-2]).to_sym][:assignments] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
-        end
-
-        def process_lvar(exp)
-            pos = statement_position(exp)
-            exp.shift
-
-            while (name = exp.shift).is_a? Sexp
-            end
-
+        def on_var_field(*node)
+            pos = block_position(node)
+            name = node[0][1]
             symbols[:vars][name][:uses] << pos
-            exp.each_sexp {|s| process(s)}
-            return exp.clear
+            return node
+        end
+
+        def on_var_ref(*node)
+            pos = block_position(node)
+            name = node[0][1]
+            symbols[:vars][name][:uses] << pos
+            return node
         end
 
         def to_s
