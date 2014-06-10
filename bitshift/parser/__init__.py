@@ -1,3 +1,4 @@
+import functools
 import json
 import sys
 import socket
@@ -98,18 +99,23 @@ def start_parse_servers():
 
     return procs
 
-def parse_via_server(codelet):
+def parse_via_server(codelet, buffered=True):
     port = 5001 + codelet.language
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.connect(("localhost", port))
     server_socket.send("%d\n%s" % (len(codelet.code), codelet.code))
 
-    symbols = json.loads(_recv_data(server_socket))
+    if buffered:
+        data = _recv_data(server_socket)
+    else:
+        data = server_socket.recv(5000)
+
+    symbols = json.loads(data)
     return symbols
 
 PARSERS = {
     "Python": parse_py,
-    "Java":   parse_via_server,
+    "Java":   functools.partial(parse_via_server, buffered=False),
     "Ruby":   parse_via_server,
 }
 

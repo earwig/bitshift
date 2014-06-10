@@ -37,7 +37,7 @@ public class PackableMemory {
    // The most significant porion of the integer is stored in mem[loc].
    // Bytes are 'OR'ed into the integer, working from left (most significant)
    //  to right (least significant)
-   int unpack(int loc)
+   public int unpack(int loc)
    {
       final int MASK = 0xff;
       int v = (int)mem[loc] & MASK;

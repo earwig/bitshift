@@ -10,6 +10,7 @@ import java.net.Socket;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -71,31 +72,23 @@ public class JavaParser extends Parser {
             this._cache = new Stack<HashMap<String, Object>>();
         }
 
+        public ArrayList<Integer> blockPosition(ASTNode node) {
+            int sl = this.root.getLineNumber(node.getStartPosition());
+            int sc = this.root.getColumnNumber(node.getStartPosition()) + 1;
+            int el = this.root.getLineNumber(node.getStartPosition() + node.getLength());
+            int ec = this.root.getColumnNumber(node.getStartPosition() + node.getLength()) + 1;
+
+            return Symbols.createCoord(sl, sc, el, ec);
+        }
+
         public boolean visit(MethodDeclaration node) {
             HashMap<String, Object> data = new HashMap<String, Object>();
             Name nameObj = node.getName();
             String name = nameObj.isQualifiedName() ?
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
-            List<Statement> statements;
 
-            if (node.getBody() != null)
-                statements = node.getBody().statements();
-            else
-                statements = new ArrayList<Statement>(0);
-
-            int sl = this.root.getLineNumber(node.getStartPosition());
-            int sc = this.root.getColumnNumber(node.getStartPosition());
-            Integer el = sl;
-            Integer ec = -1;
-
-            if (statements.size() > 0) {
-                Statement last = statements.get(statements.size() - 1);
-                el = this.root.getLineNumber(last.getStartPosition());
-                ec = this.root.getColumnNumber(last.getStartPosition());
-            }
-
-            data.put("coord", Symbols.createCoord(sl, sc, el, ec));
+            data.put("coord", this.blockPosition(node));
             data.put("name", name);
             this._cache.push(data);
             return true;
@@ -113,10 +106,8 @@ public class JavaParser extends Parser {
             String name = nameObj.isQualifiedName() ?
                 ((QualifiedName) nameObj).getFullyQualifiedName() :
                 ((SimpleName) nameObj).getIdentifier();
-            int sl = this.root.getLineNumber(node.getStartPosition());
-            int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, sl, -1));
+            data.put("coord", this.blockPosition(node));
             data.put("name", name);
             this._cache.push(data);
             return true;
@@ -143,10 +134,7 @@ public class JavaParser extends Parser {
         public boolean visit(TypeDeclaration node) {
             HashMap<String, Object> data = new HashMap<String, Object>();
 
-            int sl = this.root.getLineNumber(node.getStartPosition());
-            int sc = this.root.getColumnNumber(node.getStartPosition());
-
-            data.put("coord", Symbols.createCoord(sl, sc, sl, -1));
+            data.put("coord", this.blockPosition(node));
             this._cache.push(data);
             return true;
         }
@@ -164,10 +152,8 @@ public class JavaParser extends Parser {
 
         public boolean visit(VariableDeclarationFragment node) {
             HashMap<String, Object> data = new HashMap<String, Object>();
-            int sl = this.root.getLineNumber(node.getStartPosition());
-            int sc = this.root.getColumnNumber(node.getStartPosition());
 
-            data.put("coord", Symbols.createCoord(sl, sc, sl, -1));
+            data.put("coord", this.blockPosition(node));
             this._cache.push(data);
             return true;
         }

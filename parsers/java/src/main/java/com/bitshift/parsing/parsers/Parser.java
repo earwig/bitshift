@@ -1,5 +1,7 @@
 package com.bitshift.parsing.parsers;
 
+import java.util.Formatter;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
@@ -45,6 +47,19 @@ public abstract class Parser implements Runnable {
         return fromClient;
     }
 
+    public String escapeUnicode(String input) {
+        StringBuilder b = new StringBuilder(input.length());
+        Formatter f = new Formatter(b);
+        for (char c : input.toCharArray()) {
+            if (c < 128) {
+                b.append(c);
+            } else {
+                f.format("\\u%04x", (int) c);
+            }
+        }
+        return b.toString();
+    }
+
     protected void writeToClient(String toClient) {
         try {
             BufferedWriter clientWriter = new BufferedWriter(
@@ -54,7 +69,7 @@ public abstract class Parser implements Runnable {
             mem.pack(toClient.length(), 0);
             String dataSize = new String(mem.mem);
 
-            clientWriter.write(dataSize + toClient);
+            clientWriter.write(toClient);
             clientWriter.flush();
             this.clientSocket.close();
         } catch (IOException ex) {
