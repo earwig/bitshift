@@ -2,7 +2,7 @@ from . import nodes
 
 __all__ = ["Tree"]
 
-QUERY_TEMPLATE = """SELECT codelet_id, (codelet_rank%s) AS score
+QUERY_TEMPLATE = """SELECT codelet_id, MAX(codelet_rank%s) AS score
 FROM codelets %s
 WHERE %s
 GROUP BY codelet_id
@@ -59,13 +59,14 @@ class Tree(object):
         :rtype: 2-tuple of (SQL statement string, query parameter tuple)
         """
         def get_table_joins(tables):
-            data = [
+            joins = [
                 ("code", "codelet_code_id", "code_id"),
                 ("authors", "author_codelet", "codelet_id"),
-                ("symbols", "symbol_code", "code_id")
+                ("symbols", "symbol_code", "code_id"),
+                ("symbol_locations", "sloc_symbol", "symbol_id")
             ]
             tmpl = "INNER JOIN %s ON %s = %s"
-            for args in data:
+            for args in joins:
                 if args[0] in tables:
                     yield tmpl % args
 

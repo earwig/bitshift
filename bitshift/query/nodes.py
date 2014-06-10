@@ -191,6 +191,9 @@ class Symbol(_Node):
     Searches in symbol_type and symbol_name.
     """
     ALL = -1
+    ASSIGN = 0
+    USE = 1
+
     FUNCTION = 0
     CLASS = 1
     VARIABLE = 2
@@ -202,17 +205,20 @@ class Symbol(_Node):
     TYPE_REPR = ["FUNCTION", "CLASS", "VARIABLE", "NAMESPACE", "INTERFACE",
                  "IMPORT"]
 
-    def __init__(self, type_, name):
+    def __init__(self, context, type_, name):
         """
+        :type context: int (``ASSIGN`` or ``USE``)
         :type type_: int (``ALL``, ``FUNCTION``, ``CLASS``, etc.)
         :type name: :py:class:`._Literal`
         """
+        self.context = context
         self.type = type_
         self.name = name
 
     def __repr__(self):
+        context = ["ASSIGN", "USE", "ALL"][self.context]
         type_ = self.TYPE_REPR[self.type] if self.type >= 0 else "ALL"
-        return "Symbol({0}, {1})".format(type_, self.name)
+        return "Symbol({0}, {1}, {2})".format(context, type_, self.name)
 
     def sortkey(self):
         return self.name.sortkey()
@@ -228,6 +234,9 @@ class Symbol(_Node):
                 cond += " AND symbol_type IN (%s)" % types
         if self.type != self.ALL:
             cond += " AND symbol_type = %d" % self.type
+        if self.context != self.ALL:
+            tables |= {"symbol_locations"}
+            cond += " AND sloc_type = %d" % self.context
         return "(" + cond + ")", [name], [], False
 
 

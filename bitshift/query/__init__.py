@@ -170,15 +170,26 @@ class _QueryParser(object):
 
     def _parse_symbol(self, term, stype=Symbol.ALL):
         """Parse part of a query into a symbol node and return it."""
+        assigns = ("a:", "assign:", "assignment:", "d:", "def:", "definition:",
+                   "decl:", "declare:", "declaration:")
+        uses = ("u:", "use:", "c:", "call:")
+        if term.startswith(assigns) or term.startswith(uses):
+            context = Symbol.ASSIGN if term.startswith(assigns) else Symbol.USE
+            term_part = term.split(":", 1)[1]
+            if not term_part:
+                raise QueryParseException('Incomplete query term: "%s"' % term)
+            term = term_part
+        else:
+            context = Symbol.ALL
         literal = self._parse_literal(term)
         if isinstance(literal, String):
-            make_symbol = lambda lit: Symbol(stype, String(lit))
+            make_symbol = lambda lit: Symbol(context, stype, String(lit))
             symbols = self._split_query(literal.string, " \"'")
             node = make_symbol(symbols.pop())
             while symbols:
                 node = BinaryOp(make_symbol(symbols.pop()), BinaryOp.OR, node)
             return node
-        return Symbol(stype, literal)
+        return Symbol(context, stype, literal)
 
     def _parse_function(self, term):
         """Parse part of a query into a function node and return it."""

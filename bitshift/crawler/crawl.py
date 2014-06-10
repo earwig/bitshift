@@ -63,7 +63,7 @@ def crawl():
         for thread in threads:
             thread.join()
         for server in parse_servers:
-            server.kill()
+            server.terminate()
 
 def _configure_logging():
     # This isn't ideal, since it means the bitshift python package must be kept

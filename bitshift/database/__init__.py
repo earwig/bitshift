@@ -153,13 +153,14 @@ class Database(object):
         query1 = "INSERT INTO symbols VALUES (DEFAULT, ?, ?, ?)"
         query2 = """INSERT INTO symbol_locations VALUES
                     (DEFAULT, ?, ?, ?, ?, ?, ?)"""
+        build = lambda id, L, typ: [tuple([id, typ] + list(loc)) for loc in L]
 
         type_id = Symbol.TYPES.index(sym_type)
         for (name, assigns, uses) in symbols:
             cursor.execute(query1, (code_id, type_id, name))
             sym_id = cursor.lastrowid
-            params = ([tuple([sym_id, 0] + list(loc)) for loc in assigns] +
-                      [tuple([sym_id, 1] + list(loc)) for loc in uses])
+            params = [build(sym_id, assigns, Symbol.ASSIGN),
+                      build(sym_id, uses, Symbol.USE)]
             cursor.executemany(query2, params)
 
     def close(self):
