@@ -1,6 +1,10 @@
+/*
+ * @file Implements a parallax effect on the about page.
+ */
+
 var lastVertPos = $(window).scrollTop();
 
-function parallax(){
+$(window).scroll(function(e){
     var currVertPos = $(window).scrollTop();
     var delta = currVertPos - lastVertPos;
     $(".bg").each(function(){
@@ -8,8 +12,4 @@ function parallax(){
             delta * $(this).attr("speed") + "px");
     });
     lastVertPos = currVertPos;
-}
-
-$(window).scroll(function(e){
-    parallax();
 });
