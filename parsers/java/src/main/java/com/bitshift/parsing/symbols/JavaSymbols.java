@@ -12,6 +12,7 @@ public class JavaSymbols extends Symbols {
     private HashMap<String, HashMap<String, Object>> _interfaces;
     private HashMap<String, HashMap<String, Object>> _methods;
     private HashMap<String, HashMap<String, Object>> _vars;
+    private HashMap<String, HashMap<String, Object>> _imports;
 
     private final String assignKey = "\"assignments\"";
     private final String useKey = "\"uses\"";
@@ -22,6 +23,7 @@ public class JavaSymbols extends Symbols {
         _interfaces = new HashMap<String, HashMap<String, Object>>();
         _methods = new HashMap<String, HashMap<String, Object>>();
         _vars = new HashMap<String, HashMap<String, Object>>();
+        _imports = new HashMap<String, HashMap<String, Object>>();
     }
 
     public boolean setPackage(String name) {
@@ -116,6 +118,7 @@ public class JavaSymbols extends Symbols {
         this._vars.put(name, var);
         return true;
     }
+
     public boolean insertVariableAccess(String name, HashMap<String, Object> data) {
         HashMap<String, Object> var = this._vars.get(name);
         if (var == null) {
@@ -137,12 +140,34 @@ public class JavaSymbols extends Symbols {
         return true;
     }
 
+    public boolean insertImportStatement(String name, HashMap<String, Object> data) {
+        HashMap<String, Object> lib = this._imports.get(name);
+        if (lib == null) {
+            lib = new HashMap<String, Object>();
+            ArrayList<Object> assignments = new ArrayList<Object>(10);
+            ArrayList<Object> uses = new ArrayList<Object>(10);
+
+            uses.add(data.get("coord"));
+            lib.put(assignKey, assignments);
+            lib.put(useKey, uses);
+        } else {
+            ArrayList<Object> uses = (ArrayList<Object>)lib.get(useKey);
+
+            uses.add(data.get("coord"));
+            lib.put(useKey, uses);
+        }
+
+        this._imports.put(name, lib);
+        return true;
+    }
+
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("\"classes\":" + this._classes + ",");
         builder.append("\"interfaces\":" + this._interfaces + ",");
         builder.append("\"functions\":" + this._methods + ",");
         builder.append("\"vars\":" + this._vars + ",");
+        builder.append("\"imports\":" + this._imports + ",");
 
         String s = builder.toString().replaceAll("=", ":");
         s = s.substring(0, s.length() - 1);

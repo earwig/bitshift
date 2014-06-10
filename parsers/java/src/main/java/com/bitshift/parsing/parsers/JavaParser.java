@@ -15,6 +15,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
@@ -192,5 +193,18 @@ public class JavaParser extends Parser {
             return true;
         }
 
+        public boolean visit(ImportDeclaration node) {
+            HashMap<String, Object> data = new HashMap<String, Object>();
+
+            data.put("coord", this.blockPosition(node));
+            this._cache.push(data);
+            return true;
+        }
+
+        public void endVisit(ImportDeclaration node) {
+            HashMap<String, Object> data = this._cache.pop();
+            String name = (String)data.remove("name");
+            this.symbols.insertImportStatement("\"" + name + "\"", data);
+        }
     }
 }

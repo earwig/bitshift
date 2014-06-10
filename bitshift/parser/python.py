@@ -178,6 +178,7 @@ class _TreeWalker(ast.NodeVisitor):
 
     def visit_Import(self, node):
         pos = self.block_position(node)
+        # look through aliases
 
 def parse_py(codelet):
     """

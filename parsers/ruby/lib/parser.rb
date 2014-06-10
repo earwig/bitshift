@@ -123,6 +123,10 @@ module Bitshift
             return node
         end
 
+        def on_command(*node)
+            # catch require statements
+        end
+
         def to_s
             new_symbols = Hash.new {|hash, key| hash[key] = Hash.new}
 
