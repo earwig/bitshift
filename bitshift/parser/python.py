@@ -3,15 +3,15 @@ import re
 
 encoding_re = re.compile(r"^\s*#.*coding[:=]\s*([-\w.]+)", re.UNICODE)
 
-class _CachedWalker(ast.NodeVisitor):
+class _TreeWalker(ast.NodeVisitor):
     """
     Local node visitor for python abstract syntax trees.
 
-    :ivar accum: (dict) Information on variables, functions, and classes
-        accumulated from an abstract syntax tree.
+    :ivar symbols: (dict) Information on variables, functions, and classes
+        symbolsulated from an abstract syntax tree.
 
     :ivar cache: (dict or None) Information stored about parent nodes. Added
-        to accum when node reaches the lowest possible level.
+        to symbols when node reaches the lowest possible level.
 
     .. todo::
         Add visit funciton for ast.Name to record all uses of a variable.
@@ -24,7 +24,10 @@ class _CachedWalker(ast.NodeVisitor):
         Create a _TreeCutter instance.
         """
 
-        self.accum = {'vars': {}, 'functions': {}, 'classes': {}}
+        self.symbols = {'vars': {}, 'functions': {}, 'classes': {}}
+        self.cache = []
+
+    def clear_cache(self):
         self.cache = []
 
     def block_position(self, node):
@@ -37,120 +40,144 @@ class _CachedWalker(ast.NodeVisitor):
         """
 
         start_line, start_col = node.lineno, node.col_offset
-
         temp_node = node
+
         while 'body' in temp_node.__dict__:
             temp_node = temp_node.body[-1]
 
         end_line, end_col = temp_node.lineno, temp_node.col_offset
-        return (start_line, start_col, end_line, end_col)
+
+        if start_line == end_line:
+            return [start_line, start_col, end_line, -1]
+
+        return [start_line, start_col, end_line, end_col]
 
     def visit_Assign(self, node):
         """
-        Visits Assign nodes in a tree.  Adds relevant data about them to accum.
+        Visits Assign nodes in a tree.  Adds relevant data about them to symbols.
 
         :param node: The current node.
 
         :type node: ast.Assign
 
         .. todo::
-            Add value and type metadata to accum.
+            Add value and type metadata to symbols.
         """
 
-        line, col = node.lineno, node.col_offset
-        pos = (line, col, -1, -1)
+        pos = self.block_position(node)
 
-        self.cache.append({'nodes': []})
-        self.generic_visit(node)
-        last = self.cache.pop()
+        for t in node.targets:
+            self.visit(t)
 
-        for name in last['nodes']:
-            if not self.accum['vars'].has_key(name):
-                self.accum['vars'][name] = {'assignments': [], 'uses': []}
+        for name in self.cache:
+            if not self.symbols['vars'].has_key(name):
+                self.symbols['vars'][name] = {'assignments': [], 'uses': []}
 
-            self.accum['vars'][name]['assignments'].append(pos)
+            self.symbols['vars'][name]['assignments'].append(pos)
 
+        self.clear_cache()
+        self.visit(node.value)
+
+        for name in self.cache:
+            if not self.symbols['vars'].has_key(name):
+                self.symbols['vars'][name] = {'assignments': [], 'uses': []}
+
+            self.symbols['vars'][name]['uses'].append(pos)
+
+        self.clear_cache()
 
     def visit_FunctionDef(self, node):
         """
-        Visits FunctionDef nodes in a tree.  Adds relevant data about them to accum.
+        Visits FunctionDef nodes in a tree.  Adds relevant data about them to symbols.
 
         :param node: The current node.
 
         :type node: ast.FunctionDef
 
         .. todo::
-            Add arguments and decorators metadata to accum.
+            Add arguments and decorators metadata to symbols.
         """
 
-        start_line, start_col, end_line, end_col = self.block_position(node)
+        pos = self.block_position(node)
 
-        if not self.accum['functions'].has_key(node.name):
-            self.accum['functions'][node.name] = {'assignments': [], 'uses': []}
+        if not self.symbols['functions'].has_key(node.name):
+            self.symbols['functions'][node.name] = {'assignments': [], 'uses': []}
 
-        pos = (start_line, start_col, end_line, end_col)
-        self.accum['functions'][node.name]['assignments'].append(pos)
+        self.symbols['functions'][node.name]['assignments'].append(pos)
 
         self.generic_visit(node)
 
     def visit_Call(self, node):
         """
         Visits Function Call nodes in a tree.  Adds relevant data about them
-            in the functions section for accum.
+            in the functions section for symbols.
 
         :param node: The current node.
 
         :type node: ast.Call
 
         .. todo::
-            Add arguments and decorators metadata to accum.
+            Add arguments and decorators metadata to symbols.
         """
 
-        line, col = node.lineno, node.col_offset
-        pos = (line, col, -1, -1)
+        pos = self.block_position(node)
 
-        if isinstance(node.func, ast.Name):
-            name = node.func.id
-        elif isinstance(node.func, ast.Attribute):
-            name = node.func.attr
-        else:  # Dynamically selected functions, etc:
-            return
+        self.visit(node.func)
+        name = self.cache.pop()
 
-        if not self.accum['functions'].has_key(name):
-            self.accum['functions'][name] = {'assignments': [], 'uses': []}
+        if not self.symbols['functions'].has_key(name):
+            self.symbols['functions'][name] = {'assignments': [], 'uses': []}
 
-        self.accum['functions'][name]['uses'].append(pos)
+        self.symbols['functions'][name]['uses'].append(pos)
+
+        for name in self.cache:
+            if not self.symbols['vars'].has_key(name):
+                self.symbols['vars'][name] = {'assignments': [], 'uses': []}
+
+            self.symbols['vars'][name]['uses'].append(pos)
+
+        self.clear_cache()
+
+        for a in node.args:
+            self.visit(a)
+
+        for name in self.cache:
+            if not self.symbols['vars'].has_key(name):
+                self.symbols['vars'][name] = {'assignments': [], 'uses': []}
+
+            self.symbols['vars'][name]['uses'].append(pos)
+
+        self.clear_cache()
 
     def visit_ClassDef(self, node):
         """
-        Visits ClassDef nodes in a tree.  Adds relevant data about them to accum.
+        Visits ClassDef nodes in a tree.  Adds relevant data about them to symbols.
 
         :param node: The current node.
 
         :type node: ast.ClassDef
 
         .. todo::
-            Add arguments, inherits, and decorators metadata to accum.
+            Add arguments, inherits, and decorators metadata to symbols.
         """
 
-        start_line, start_col, end_line, end_col = self.block_position(node)
+        pos = self.block_position(node)
 
-        pos = (start_line, start_col, end_line, end_col)
-        if node.name not in self.accum['classes']:
-            self.accum['classes'][node.name] = {'assignments': [], 'uses': []}
-        self.accum['classes'][node.name]['assignments'].append(pos)
+        if node.name not in self.symbols['classes']:
+            self.symbols['classes'][node.name] = {'assignments': [], 'uses': []}
+        self.symbols['classes'][node.name]['assignments'].append(pos)
 
         self.generic_visit(node)
 
     def visit_Name(self, node):
-        if self.cache:
-            last = self.cache[-1]
-            last['nodes'].append(node.id)
+        self.cache.append(node.id)
 
     def visit_Attribute(self, node):
-        if self.cache:
-            last = self.cache[-1]
-            last['nodes'].append(node.attr)
+        self.visit(node.value)
+        self.cache.append(node.attr)
+
+    def visit_Import(self, node):
+        pos = self.block_position(node)
 
 def parse_py(codelet):
     """
@@ -181,6 +208,7 @@ def parse_py(codelet):
     except SyntaxError:
         ## TODO: add some logging here?
         return
-    cutter = _CachedWalker()
-    cutter.visit(tree)
-    return cutter.accum
+
+    walker = _TreeWalker()
+    walker.visit(tree)
+    return walker.symbols

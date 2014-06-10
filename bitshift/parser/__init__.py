@@ -109,8 +109,8 @@ def parse_via_server(codelet):
 
 PARSERS = {
     "Python": parse_py,
-    "Java": parse_via_server,
-    "Ruby": parse_via_server,
+    "Java":   parse_via_server,
+    "Ruby":   parse_via_server,
 }
 
 def parse(codelet):
@@ -134,7 +134,6 @@ def parse(codelet):
                 yield None
             else:
                 yield i
-
 
     if lang_string in PARSERS:
         symbols = PARSERS[lang_string](codelet)
