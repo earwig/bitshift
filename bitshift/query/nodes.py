@@ -11,6 +11,10 @@ class _Node(object):
     of a specific language are selected.
     """
 
+    def _null_regex(self, expr):
+        """Implements a regex search with support for a null expression."""
+        return "IF(ISNULL(%s), 0, %s REGEXP ?)" % (expr, expr)
+
     def sortkey(self):
         """Return a string sort key for the node."""
         return ""
@@ -87,13 +91,13 @@ class Text(_Node):
     def parameterize(self, tables):
         tables |= {"code", "symbols"}
         if isinstance(self.text, Regex):
-            ranks = ["(codelet_name REGEXP ?)", "(symbol_name REGEXP ?)",
-                     "(code_code REGEXP ?)"]
+            ranks = ["(codelet_name REGEXP ?)", "(code_code REGEXP ?)",
+                     self._null_regex("symbol_name")]
             text = self.text.regex
         else:
             ranks = ["(MATCH(codelet_name) AGAINST (? IN BOOLEAN MODE))",
                      "(MATCH(code_code) AGAINST (? IN BOOLEAN MODE))",
-                     "(symbol_name = ?)"]
+                     "(symbol_name <=> ?)"]
             text = self.text.string
         cond = "(" + " OR ".join(ranks) + ")"
         return cond, [text] * 3, ranks, True
@@ -119,7 +123,7 @@ class Language(_Node):
 
     def parameterize(self, tables):
         tables |= {"code"}
-        return "(code_lang = ?)", [self.lang], [], False
+        return "(code_lang <=> ?)", [self.lang], [], False
 
 
 class Author(_Node):
@@ -143,7 +147,8 @@ class Author(_Node):
     def parameterize(self, tables):
         tables |= {"authors"}
         if isinstance(self.name, Regex):
-            return "(author_name REGEXP ?)", [self.name.regex], [], False
+            cond = self._null_regex("author_name")
+            return cond, [self.name.regex], [], False
         cond = "(MATCH(author_name) AGAINST (? IN BOOLEAN MODE))"
         return cond, [self.name.string], [], True
 
@@ -182,7 +187,8 @@ class Date(_Node):
         column = {self.CREATE: "codelet_date_created",
                   self.MODIFY: "codelet_date_modified"}[self.type]
         op = {self.BEFORE: "<=", self.AFTER: ">="}[self.relation]
-        return "(" + column + " " + op + " ?)", [self.date], [], False
+        cond = "IF(ISNULL(%s), 0, %s %s ?)" % (column, column, op)
+        return cond, [self.date], [], False
 
 
 class Symbol(_Node):
@@ -226,17 +232,18 @@ class Symbol(_Node):
     def parameterize(self, tables):
         tables |= {"code", "symbols"}
         if isinstance(self.name, Regex):
-            cond, name = "symbol_name REGEXP ?", self.name.regex
+            cond, name = self._null_regex("symbol_name"), self.name.regex
         else:
-            cond, name = "symbol_name = ?", self.name.string
+            cond, name = "symbol_name <=> ?", self.name.string
             if self.type == self.ALL:
                 types = ", ".join(str(typ) for typ in xrange(len(self.TYPES)))
-                cond += " AND symbol_type IN (%s)" % types
+                part = " AND IF(ISNULL(symbol_type), 0, symbol_type IN (%s))"
+                cond += part % types
         if self.type != self.ALL:
-            cond += " AND symbol_type = %d" % self.type
+            cond += " AND symbol_type <=> %d" % self.type
         if self.context != self.ALL:
             tables |= {"symbol_locations"}
-            cond += " AND sloc_type = %d" % self.context
+            cond += " AND sloc_type <=> %d" % self.context
         return "(" + cond + ")", [name], [], False
 
 

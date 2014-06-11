@@ -60,14 +60,14 @@ class Tree(object):
         """
         def get_table_joins(tables):
             joins = [
-                ("code", "codelet_code_id", "code_id"),
-                ("authors", "author_codelet", "codelet_id"),
-                ("symbols", "symbol_code", "code_id"),
-                ("symbol_locations", "sloc_symbol", "symbol_id")
+                ("INNER", "code", "codelet_code_id", "code_id"),
+                ("LEFT", "authors", "author_codelet", "codelet_id"),
+                ("LEFT", "symbols", "symbol_code", "code_id"),
+                ("LEFT", "symbol_locations", "sloc_symbol", "symbol_id")
             ]
-            tmpl = "INNER JOIN %s ON %s = %s"
+            tmpl = "%s JOIN %s ON %s = %s"
             for args in joins:
-                if args[0] in tables:
+                if args[1] in tables:
                     yield tmpl % args
 
         tables = set()
