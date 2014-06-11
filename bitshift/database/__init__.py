@@ -159,8 +159,8 @@ class Database(object):
         for (name, assigns, uses) in symbols:
             cursor.execute(query1, (code_id, type_id, name))
             sym_id = cursor.lastrowid
-            params = [build(sym_id, assigns, Symbol.ASSIGN),
-                      build(sym_id, uses, Symbol.USE)]
+            params = (build(sym_id, assigns, Symbol.ASSIGN) +
+                      build(sym_id, uses, Symbol.USE))
             cursor.executemany(query2, params)
 
     def close(self):
