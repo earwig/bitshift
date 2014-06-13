@@ -3,6 +3,7 @@ Module to contain all the project's Flask server plumbing.
 """
 
 import datetime
+import flask
 
 from json import dumps
 from flask import Flask, make_response, render_template, request
@@ -54,6 +55,12 @@ def about():
 @app.route("/developers")
 def developers():
     return render_template("developers.html")
+
+@app.route("/robots.txt")
+@app.route("/sitemap.xml")
+@app.route("/favicon.ico")
+def static_from_root():
+    return flask.send_from_directory(app.static_folder, request.path[1:])
 
 if __name__ == "__main__":
     app.run(debug=True)
