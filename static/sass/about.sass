@@ -5,6 +5,8 @@
 @import mixins
 @import variables
 
+$centered-section-min-width: 500px
+
 div.bg
     $img-height: 650px
 
@@ -28,22 +30,22 @@ div.bg
         background: url(../img/about/bg3.png) no-repeat
         background-size: cover
         height: $img-height + 250
-        top: 1600px
+        top: 1560px
 
     &#img-4
         background: url(../img/about/bg4.png) no-repeat
         background-size: cover
-        height: $img-height + 300
-        top: 5450px
+        height: $img-height + 400
+        top: 5280px
 
 div.section
     background-color: white
     border: 1px solid $baseColor2
-    height: 300px
     margin-bottom: 200px
     margin-top: 300px
     padding-bottom: 50px
     padding-top: 20px
+    overflow: hidden
 
     &#top
         margin-top: 0px
@@ -53,7 +55,8 @@ div.section
         line-height: 150%
         margin-left: auto
         margin-right: auto
-        width: 50%
+        min-width: 500px
+        width: 65%
 
         &#how
             b
@@ -86,3 +89,35 @@ div.section
         span#title
             color: $baseColor1
             font-weight: bold
+
+div.person
+    font-size: 80%
+    overflow: hidden
+
+    &#top
+        margin-top: 40px
+
+    >div
+        $image-min-width: 100px
+
+        display: inline-block
+        height: 100%
+        margin-bottom: 40px
+        vertical-align: top
+
+        &.photo
+            margin-right: 40px
+            width: $image-min-width
+
+            img
+                display: block
+                height: $image-min-width
+                width: $image-min-width
+
+        &.bio
+            min-width: $centered-section-min-width - $image-min-width - 50px
+            width: 70%
+
+            h1
+                font-size: 130%
+                margin: 0
