@@ -202,6 +202,31 @@ div#advanced-search
             &#col2
                 width: 75%
 
+                button
+                    border: none
+                    color: white
+                    float: right
+                    font-size: 80%
+                    font-weight: bold
+                    padding-left: 4%
+                    padding-right: 4%
+
+                    &:hover
+                        cursor: pointer
+
+                    &#add-group
+                        background-color: #7FAFFC
+                        margin-right: 1%
+
+                        &:hover
+                            background-color: #609AF8
+
+                    &#remove-group
+                        background-color: #E74C4C
+
+                        &:hover
+                            background-color: #D63636
+
     >div
         @include vendor(box-sizing, border-box)
 
@@ -249,43 +274,6 @@ div#advanced-search
                         background-color: $baseColor1
                         color: white
                         width: 90%
-
-        button#add-group
-            background-color: $lightBlue
-            border: none
-            color: white
-            display: block
-            height: 40px
-            margin-bottom: 2%
-            overflow: hidden
-            white-space: nowrap
-            width: 40px
-
-            span
-                font-size: 150%
-                font-weight: bold
-                margin-left: 6px
-                margin-right: 14px
-
-            &:hover
-                @extend .t3
-
-                background-color: $blue
-                cursor: pointer
-                width: 90%
-
-        button#remove-group
-            @extend button#add-group
-
-            background-color: #D82D48
-
-            span
-                padding-left: 3px
-
-            &:hover
-                @extend .t3
-
-                background-color: #F11437
 
     #search-groups
         margin-top: 1%

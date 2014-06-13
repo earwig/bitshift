@@ -18,7 +18,7 @@
 = endblock
 
 = block body
-  <div id="search-field">
+  <div id="search-field" class="partly-visible">
     <a id="title" href="/">
       <div id="title">
         <span id="title-bit">bit</span
@@ -30,13 +30,21 @@
     <form id="search-bar">
       <input type="text" name="query"
       ><button id="advanced-search" title="advanced search" type="button">
-        <img src="static/img/search_bar_magnifying_glass.png">
+        <img src="img/index/search_bar_magnifying_glass.png">
       </button>
 
       <div id="advanced-search">
         <div id="heading">
           <div id="col1">Fields</div
-          ><div id="col2">Search groups</div>
+          ><div id="col2">
+            Search groups
+            <button id="add-group">
+              <div><span>+</span> Add</div>
+            </button>
+            <button id="remove-group">
+              <div><span>-</span> Remove</div>
+            </button>
+          </div>
         </div>
         <div id="sidebar">
           <ul>
@@ -73,12 +81,6 @@
               <label for="variable"><div>variables</div></label>
             </li>
           </ul>
-          <button id="add-group">
-            <div><span>+</span> Add</div>
-          </button>
-          <button id="remove-group">
-            <div><span>-</span> Remove</div>
-          </button>
         </div>
         <div id="search-groups">
           <div class="search-group" id="selected">
