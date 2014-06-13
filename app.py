@@ -56,5 +56,9 @@ def about():
 def developers():
     return render_template("developers.html")
 
+@app.errorhandler(404)
+def error404(error):
+    return render_template("error404.html"), 404
+
 if __name__ == "__main__":
     app.run(debug=True)
