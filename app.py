@@ -12,7 +12,7 @@ from bitshift.database import Database
 from bitshift.languages import LANGS
 from bitshift.query import parse_query, QueryParseException
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", static_url_path="")
 app.config.from_object("bitshift.config")
 app.jinja_env.globals.update(year=datetime.datetime.now().year)
 
@@ -55,12 +55,6 @@ def about():
 @app.route("/developers")
 def developers():
     return render_template("developers.html")
-
-@app.route("/robots.txt")
-@app.route("/sitemap.xml")
-@app.route("/favicon.ico")
-def static_from_root():
-    return flask.send_from_directory(app.static_folder, request.path[1:])
 
 if __name__ == "__main__":
     app.run(debug=True)
