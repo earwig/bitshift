@@ -5,8 +5,8 @@
 from flask import Markup
 
 ASSET_HTML_TEMPLATES = {
-    'css': "<link rel='stylesheet' type='text/css' href='/static/css/%s'>",
-    'js': "<script src='/static/js/%s'></script>"
+    'css': "<link rel='stylesheet' type='text/css' href='/css/%s'>",
+    'js': "<script src='/js/%s'></script>"
 }
 
 def tag(filename):
