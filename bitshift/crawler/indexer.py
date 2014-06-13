@@ -168,6 +168,8 @@ class GitIndexer(threading.Thread):
                 parse(codelet)
             except UnsupportedFileError:
                 continue
+            except Exception:
+                self._logger.exception("Exception raised while parsing:")
             self.database.insert(codelet)
 
     def _generate_file_url(self, filename, repo):
