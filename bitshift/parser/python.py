@@ -123,6 +123,8 @@ class _TreeWalker(ast.NodeVisitor):
         pos = self.block_position(node)
 
         self.visit(node.func)
+        if not self.cache:
+            return
         name = self.cache.pop()
 
         if not self.symbols['functions'].has_key(name):

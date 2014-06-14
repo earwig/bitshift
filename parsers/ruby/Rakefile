@@ -1,5 +1,6 @@
-require File.expand_path('../lib/parse_server.rb', __FILE__)
+require 'pp'
+require File.expand_path('../lib/parser.rb', __FILE__)
 
-task :start_server, [:port_number] do |t, args|
-    start_server Integer(args[:port_number])
+task :parse do |t|
+    parse
 end

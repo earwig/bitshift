@@ -1,18 +1,6 @@
 require 'socket'
 require File.expand_path('../parser.rb', __FILE__)
 
-def pack_int(i)
-    bytes = []; mask = 255
-
-    while bytes.length < 4
-        bytes.unshift (i & mask)
-        i = i >> 8
-    end
-
-    return bytes.pack('cccc')
-end
-
-
 def start_server(port_number)
     server = TCPServer.new port_number
     puts "Ruby Server listening on port #{port_number}\n"
@@ -23,11 +11,12 @@ def start_server(port_number)
             begin
                 # Get the amount of data to be read
                 size = (client.readline).to_i
+                eos = ">}e^"
                 p = Bitshift::Parser.new client.read(size)
                 # Get the parsed result
                 symbols = p.parse
-                client.puts pack_int(symbols.length)
                 client.puts symbols
+                client.puts eos
             ensure
                 # Close the socket
                 client.close
