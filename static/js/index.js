@@ -260,10 +260,10 @@ function createResult(codelet) {
     site.innerHTML = '<a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
     nextMatch.innerHTML = 'next match';
     prevMatch.innerHTML = 'prev match';
-    language.innerHTML = 'Language: <span>' + codelet.language + '</span>';
-    dateModified.innerHTML = 'Last modified: <span>' + codelet.date_modified + '</span>';
+    language.innerHTML = 'Language: <span>' + codelet.lang + '</span>';
+    dateModified.innerHTML = 'Last modified: <span>' + codelet.modified + '</span>';
     // Needs to be changed from int to string on the server
-    dateCreated.innerHTML = 'Created: <span>' + codelet.date_created + '</span>';
+    dateCreated.innerHTML = 'Created: <span>' + codelet.created + '</span>';
 
     var authorsHtml = 'Authors: <span>';
     codelet.authors.forEach(function(a, i) {
