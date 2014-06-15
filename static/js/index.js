@@ -141,13 +141,13 @@ var codeExample = '<table class="highlighttable"><tr><td class="linenos"><div cl
 
 var testCodelet = {
     'url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
-    'filename': 'app.py',
+    'name': 'app.py',
     'language': 'python',
     'date_created': 'May 10, 2014',
     'date_modified': '2 days ago',
     'origin': ['GitHub', 'https://github.com', ''],
     'authors': ['sevko', 'earwig'],
-    'html_code': codeExample
+    'code': codeExample
 };
 
 // Enable infinite scrolling down the results page.
@@ -210,26 +210,6 @@ function clearResults(){
 }
 
 /*
- * Query the server with the current search string, and populate `div#results`
- * with its response.
- */
-function populateResults(){
-    searchResultsPage = 1;
-    var results = queryServer();
-
-    for(var result = 0; result < results.length; result++){
-        var newDiv = results[result];
-        resultsDiv.appendChild(newDiv);
-        setTimeout(
-            (function(divReference){
-                return function(){
-                    divReference.classList.add("cascade");
-                };
-            }(newDiv)), result * 20);
-    }
-}
-
-/*
  * Create a result element based upon a codelet instance.
  *
  * @return {Element} The result element.
@@ -276,7 +256,7 @@ function createResult(codelet) {
 
     //Add the bulk of the html
     title.innerHTML = ' &raquo; <a href="' + codelet.url + '">'
-                      + codelet.filename + '</a>';
+                      + codelet.name + '</a>';
     site.innerHTML = '<a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
     nextMatch.innerHTML = 'next match';
     prevMatch.innerHTML = 'prev match';
@@ -295,7 +275,7 @@ function createResult(codelet) {
     authors.innerHTML = authorsHtml;
 
     // Needs to be processed on the server
-    codeElt.innerHTML = '<div id=tablecontainer>' + codelet.html_code + '</div>';
+    codeElt.innerHTML = '<div id=tablecontainer>' + codelet.code + '</div>';
 
     //Event binding
     $(newDiv).on('mousemove', function(e) {
@@ -408,39 +388,49 @@ function queryServer(){
         "p" : searchResultsPage++
     });
 
-    var resultDivs = [];
+    var results = $.Deferred();
     $.getJSON(queryUrl, function(result){
+        var resultDivs = [];
         if("error" in result)
             insertErrorMessage(result["error"]);
         else
-            for(var codelet = 0; codelet < result["results"].length; codelet++)
-                resultDivs.push(result["results"][codelet]);
+            for(var codelet = 0; codelet < result["results"].length; codelet++){
+                resultDivs.push(createResult(result["results"][codelet]));
+                console.log(result["results"][codelet]);
+            }
+        results.resolve(resultDivs);
     });
 
-    for(var result = 0; result < 20; result++){
-        var newDiv = createResult(testCodelet);
-        resultDivs.push(newDiv)
-    }
-
-    return resultDivs;
+    return results;
 }
 
 /*
- * Adds more results to `div#results`.
+ * Query the server with the current search string, and populate `div#results`
+ * with its response.
+ */
+function populateResults(){
+    searchResultsPage = 1;
+    loadMoreResults();
+}
+
+/*
+ * Query the server for the next results page, and add its codelets to
+ * `div#results`.
  */
 function loadMoreResults(){
-    var results = queryServer();
-    for(var result = 0; result < results.length; result++){
-        var newDiv = results[result];
-        resultsDiv.appendChild(newDiv);
-        setTimeout(
-            (function(divReference){
-                return function(){
-                    divReference.classList.add("cascade");
-                };
-            }(newDiv)),
-            result * 20);
-    }
+    queryServer().done(function(results){
+        for(var result = 0; result < results.length; result++){
+            var newDiv = results[result];
+            resultsDiv.appendChild(newDiv);
+            setTimeout(
+                (function(divReference){
+                    return function(){
+                        divReference.classList.add("cascade");
+                    };
+                }(newDiv)),
+                result * 20);
+        }
+    });
 }
 
 /*
@@ -453,5 +443,3 @@ function insertErrorMessage(msg){
     error.append(msg);
     resultsDiv.appendChild(error[0]);
 }
-
-// loadMoreResults();
