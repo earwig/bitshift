@@ -43,7 +43,7 @@ var searchResultsPage = 1;
             advancedSearchButton.addClass("clicked");
         }
         else {
-            advancedSearchDiv.fadeOut(300).removeClass("visible");
+            advancedSearchDiv.hide().removeClass("visible");
             advancedSearchButton.removeClass("clicked");
             if($("div#results .result").length == 0)
                 searchField.removeClass("partly-visible");
@@ -393,6 +393,8 @@ function queryServer(){
         var resultDivs = [];
         if("error" in result)
             insertErrorMessage(result["error"]);
+        else if(result["results"].length == 0)
+            insertErrorMessage("No search results.");
         else
             for(var codelet = 0; codelet < result["results"].length; codelet++){
                 resultDivs.push(createResult(result["results"][codelet]));
@@ -439,7 +441,11 @@ function loadMoreResults(){
  * @param msg (str) The message string.
  */
 function insertErrorMessage(msg){
-    var error = $("<div id='error'><span>Error: </span></div>");
+    var error = $(
+            [
+                "<div id='error'><span id='s1'>Error</span> ",
+                "<span id='s2'>&raquo;</span> </div>"
+            ].join(""));
     error.append(msg);
     resultsDiv.appendChild(error[0]);
 }

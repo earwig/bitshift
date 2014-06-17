@@ -115,39 +115,28 @@ div#search-field
             margin-bottom: 0px
             padding: 6px
 
-        input[type="text"]
-            width: 85%
+        input[type="text"]#query
+            width: 100%
 
             &:hover
                 border-color: $baseColor1
 
         button#advanced-search
             background-color: white
-            border: 1px solid white
-            width: 15%
-            height: 10%
-            padding: 0px
-            float: right
+            border: none
+            color: $baseColor2
+            font-size: 1.1em
+            font-style: italic
 
             &:hover
-                img
-                    background-color: black
-                    cursor: pointer
+                color: $baseColor1
+                cursor: pointer
 
             &.clicked
-                img
-                    background-color: $baseColor1
+                color: $baseColor1
 
             &:focus
                 outline: 0
-
-            img
-                @extend .t3
-
-                background-color: $baseColor2
-                margin-top: 5px
-                width: 26px
-                height: 26px
 
     &.partly-visible
         margin-top: 0%
@@ -168,10 +157,14 @@ div#search-field
             margin-right: auto
             width: 60%
 
-            input:hover
+            input
                 @extend .t3
 
-                border: 1px solid $baseColor1
+                &#query
+                    width: 80%
+
+                &:hover
+                    border: 1px solid $baseColor1
 
 div#advanced-search
     background-color: white
@@ -338,8 +331,14 @@ div#results
         text-align: center
 
         span
-            color: $baseColor1
+            margin-right: 10px
             font-size: 150%
+
+            &#s1
+                color: $baseColor1
+
+            &#s2
+                color: $baseColor2
 
     &.disable-hover
         pointer-events: none
