@@ -6,9 +6,17 @@
 
 = block body
   <div id="message">
-    <span class="c1">puts</span
-    ><span class="c3">(</span><span class=c2>"</span
-    ><span id="error-num">404</span><span class=c2>"</span><span class=c3
-    >)</span><span class="c3">;</span>
+  {{ assets.syntax_highlight([
+    'puts("404");',
+    'printf("%d\n", 404);',
+    'puts 404',
+    'System.out.println("404")',
+    'print 404',
+    'console.log("404")',
+    'echo 404',
+    'std::cout << "404\\n"',
+    '(println "404")',
+    'say "404!";'
+    ] | random) | safe }}
   </div>
 = endblock
