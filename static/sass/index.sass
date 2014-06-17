@@ -6,9 +6,9 @@
 @import variables
 
 $minSearchFieldsWidth: 490px
-$resultWidth: 800px
+// $resultWidth: 400px
 $codeWidth: 700px
-$hiddenInfoWidth: 250px
+$hiddenInfoWidth: 300px
 
 .ui-datepicker
     font-size: 70%
@@ -346,7 +346,7 @@ div#results
 div.result
     @extend .t3
 
-    width: $resultWidth
+    // width: $resultWidth
     height: 200px
     margin-bottom: 100%
     pointer-events: auto
@@ -368,6 +368,10 @@ div.result
     &.display-all
         table tr
             @include opaque(1.0)
+
+        #tablecontainer
+            max-width: 70%
+            overflow: auto !important
 
 div#display-info
     font-size: 1.3em
@@ -391,17 +395,20 @@ td#code
     #tablecontainer
         width: 100%
         height: inherit
-        overflow: auto
+        overflow: hidden
         background-color: #49483e
         position: relative
         z-index: 1
+
+        // &:hover
+            // overflow: auto
 
         table
             border-collapse: collapse
             font-family: monospace
 
             .linenos
-                padding-left: 1%
+                padding-left: 8px
 
                 pre
                     margin-top: 5px
@@ -414,7 +421,7 @@ td#code
 
 div#hidden-info
     width: $hiddenInfoWidth
-    margin-left: -$hiddenInfoWidth - 200px
+    margin-left: -$hiddenInfoWidth
     height: 100%
     padding-top: 40px
     font-size: 1.2em
@@ -425,7 +432,7 @@ div#hidden-info
     @include vendor(transition, margin-left 0.2s ease-in-out)
 
     .display-all &
-        margin-left: 0px
+        margin-left: -$hiddenInfoWidth / 1.5
         padding-left: 20px
 
     span
