@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Arrays;
 
-import java.net.Socket;
+import com.google.common.base.Joiner;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -26,23 +27,20 @@ import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
-import com.bitshift.parsing.parsers.Parser;
 import com.bitshift.parsing.symbols.Symbols;
 import com.bitshift.parsing.symbols.JavaSymbols;
 
 /*TODO: Work on parsing partial java code.*/
-public class JavaParser extends Parser {
+public class JavaParser {
+    private String source;
 
-    public JavaParser(Socket clientSocket) {
-        super(clientSocket);
+    public JavaParser(String source) {
+        this.source = source;
     }
 
-    @Override
-    protected Symbols genSymbols() {
-        char[] source = this.readFromClient().toCharArray();
-
+    private Symbols genSymbols() {
         ASTParser parser = ASTParser.newParser(AST.JLS3);
-        parser.setSource(source);
+        parser.setSource(this.source.toCharArray());
 
         Map options = JavaCore.getOptions();
         parser.setCompilerOptions(options);
@@ -55,10 +53,9 @@ public class JavaParser extends Parser {
         return visitor.symbols;
     }
 
-    @Override
-    public void run() {
+    public String parse() {
         JavaSymbols symbols = (JavaSymbols) this.genSymbols();
-        writeToClient(symbols.toString());
+        return symbols.toString();
     }
 
     class NodeVisitor extends ASTVisitor {
@@ -76,8 +73,10 @@ public class JavaParser extends Parser {
         public ArrayList<Integer> blockPosition(ASTNode node) {
             int sl = this.root.getLineNumber(node.getStartPosition());
             int sc = this.root.getColumnNumber(node.getStartPosition()) + 1;
-            int el = this.root.getLineNumber(node.getStartPosition() + node.getLength());
-            int ec = this.root.getColumnNumber(node.getStartPosition() + node.getLength()) + 1;
+            int el = this.root.getLineNumber(node.getStartPosition()
+                    + node.getLength() - 1);
+            int ec = this.root.getColumnNumber(node.getStartPosition()
+                    + node.getLength() - 1) + 1;
 
             return Symbols.createCoord(sl, sc, el, ec);
         }
@@ -204,7 +203,12 @@ public class JavaParser extends Parser {
         public void endVisit(ImportDeclaration node) {
             HashMap<String, Object> data = this._cache.pop();
             String name = (String)data.remove("name");
-            this.symbols.insertImportStatement("\"" + name + "\"", data);
+            String[] parts = name.split("\\.");
+
+            for(int i = parts.length; i > 1; i--) {
+                String pkg = Joiner.on(".").join(Arrays.copyOfRange(parts, 0, i));
+                this.symbols.insertImportStatement("\"" + pkg + "\"", data);
+            }
         }
     }
 }

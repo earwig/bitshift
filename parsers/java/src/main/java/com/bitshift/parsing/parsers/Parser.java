@@ -8,14 +8,16 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.IOException;
 
+import java.nio.ByteBuffer;
+
 import java.net.Socket;
 
 import com.bitshift.parsing.symbols.Symbols;
-import com.bitshift.parsing.utils.PackableMemory;
 
 public abstract class Parser implements Runnable {
 
     protected Socket clientSocket;
+    private String eos;
 
     public Parser(Socket clientSocket) {
         this.clientSocket = clientSocket;
@@ -29,6 +31,7 @@ public abstract class Parser implements Runnable {
                     new InputStreamReader(this.clientSocket.getInputStream()));
 
             int bytes = Integer.parseInt(clientReader.readLine());
+            this.eos = clientReader.readLine();
 
             StringBuilder builder = new StringBuilder();
             int i = 0;
@@ -47,29 +50,13 @@ public abstract class Parser implements Runnable {
         return fromClient;
     }
 
-    public String escapeUnicode(String input) {
-        StringBuilder b = new StringBuilder(input.length());
-        Formatter f = new Formatter(b);
-        for (char c : input.toCharArray()) {
-            if (c < 128) {
-                b.append(c);
-            } else {
-                f.format("\\u%04x", (int) c);
-            }
-        }
-        return b.toString();
-    }
-
     protected void writeToClient(String toClient) {
         try {
             BufferedWriter clientWriter = new BufferedWriter(
                     new OutputStreamWriter(this.clientSocket.getOutputStream()));
 
-            PackableMemory mem = new PackableMemory(4);
-            mem.pack(toClient.length(), 0);
-            String dataSize = new String(mem.mem);
-
             clientWriter.write(toClient);
+            clientWriter.write(eos);
             clientWriter.flush();
             this.clientSocket.close();
         } catch (IOException ex) {

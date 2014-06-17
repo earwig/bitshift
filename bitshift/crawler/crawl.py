@@ -14,7 +14,6 @@ from threading import Event
 
 from .crawler import GitHubCrawler, BitbucketCrawler
 from .indexer import GitIndexer, GitRepository
-from ..parser import start_parse_servers
 
 __all__ = ["crawl"]
 
@@ -31,7 +30,6 @@ def crawl():
     """
 
     _configure_logging()
-    parse_servers = start_parse_servers()
     time.sleep(5)
 
     repo_clone_queue = Queue.Queue(maxsize=MAX_URL_QUEUE_SIZE)
@@ -62,8 +60,6 @@ def crawl():
             repo_clone_queue.queue.clear()
         for thread in threads:
             thread.join()
-        for server in parse_servers:
-            server.terminate()
 
 def _configure_logging():
     # This isn't ideal, since it means the bitshift python package must be kept
