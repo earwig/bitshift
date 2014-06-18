@@ -156,13 +156,14 @@ class GitIndexer(threading.Thread):
             return
 
         for filename, data in file_meta.iteritems():
+            name = ("%s: %s" % (repo.name, filename)).encode("utf8")
             authors = [(author, None) for author in data["authors"]]
             encoded_source = data["blob"].data_stream.read()
             source = UnicodeDammit(encoded_source).unicode_markup
             url = self._generate_file_url(filename, repo)
-            codelet = Codelet("%s: %s" % (repo.name, filename), source,
-                            filename, None, authors, url, data["time_created"],
-                            data["time_last_modified"], repo.rank)
+            codelet = Codelet(name, source, filename, None, authors, url,
+                              data["time_created"], data["time_last_modified"],
+                              repo.rank)
             self._logger.debug("Indexing file: %s", codelet.name)
             try:
                 parse(codelet)
