@@ -8,7 +8,7 @@ import flask
 from json import dumps
 from flask import Flask, make_response, render_template, request
 from bitshift import assets
- from bitshift.database import Database
+from bitshift.database import Database
 from bitshift.languages import LANGS
 from bitshift.query import parse_query, QueryParseException
 
