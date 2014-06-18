@@ -108,7 +108,6 @@ var searchResultsPage = 1;
 
     var displayHotkeyHelp = function(){
         var help = $("div#hotkey-help");
-        console.log("H");
         if(help.hasClass("hidden"))
             help.fadeIn(420);
         else
@@ -137,16 +136,16 @@ var searchResultsPage = 1;
 }());
 
 //Obtained by parsing python file with pygments
-var codeExample = '<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n36\n37\n38\n39\n40</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>\n<span class="sd">Module to contain all the project&#39;s Flask server plumbing.</span>\n<span class="sd">&quot;&quot;&quot;</span>\n\n<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>\n<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">session</span>\n\n<span class="kn">from</span> <span class="nn">bitshift</span> <span class="kn">import</span> <span class="n">assets</span>\n<span class="c"># from bitshift.database import Database</span>\n<span class="c"># from bitshift.query import parse_query</span>\n\n<span class="hll"><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>\n</span><span class="hll"><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="s">&quot;bitshift.config&quot;</span><span class="p">)</span>\n</span>\n<span class="hll"><span class="n">app_env</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span>\n</span><span class="hll"><span class="n">app_env</span><span class="o">.</span><span class="n">line_statement_prefix</span> <span class="o">=</span> <span class="s">&quot;=&quot;</span>\n</span><span class="hll"><span class="n">app_env</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">assets</span><span class="o">=</span><span class="n">assets</span><span class="p">)</span>\n</span>\n<span class="c"># database = Database()</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;index.html&quot;</span><span class="p">)</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/search/&lt;query&gt;&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>\n    <span class="c"># tree = parse_query(query)</span>\n    <span class="c"># database.search(tree)</span>\n    <span class="k">pass</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/about&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">about</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;about.html&quot;</span><span class="p">)</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/developers&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">developers</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;developers.html&quot;</span><span class="p">)</span>\n\n<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>\n<span class="hll">    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>\n</span></pre></div>\n</td></tr></table>'
+var codeExample = '<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1\n 2\n 3\n 4\n 5\n 6\n 7\n 8\n 9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n36\n37\n38\n39\n40</pre></div></td><td class="code"><div class="highlight"><pre><span class="sd">&quot;&quot;&quot;</span>\n<span class="sd">Module to contain all the project&#39;s Flask server plumbing.</span>\n<span class="sd">&quot;&quot;&quot;</span>\n\n<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>\n<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">session</span>\n\n<span class="kn">from</span> <span class="nn">bitshift</span> <span class="kn">import</span> <span class="n">assets</span>\n<span class="c"># from bitshift.database import Database</span>\n<span class="c"># from bitshift.query import parse_query</span>\n\n<span class="hll"><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>\n</span><span class="hll"><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">from_object</span><span class="p">(</span><span class="s">&quot;bitshift.config&quot;</span><span class="p">)</span>\n</span>\n<span class="hll"><span class="n">app_env</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">jinja_env</span>\n</span><span class="hll"><span class="n">app_env</span><span class="o">.</span><span class="n">line_statement_prefix</span> <span class="o">=</span> <span class="s">&quot;=&quot;</span>\n</span><span class="hll"><span class="n">app_env</span><span class="o">.</span><span class="n">globals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">assets</span><span class="o">=</span><span class="n">assets</span><span class="p">)</span>\n</span>\n<span class="c"># database = Database()</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;index.html&quot;</span><span class="p">)</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/search/&lt;query&gt;&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>\n    <span class="c"># tree = parse_query(query)</span>\n    <span class="c"># database.search(tree)</span>\n    <span class="k">pass</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/about&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">about</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;about.html&quot;</span><span class="p">)</span>\n\n<span class="hll"><span class="nd">@app.route</span><span class="p">(</span><span class="s">&quot;/developers&quot;</span><span class="p">)</span>\n</span><span class="k">def</span> <span class="nf">developers</span><span class="p">():</span>\n    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">&quot;developers.html&quot;</span><span class="p">)</span>\n\n<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>\n<span class="hll">    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">deaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>\n</span></pre></div>\n</td></tr></table>'
 
 var testCodelet = {
     'url': 'https://github.com/earwig/bitshift/blob/develop/app.py',
     'name': 'app.py',
-    'language': 'python',
-    'date_created': 'May 10, 2014',
-    'date_modified': '2 days ago',
+    'lang': 'python',
+    'created': 'May 10, 2014 aaaaaaaaaa',
+    'modified': '2 days ago',
     'origin': ['GitHub', 'https://github.com', ''],
-    'authors': ['sevko', 'earwig'],
+    'authors': ['sevko', 'earwig', 'another author', 'a'],
     'code': codeExample
 };
 
@@ -215,6 +214,8 @@ function clearResults(){
  * @return {Element} The result element.
  */
 function createResult(codelet) {
+    var maxAttributeLength = 20;
+
     //Level 1
     var newDiv = document.createElement("div"),
         table = document.createElement("table"),
@@ -256,23 +257,31 @@ function createResult(codelet) {
 
     //Add the bulk of the html
     title.innerHTML = ' &raquo; <a href="' + codelet.url + '">'
-                      + codelet.name + '</a>';
-    site.innerHTML = '<a href="' + codelet.origin[1] + '">' + codelet.origin[0] +'</a>';
+            + codelet.name + '</a>';
+    site.innerHTML = '<a href="' + codelet.origin[1] + '">' +
+            codelet.origin[0] +'</a>';
     nextMatch.innerHTML = 'next match';
     prevMatch.innerHTML = 'prev match';
     language.innerHTML = 'Language: <span>' + codelet.lang + '</span>';
-    dateModified.innerHTML = 'Last modified: <span>' + codelet.modified + '</span>';
+    dateModified.innerHTML = 'Last modified: <span>' + codelet.modified +
+            '</span>';
     // Needs to be changed from int to string on the server
-    dateCreated.innerHTML = 'Created: <span>' + codelet.created + '</span>';
+    dateCreated.innerHTML = 'Created: <span>' +
+            codelet.created.substring(0, maxAttributeLength) + '</span>';
 
     var authorsHtml = 'Authors: <span>';
-    codelet.authors.forEach(function(a, i) {
-        if (i == codelet.authors.length - 1)
-            authorsHtml += '<a href=#>' + a + ' </a>';
+    var currLength = 0;
+    var authorsList = [];
+    for(var auth = 0; auth < codelet.authors.length; auth++){
+        currLength += codelet.authors[auth].length;
+        if(maxAttributeLength < currLength){
+            authorsList.push("...");
+            break;
+        }
         else
-            authorsHtml += '<a href=#>' + a + ' </a>, ';
-    });
-    authors.innerHTML = authorsHtml;
+            authorsList.push('<a href=#>' + codelet.authors[auth] + '</a>');
+    }
+    authors.innerHTML = "Authors: <span>" + authorsList.join(", ") + "</span>";
 
     // Needs to be processed on the server
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.code + '</div>';
@@ -396,10 +405,8 @@ function queryServer(){
         else if(result["results"].length == 0)
             insertErrorMessage("No search results.");
         else
-            for(var codelet = 0; codelet < result["results"].length; codelet++){
+            for(var codelet = 0; codelet < result["results"].length; codelet++)
                 resultDivs.push(createResult(result["results"][codelet]));
-                console.log(result["results"][codelet]);
-            }
         results.resolve(resultDivs);
     });
 
