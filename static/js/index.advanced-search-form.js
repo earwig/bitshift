@@ -92,6 +92,13 @@ loadInputFieldWidgets();
         searchGroups[0].scrollTop = searchGroups[0].scrollHeight;
     });
 
+    $("div#advanced-search button#submit").click(function(){
+        $("div#advanced-search").hide();
+        advancedSearchButton.removeClass("clicked");
+        assembleQuery();
+        queryServer();
+    })
+
     var previousAdvancedQuery = "";
     var searchBar = $("form#search-bar input[name=query]");
 
@@ -158,6 +165,8 @@ function assembleQuery(){
  *
  * @param field (DOM element) An `input[type=text]` element.
  * @param hasRegex (boolean) Whether or not the field's value has regex.
+ *
+ * @return The processed query.
  */
 function genFieldQueryString(field, hasRegex){
     var terms = field.value.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");

@@ -47,6 +47,7 @@ var searchResultsPage = 1;
             advancedSearchButton.removeClass("clicked");
             if($("div#results .result").length == 0)
                 searchField.removeClass("partly-visible");
+            clearResults();
         }
     });
 
@@ -197,6 +198,7 @@ function finishedTyping(){
         searchField.removeClass("partly-visible");
         $("div#advanced-search").fadeOut(50);
         advancedSearchButton.removeClass("clicked");
+        clearResults();
     }
 }
 
