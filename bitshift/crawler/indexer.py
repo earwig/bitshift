@@ -70,8 +70,8 @@ class GitIndexer(threading.Thread):
     :ivar index_queue: (:class:`Queue.Queue`) A queue containing
         :class:`GitRepository` objects for every new repository succesfully
         cloned by :class:`_GitCloner`, which are to be indexed.
-    :ivar git_cloner: (:class:`_GitCloner`) The corresponding repository cloner,
-        which feeds :class:`GitIndexer`.
+    :ivar git_cloner: (:class:`_GitCloner`) The corresponding repository
+        cloner, which feeds :class:`GitIndexer`.
     :ivar _logger: (:class:`logging.Logger`) A class-specific logger object.
     """
 
@@ -227,7 +227,7 @@ class GitIndexer(threading.Thread):
                 continue
             log = repo.git.log("--follow", '--format=%an %ct', "--", item.path)
             lines = log.splitlines()
-            authors = {line.rsplit(" ", 1)[0] for line in lines}
+            authors = {line.rsplit(" ", 1)[0].decode("utf8") for line in lines}
             last_mod = int(lines[0].rsplit(" ", 1)[1])
             created = int(lines[-1].rsplit(" ", 1)[1])
 
