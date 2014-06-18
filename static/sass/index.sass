@@ -4,6 +4,7 @@
 
 @import mixins
 @import variables
+@import logo
 
 $minSearchFieldsWidth: 490px
 $codeWidth: 700px
@@ -84,25 +85,6 @@ div#search-field
     top: 0
     width: 40%
 
-    a#title
-        letter-spacing: 0.3em
-        text-decoration: none
-
-        div#title
-            font-size: 400%
-            padding-bottom: 0.2em
-            text-align: center
-
-            #title-bit
-                color: $baseColor1
-
-            #title-angle
-                color: $baseColor3
-
-            #title-shift
-                color: $baseColor2
-                font-style: italic
-
     form#search-bar
         min-width: $minSearchFieldsWidth
 
@@ -143,7 +125,7 @@ div#search-field
         position: absolute
         width: 100%
 
-        #title
+        #logo
             position: absolute
             top: -1%
             left: 1%
