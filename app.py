@@ -55,6 +55,10 @@ def about():
 def developers():
     return render_template("developers.html")
 
+@app.route("/docs")
+def docs():
+    return render_template("docs.html")
+
 @app.errorhandler(404)
 def error404(error):
     return render_template("error404.html"), 404
