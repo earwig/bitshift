@@ -4,38 +4,115 @@
   docs
 = endblock
 
+= block head
+  {{ assets.tag("docs.css") }}
+= endblock
+
 = block body
-  <h1>Usage</h1>
-  <p>
-    bitshift is a search-engine optimized for source code: beyond supporting searches with the full range of ASCII
-    symbols, the engine <em>understands</em> code, allowing users to query for metadata, like time of creation/last
-    modification, programming language, and even symbols like function names and variables. Basic use boils down to
-    general and advanced searches.
-
-    <h2>general search</h2>
-    <p>
-      To perform a "general search," simply place your cursor in the search bar on our home page and begin typing; when
-      you stop typing for a short period of time, we'll automtically execute a query for you. As you scroll down the
-      results page, the front-end will query our server and seamlessly load more and more results.
-    </p>
-
-    <h2>advanced search</h2>
-    <p>
-      General searches, though, are limited. To allow users to make the best of our engine, we created an advanced
-      search form that allows the creation of complex queries.
-
-      <h3>search fields</h3>
+  <ul>
+    <li>
+      <h1><span>&raquo;</span> Usage</h1>
       <p>
+        <span id="title">bitshift</span> is a search-engine optimized for source code: beyond supporting searches with the full range of ASCII
+        symbols, the engine <em>understands</em> code, allowing users to query for metadata, like time of creation/last
+        modification, programming language, and even symbols like function names and variables. Basic use boils down to
+        general and advanced searches.
+
+        <ul>
+          <li>
+            <h2>general search</h2>
+            <p>
+              To perform a "general search," simply place your cursor in the search bar on our home page and begin
+              entering text; when you stop typing for a short period of time, we'll automatically execute the query for you.
+              As you scroll down the results page, new codelets will be seamlessly downloaded from our server and
+              appended to the end.
+            </p>
+          </li>
+
+          <li>
+            <h2>advanced search</h2>
+            <p>
+              General searches, though, are limited. To allow users to make the best of our engine, we created an advanced
+              search form that allows the creation of complex queries with the following specifiers:
+
+              <ul>
+                <li>
+                  <h3>search fields</h3>
+                  <ul id="search-fields">
+                    <li>
+                      <span id="code">languages</span> : The programming languages to search for.
+                    </li>
+                    <li>
+                      <span id="code">authors</span> : Search for code written/modified by a specific person.
+                    </li>
+                    <li>
+                      <span id="code">date last modified</span> : Search for code last modified on a specific date (<span
+                        id="code">mm/dd/yy</span> format).
+                    </li>
+                    <li>
+                      <span id="code">date created</span> : Search for code created on a specific date (<span
+                        id="code">mm/dd/yy</span> format).
+                    </li>
+                    <li>
+                      <span id="code">symbols</span> : Search for specific symbols.
+                    </li>
+                    <li>
+                      <span id="code">functions</span> : Search for functions with specific names.
+                    </li>
+                    <li>
+                      <span id="code">classes</span> : Search for classes with specific names.
+                    </li>
+                    <li>
+                      <span id="code">variables</span> : Search for variables with specific names.
+                    </li>
+                  </ul>
+
+                  <p>
+                    Each of the search fields allows for numerous values; just separate them with spaces. If you'd like
+                    to search for a multi-word, space-delimited string, on the other hand, enclose it in double quotes.
+
+                    A query for <span id="code">foo bar</span> will search for occurrences of both <span
+                      id="string">"foo"</span> and <span id="string">"bar"</span>, while <span id="code">"foo bar"</span>
+                    will search for occurrences of <span id="string">"foo bar"</span>.
+                  </p>
+                </li>
+
+                <li>
+                  <h3>search groups</h3>
+                  <p>
+                    Search groups facilitate even more robust queries: they're like a bunch of individual searches
+                    grouped into one. A user searching for occurrenes of symbol <span id="string">"curses"</span> in the
+                    language <span id="string">"Python"</span>, and <span id="string">"ncurses"</span> in <span
+                    id="string">"C"</span>, won't get away with: <span id="code">symbols: "curses ncurses"</span> and
+                    <span id="code">languages: "Python C"</span>. The engine might return results <span
+                    id="string">"curses"</span> in <span id="string">"C"</span> and <span id="string">"ncurses"</span> in
+                    <span id="string">"Python"</span>!
+
+                    To work around that, you can use two search groups: one for <span id="string">"curses"</span> in
+                    <span id="string">"Python"</span>, and another for <span id="string">"curses"</span> in <span
+                    id="string">"C"</span>. <span id="title">bitshift</span> will return the union of both sets of search results.
+                  </p>
+                </li>
+              </ul>
+            </p>
+          </li>
+        </ul>
       </p>
+    </li>
 
-      <h3>search groups</h3>
-      <p></p>
-    </p>
-  </p>
+    <li>
+      <h1><span>&raquo;</span> Handwritten Queries</h1>
+      <p>
+        No content, yet.
+      </p>
+    </li>
 
-  <h1>Handwritten Queries</h1>
-  <p></p>
-
-  <h1>Get involved</h1>
-  <p></p>
+    <li id="sec3">
+      <h1><span>&raquo;</span> Get involved</h1>
+      <p>
+        <span id="title">bitshift</span> is <span id="gasp">(gasp)</span> open-source! The project is hosted on
+        <a href="https://github.com/earwig/bitshift">GitHub</a>; feel free to file an issue or submit a pull request!
+      </p>
+    </li>
+  </ul>
 = endblock
