@@ -7,10 +7,10 @@ var searchGroups = $("div#search-groups");
 /*
  * Load all advanced search form libraries.
  */
-(function loadInputFieldWidgets(){
+function loadInputFieldWidgets(){
     $(".search-group input#date-last-modified").datepicker();
     $(".search-group input#date-created").datepicker();
-    $("#autocomplete").autocomplete({
+    $(".search-group input#autocomplete").autocomplete({
         source: function(request, response){
             var matcher = new RegExp(
                 $.ui.autocomplete.escapeRegex(request.term), "i");
@@ -19,7 +19,8 @@ var searchGroups = $("div#search-groups");
             }));
         }
     });
-}());
+};
+loadInputFieldWidgets();
 
 /*
  * Set all advanced search form button callbacks.
@@ -35,7 +36,8 @@ var searchGroups = $("div#search-groups");
             id : "selected"
         });
         searchGroups.append(
-            searchGroup.append(createSearchGroupInput("language")));
+            searchGroup.append(createSearchGroupInput("language", "languages")));
+        loadInputFieldWidgets();
         $("div#sidebar input[type=checkbox]#language").prop("checked", true);
 
         searchGroups[0].scrollTop = searchGroups[0].scrollHeight;
@@ -74,7 +76,10 @@ var searchGroups = $("div#search-groups");
         var fieldId = $(this).prop("id");
         if($(this).is(":checked")){
             $("div.search-group#selected").append(
-                    $.parseHTML(createSearchGroupInput(fieldId)));
+                    $.parseHTML(createSearchGroupInput(
+                            fieldId, $(this).next("label").children("div").
+                            text())));
+            loadInputFieldWidgets();
             if(fieldId.slice(0, 4) == "date")
                 $(".search-group#selected ." + fieldId).datepicker();
         }
@@ -103,16 +108,25 @@ var searchGroups = $("div#search-groups");
  * Return an HTML string representing a new input field div in a search group.
  *
  * @param fieldId The id of the input field div, and its child elements.
+ * @param name The name to display next to the input field.
  */
-function createSearchGroupInput(fieldId){
-    return [
+function createSearchGroupInput(fieldId, name){
+    var fieldHTML = [
         "<div id='" + fieldId + "'>",
-            "<div class='name'>" + fieldId.replace(/-/g, " ") + "</div>",
+            "<div class='name'>" + name + "</div>",
             "<input class='" + fieldId + "' name='" + fieldId + "'type='text'>",
             "<input type='checkbox' name='regex'>",
             "<span class='regex'>Regex</span>",
         "</div>"
-    ].join("");
+    ]
+
+    if(fieldId == "language")
+        fieldHTML[2] = [
+            "<input id='autocomplete' class='language'",
+            "name='language' type='text'>"
+        ].join(" ");
+
+    return fieldHTML.join("");
 }
 
 /*
