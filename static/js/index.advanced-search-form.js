@@ -96,7 +96,7 @@ loadInputFieldWidgets();
         $("div#advanced-search").hide();
         advancedSearchButton.removeClass("clicked");
         assembleQuery();
-        queryServer();
+        populateResults();
     })
 
     var previousAdvancedQuery = "";
