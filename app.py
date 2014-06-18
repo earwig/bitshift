@@ -8,13 +8,12 @@ import flask
 from json import dumps
 from flask import Flask, make_response, render_template, request
 from bitshift import assets
-from bitshift.database import Database
+ from bitshift.database import Database
 from bitshift.languages import LANGS
 from bitshift.query import parse_query, QueryParseException
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 app.config.from_object("bitshift.config")
-app.jinja_env.globals.update(year=datetime.datetime.now().year)
 
 app_env = app.jinja_env
 app_env.line_statement_prefix = "="

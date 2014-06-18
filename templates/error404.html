@@ -1,5 +1,9 @@
 = extends "layout.html"
 
+= block title
+  404
+= endblock
+
 = block head
   {{ assets.tag("error404.css") }}
 = endblock
@@ -7,16 +11,16 @@
 = block body
   <div id="message">
   {{ assets.syntax_highlight([
-    'puts("404");',
-    'printf("%d\n", 404);',
-    'puts 404',
-    'System.out.println("404")',
-    'print 404',
-    'console.log("404")',
-    'echo 404',
-    'std::cout << "404\\n"',
-    '(println "404")',
-    'say "404!";'
-    ] | random) | safe }}
+  'puts("404");',
+  'printf("%d\n", 404);',
+  'puts 404',
+  'System.out.println("404")',
+  'print 404',
+  'console.log("404")',
+  'echo 404',
+  'std::cout << "404\\n"',
+  '(println "404")',
+  'say "404!";'
+  ] | random) | safe }}
   </div>
 = endblock
