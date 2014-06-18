@@ -402,7 +402,7 @@ function queryServer(){
         var resultDivs = [];
         if("error" in result)
             insertErrorMessage(result["error"]);
-        else if(result["results"].length == 0)
+        else if(result["results"].length == 0 && searchResultsPage == 1)
             insertErrorMessage("No search results.");
         else
             for(var codelet = 0; codelet < result["results"].length; codelet++)

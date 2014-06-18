@@ -6,7 +6,6 @@
 @import variables
 
 $minSearchFieldsWidth: 490px
-// $resultWidth: 400px
 $codeWidth: 700px
 $hiddenInfoWidth: 300px
 
@@ -86,6 +85,7 @@ div#search-field
     width: 40%
 
     a#title
+        letter-spacing: 0.3em
         text-decoration: none
 
         div#title
@@ -327,10 +327,12 @@ div#results
     width: 80%
 
     a
+        @extend .t3
+
         text-decoration: none
 
         &:hover
-            color: orange
+            color: $baseColor1
 
     div#error
         font-size: 170%
@@ -353,7 +355,6 @@ div#results
 div.result
     @extend .t3
 
-    // width: $resultWidth
     height: 200px
     margin-bottom: 100%
     pointer-events: auto
@@ -407,9 +408,6 @@ td#code
         position: relative
         z-index: 1
 
-        // &:hover
-            // overflow: auto
-
         table
             border-collapse: collapse
             font-family: monospace
@@ -443,9 +441,10 @@ div#hidden-info
         padding-left: 20px
 
     span
-        font-family: monospace
         color: $baseColor1
-        float: right
+        font-family: monospace
+        font-size: 1.1em
+        // float: right
 
     div
         display: block
