@@ -12,7 +12,7 @@ __all__ = ["parse", "UnsupportedFileError", "start_parse_servers"]
 # TODO: Change these
 PARSER_COMMANDS = {
         'Java': ['java', '-cp',
-            path.join(path.dirname(__file__), "../../parsers/java/target/classes"),
+            path.join(path.dirname(__file__), "../../parsers/java/parsing.jar"),
             'com.bitshift.parsing.Parse'],
         'Ruby': ['rake', '-f',
             path.join(path.dirname(__file__), "../../parsers/ruby/Rakefile"),
