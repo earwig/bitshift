@@ -1,3 +1,5 @@
+# -*- coding: utf-8  -*-
+
 from __future__ import unicode_literals
 import unittest
 
@@ -12,7 +14,8 @@ TESTS = [
     ("language:python", "Tree(Language(Python))"),
     ("language:py", "Tree(Language(Python))"),
     ("l:r:r..y", "Tree(Language(Ruby))"),
-    ("lang:re:py|c", "Tree(BinaryOp(Language(C), OR, Language(Python)))"),
+    (r'"lang:re:python|^c$"',
+     "Tree(BinaryOp(Language(C), OR, Language(Python)))"),
 
     # Author
     ('"author:Ben Kurtovic"', "Tree(Author(String(u'Ben Kurtovic')))"),
@@ -25,12 +28,12 @@ TESTS = [
      "Tree(Date(MODIFY, AFTER, 2010-05-09 10:11:12))"),
 
     # Symbol
-    ("sym:foobar", "Tree(Symbol(ALL, String(u'foobar')))"),
-    ("func:foo_bar", "Tree(Symbol(FUNCTION, String(u'foo_bar')))"),
-    ("func:foo_bar()", "Tree(Symbol(FUNCTION, String(u'foo_bar')))"),
-    ("class:FooBar", "Tree(Symbol(CLASS, String(u'FooBar')))"),
-    ("var:foobar", "Tree(Symbol(VARIABLE, String(u'foobar')))"),
-    ("var:r:foobar", "Tree(Symbol(VARIABLE, Regex(u'foobar')))"),
+    ("sym:foobar", "Tree(Symbol(ALL, ALL, String(u'foobar')))"),
+    ("func:foo_bar", "Tree(Symbol(ALL, FUNCTION, String(u'foo_bar')))"),
+    ("func:foo_bar()", "Tree(Symbol(ALL, FUNCTION, String(u'foo_bar')))"),
+    ("class:FooBar", "Tree(Symbol(ALL, CLASS, String(u'FooBar')))"),
+    ("var:foobar", "Tree(Symbol(ALL, VARIABLE, String(u'foobar')))"),
+    ("var:r:foobar", "Tree(Symbol(ALL, VARIABLE, Regex(u'foobar')))"),
 
     # Composition
     ("(a and b) or (c and d)", ", ".join([
@@ -52,6 +55,12 @@ TESTS = [
     ("a not b", ", ".join([
         "Tree(BinaryOp(Text(String(u'a'))", "AND", "UnaryOp(NOT",
         "Text(String(u'b')))))"])),
+
+    # Unicode, Escaping
+    (r'lang:py "author:fo\\o \"bar\" baz\\"', ", ".join([
+        "Tree(BinaryOp(Language(Python)", "AND",
+        "Author(String(u'fo\\\\o \"bar\" baz\\\\'))))"])),
+    ('"author:Ben Kurtović"', "Tree(Author(String(u'Ben Kurtovi\\u0107')))")
 ]
 
 class TestQueryParser(unittest.TestCase):

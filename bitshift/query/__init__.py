@@ -217,10 +217,7 @@ class _QueryParser(object):
 
     def _parse_term(self, term):
         """Parse a query term into a tree node and return it."""
-        try:
-            term = term.decode("unicode_escape")
-        except UnicodeDecodeError:
-            raise QueryParseException('Invalid query term: "%s"' % term)
+        term = term.replace('\\"', '"').replace("\\\\", "\\")
         if ":" in term and not term[0] == ":":
             prefix, arg = term.split(":", 1)
             invert = prefix.lower() == "not"

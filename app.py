@@ -2,11 +2,10 @@
 Module to contain all the project's Flask server plumbing.
 """
 
-import datetime
-import flask
-
 from json import dumps
+
 from flask import Flask, make_response, render_template, request
+
 from bitshift import assets
 from bitshift.database import Database
 from bitshift.languages import LANGS
