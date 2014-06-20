@@ -156,10 +156,10 @@ class Database(object):
         build = lambda id, L, typ: [tuple([id, typ] + list(loc)) for loc in L]
 
         type_id = Symbol.TYPES.index(sym_type)
-        for (name, assigns, uses) in symbols:
+        for (name, defs, uses) in symbols:
             cursor.execute(query1, (code_id, type_id, name))
             sym_id = cursor.lastrowid
-            params = (build(sym_id, assigns, Symbol.ASSIGN) +
+            params = (build(sym_id, defs, Symbol.DEFINE) +
                       build(sym_id, uses, Symbol.USE))
             cursor.executemany(query2, params)
 

@@ -197,7 +197,7 @@ class Symbol(_Node):
     Searches in symbol_type and symbol_name.
     """
     ALL = -1
-    ASSIGN = 0
+    DEFINE = 0
     USE = 1
 
     FUNCTION = 0
@@ -213,7 +213,7 @@ class Symbol(_Node):
 
     def __init__(self, context, type_, name):
         """
-        :type context: int (``ASSIGN`` or ``USE``)
+        :type context: int (``DEFINE`` or ``USE``)
         :type type_: int (``ALL``, ``FUNCTION``, ``CLASS``, etc.)
         :type name: :py:class:`._Literal`
         """
@@ -222,7 +222,7 @@ class Symbol(_Node):
         self.name = name
 
     def __repr__(self):
-        context = ["ASSIGN", "USE", "ALL"][self.context]
+        context = ["DEFINE", "USE", "ALL"][self.context]
         type_ = self.TYPE_REPR[self.type] if self.type >= 0 else "ALL"
         return "Symbol({0}, {1}, {2})".format(context, type_, self.name)
 
