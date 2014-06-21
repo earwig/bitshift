@@ -4,13 +4,13 @@
     <url>
         <loc>http://bitshift.it/</loc>
         <changefreq>monthly</changefreq>
-    </url> 
+    </url>
     <url>
         <loc>http://bitshift.it/about</loc>
         <changefreq>monthly</changefreq>
     </url>
     <url>
-        <loc>http://bitshift.it/developers</loc>
+        <loc>http://bitshift.it/docs</loc>
         <changefreq>monthly</changefreq>
     </url>
 </urlset>

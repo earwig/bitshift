@@ -31,28 +31,30 @@ def search():
         resp.mimetype = "application/json"
         return resp
 
-    query, page = request.args.get("q"), request.args.get("p", 1)
+    query = request.args.get("q")
     if not query:
         return reply({"error": "No query given"})
     try:
         tree = parse_query(query)
     except QueryParseException as exc:
         return reply({"error": exc.args[0]})
+
+    page = request.args.get("p", 1)
     try:
         page = int(page)
     except ValueError:
         return reply({"error": u"Invalid page number: %s" % page})
+
+    highlight = request.args.get("hl", "0")
+    highlight = highlight.lower() not in ["0", "false", "no"]
+
     count, codelets = database.search(tree, page)
-    results = [clt.serialize() for clt in codelets]
+    results = [clt.serialize(highlight) for clt in codelets]
     return reply({"count": count, "results": results})
 
 @app.route("/about")
 def about():
     return render_template("about.html")
-
-@app.route("/developers")
-def developers():
-    return render_template("developers.html")
 
 @app.route("/docs")
 def docs():
