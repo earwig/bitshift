@@ -10,7 +10,13 @@ CREATE TABLE `version` (
 ) ENGINE=InnoDB;
 INSERT INTO `version` VALUES (12);
 
-CREATE TABLE `stopwords` LIKE information_schema.innodb_ft_default_stopword;
+CREATE TABLE `stopwords`
+    LIKE information_schema.innodb_ft_default_stopword
+    ENGINE=InnoDB;
+
+CREATE TABLE `stopwords` (
+    `value` varchar(18) NOT NULL DEFAULT ""
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 INSERT INTO `stopwords` VALUES
     ("a"), ("about"), ("an"), ("are"), ("as"), ("at"), ("be"), ("by"), ("how"),
     ("i"), ("it"), ("la"), ("of"), ("on"), ("that"), ("the"), ("to"), ("und"),
