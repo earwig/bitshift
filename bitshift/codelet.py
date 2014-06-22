@@ -74,20 +74,20 @@ class Codelet(object):
         self.symbols = symbols or {}
         self.origin = origin or (None, None)
 
-    def serialize(self, highlight=False):
+    def serialize(self, highlight_code=False):
         """
         Convert the codelet into a dictionary that can be sent as JSON.
 
-        :param highlight: Whether to return code as pygments-highlighted HTML
-            or as plain source.
-        :type highlight: bool
+        :param highlight_code: Whether to return code as pygments-highlighted
+            HTML or as plain source.
+        :type highlight_code: bool
 
         :return: The codelet as a dictionary.
         :rtype: str
         """
         lang = LANGS[self.language]
         code = self.code
-        if highlight:
+        if highlight_code:
             symbols = reduce(concat, self.symbols.values(), [])
             lines = reduce(concat, [[loc[0] for loc in sym[1] + sym[2]]
                                     for sym in symbols], [])
