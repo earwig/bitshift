@@ -210,7 +210,7 @@ def parse_py(codelet):
         tree = ast.parse("\n".join(strip_encoding(codelet.code.splitlines())))
     except SyntaxError:
         ## TODO: add some logging here?
-        return
+        return {}
 
     walker = _TreeWalker()
     walker.visit(tree)
