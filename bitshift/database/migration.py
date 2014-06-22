@@ -3,7 +3,7 @@ Contains information about database schema versions, and SQL queries to update
 between them.
 """
 
-VERSION = 11
+VERSION = 12
 
 MIGRATIONS = [
     # 1 -> 2
@@ -127,6 +127,16 @@ MIGRATIONS = [
     [
         """ALTER DATABASE `bitshift`
            CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci"""
+    ],
+    # 11 -> 12
+    [
+        """CREATE TABLE `stopwords`
+           LIKE information_schema.innodb_ft_default_stopword""",
+        """INSERT INTO `stopwords` VALUES
+           ("a"), ("about"), ("an"), ("are"), ("as"), ("at"), ("be"), ("by"),
+           ("how"), ("i"), ("it"), ("la"), ("of"), ("on"), ("that"), ("the"),
+           ("to"), ("und"), ("was"), ("what"), ("when"), ("where"), ("who"),
+           ("will")"""
     ]
 ]
 

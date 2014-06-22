@@ -1,4 +1,4 @@
--- Schema version 11
+-- Schema version 12
 
 CREATE DATABASE `bitshift`
     DEFAULT CHARACTER SET utf8mb4
@@ -8,7 +8,13 @@ USE `bitshift`;
 CREATE TABLE `version` (
     `version` INT UNSIGNED NOT NULL
 ) ENGINE=InnoDB;
-INSERT INTO `version` VALUES (11);
+INSERT INTO `version` VALUES (12);
+
+CREATE TABLE `stopwords` LIKE information_schema.innodb_ft_default_stopword;
+INSERT INTO `stopwords` VALUES
+    ("a"), ("about"), ("an"), ("are"), ("as"), ("at"), ("be"), ("by"), ("how"),
+    ("i"), ("it"), ("la"), ("of"), ("on"), ("that"), ("the"), ("to"), ("und"),
+    ("was"), ("what"), ("when"), ("where"), ("who"), ("will");
 
 CREATE TABLE `origins` (
     `origin_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
