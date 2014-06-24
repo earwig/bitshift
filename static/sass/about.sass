@@ -51,9 +51,20 @@ div.section
     &#top
         margin-top: 0px
 
-        iframe#vimeo
-            border: 1px solid $baseColor3
-            margin-top: 40px
+        div#wrap
+            width: 100%
+            position: relative
+            padding-top: 56.782% // aspect ration, 9 / 16
+
+            iframe#vimeo
+                border: 1px solid $baseColor3
+                margin-top: 40px
+
+                position: absolute
+                top: 0
+                left: 0
+                height: none
+                width: none
 
     div.centered
         font-size: 110%
