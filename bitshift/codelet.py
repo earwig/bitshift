@@ -88,7 +88,7 @@ class Codelet(object):
         lang = LANGS[self.language]
         code = self.code
         if highlight_code:
-            lexer = find_lexer_class(lang) or get_lexer_by_name("text")
+            lexer = find_lexer_class(lang)() or get_lexer_by_name("text")
             symbols = reduce(concat, self.symbols.values(), [])
             lines = reduce(concat, [[loc[0] for loc in sym[1] + sym[2]]
                                     for sym in symbols], [])
