@@ -1,7 +1,7 @@
 from operator import concat
 
 from pygments import highlight
-from pygments.lexers import get_lexer_by_name
+from pygments.lexers import find_lexer_class, get_lexer_by_name
 from pygments.formatters.html import HtmlFormatter
 
 from .languages import LANGS
@@ -88,11 +88,12 @@ class Codelet(object):
         lang = LANGS[self.language]
         code = self.code
         if highlight_code:
+            lexer = find_lexer_class(lang) or get_lexer_by_name("text")
             symbols = reduce(concat, self.symbols.values(), [])
             lines = reduce(concat, [[loc[0] for loc in sym[1] + sym[2]]
                                     for sym in symbols], [])
             formatter = HtmlFormatter(linenos=True, hl_lines=lines)
-            code = highlight(code, get_lexer_by_name(lang.lower()), formatter)
+            code = highlight(code, lexer, formatter)
 
         return {
             "name": self.name, "code": code, "lang": lang,
