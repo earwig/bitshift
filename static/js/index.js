@@ -262,14 +262,14 @@ function createResult(codelet) {
     var authorsList = [];
     for(var auth = 0; auth < codelet.authors.length; auth++){
         currLength += codelet.authors[auth].length;
-        if(maxAttributeLength < currLength){
+        if(6 < currLength){
             authorsList.push("...");
             break;
         }
         else
             authorsList.push('<a href=#>' + codelet.authors[auth] + '</a>');
     }
-    authors.innerHTML = "Authors: <span>" + authorsList.join(", ") + "</span>";
+    authors.innerHTML = "Authors: <span>" + authorsList.join(" ") + "</span>";
 
     // Needs to be processed on the server
     codeElt.innerHTML = '<div id=tablecontainer>' + codelet.code + '</div>';
