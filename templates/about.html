@@ -1,0 +1,92 @@
+= extends "layout.html"
+
+= block title
+  about
+= endblock
+
+= block head
+  {{ assets.tag("lib/jquery.min.js") }}
+  {{ assets.tag("main.css") }}
+  {{ assets.tag("about.css") }}
+= endblock
+
+= block after_body
+  <div id="img-1" class="bg" speed="-1.25"></div>
+  <div id="img-2" class="bg" speed="1.4"></div>
+  <div id="img-3" class="bg" speed="1.4"></div>
+  <div id="img-4" class="bg" speed="1.4"></div>
+
+  <div id="top" class="section">
+    <div class="centered">
+      <h1><span>&raquo;</span> What</h1>
+      <span id="title">bitshift</span> is an <a href="https://github.com/earwig/bitshift">open-source</a>
+      online source-code search engine, developed by programmers, for programmers. The engine currently aggregates
+      publicly-available code from two online frameworks &#8211; <a href="https://github.com/">GitHub</a> and <a
+        href="https://bitbucket.org/">Bitbucket</a> &#8211; but has the necessary infrastructure to quickly incorporate
+      others, like <a href="http://stackoverflow.com/">StackOverflow</a> and
+      <a href="https://gitorious.org/">Gitorious</a>.  <span id="title">bitshift</span> supports a robust query
+      language, which allows users to search for specific languages, files, dates of creation and last modifcation,
+      and symbols (function, class, and variable names), amongst other attributes.
+
+      Watch our introductory video:
+      <div id="wrap">
+        <iframe id="vimeo" src="//player.vimeo.com/video/98697078" width="100%" height="100%" frameborder="0"
+          webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div id="how" class="centered">
+      <h1><span>&raquo;</span> How</h1>
+      <span id="title">bitshift</span> has an extensive back-end, roughly divided into three sections:
+      <ul>
+        <li><span>indexer</span> : finds and downloads code from online frameworks</li>
+        <li><span>parser</span> : parses newly crawled code, identifying its symbols</li>
+        <li><span>database</span> : interprets and compiles user searches into database queries</li>
+      </ul>
+      The engine was developed over the span of four months, and is primarily implemented in <b>Python</b>, but has
+      parsers in <b>Ruby</b>, <b>Java</b>, and a number of other languages.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="centered">
+      <h1><span>&raquo;</span> Who</h1>
+      <span id="title">bitshift</span> was developed by three seniors from New York City's Stuyvesant High School.
+      <div id="top" class="person">
+        <div class="photo">
+          <a href="https://github.com/breuckelen"><img src="img/about/bio1.jpg" alt="Benjamin Attal's photo."></a>
+        </div>
+        <div class="bio">
+          <h1><a href="https://github.com/breuckelen">Benjamin Attal</a></h1>
+          Benjamin Attal hacked together <span id="title">bitshift</span>'s parsers and is working on
+          data-visualization for bitshift's statistics page. He is a software developer and entrepreneur who enjoys
+          listening to and playing country music, as well as working with smart people.
+        </div>
+      </div>
+      <div class="person">
+        <div class="photo">
+          <a href="https://github.com/earwig"><img src="img/about/bio2.jpg" alt="Ben Kurtovic's photo."></a>
+        </div>
+        <div class="bio">
+          <h1><a href="https://github.com/earwig">Ben Kurtovic</a></h1> Ben Kurtovic designed <span
+            id="title">bitshift</span>’s database and acts as its server admin. In his free time, he edits Wikipedia
+          and invents new ways of confusing the hell out of people through source code obfuscation.
+        </div>
+      </div>
+      <div class="person">
+        <div class="photo">
+          <a href="https://github.com/sevko"><img src="img/about/bio3.jpg" alt="Severyn Kozak's photo."></a>
+        </div>
+        <div class="bio">
+          <h1><a href="https://github.com/sevko">Severyn Kozak</a></h1>
+          Severyn developed <span id="title">bitshift</span>'s crawlers and its front-end. He loves skiing, mathematics
+          that he doesn't understand, and the art of good software development.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ assets.tag("about.js") }}
+= endblock

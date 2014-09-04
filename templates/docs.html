@@ -1,0 +1,282 @@
+= extends "layout.html"
+
+= block title
+  docs
+= endblock
+
+= block head
+  {{ assets.tag("lib/highlight.css") }}
+
+  {{ assets.tag("docs.css") }}
+= endblock
+
+= block body
+  <a id="logo" href="/">
+    <div id="logo">
+      <span id="logo-bit">bit</span
+      ><span id="logo-angle">&laquo;</span
+      ><span id="logo-shift">shift</span>
+    </div>
+  </a>
+
+  <ul>
+    <li>
+      <h1><span>&raquo;</span> Usage</h1>
+      <p>
+        <span class="title">bitshift</span> is a search-engine optimized for
+        source code: beyond supporting searches with the full range of ASCII
+        symbols, the engine <em>understands</em> code, allowing users to query
+        for metadata, like time of creation/last modification, programming
+        language, and even symbols like function names and variables. Basic use
+        boils down to general and advanced searches.
+
+        <ul>
+          <li>
+            <h2>general search</h2>
+            <p>
+              To perform a "general search," simply place your cursor in the
+              search bar on our home page and begin entering text; when you
+              stop typing for a short period of time, we'll automatically
+              execute the query for you. As you scroll down the page, new
+              codelets, or results, will be seamlessly downloaded from our
+              server and appended to the end.
+            </p>
+          </li>
+
+          <li>
+            <h2>advanced search</h2>
+            <p>
+              General searches, though, are limited. To allow users to make the
+              best of our engine, we created an advanced search form that
+              allows the creation of complex queries with the following
+              specifiers:
+
+              <ul>
+                <li>
+                  <h3>search fields</h3>
+                  <ul id="search-fields">
+                    <li>
+                      <span class="code">languages</span> : The programming
+                      languages to search for.
+                    </li>
+                    <li>
+                      <span class="code">authors</span> : Search for code
+                      written/modified by a specific person.
+                    </li>
+                    <li>
+                      <span class="code">date last modified</span> : Search for
+                      code last modified on a specific date
+                      (<span class="code">mm/dd/yy</span> format).
+                    </li>
+                    <li>
+                      <span class="code">date created</span> : Search for code
+                      created on a specific date
+                      (<span class="code">mm/dd/yy</span> format).
+                    </li>
+                    <li>
+                      <span class="code">symbols</span> : Search for specific
+                      symbols.
+                    </li>
+                    <li>
+                      <span class="code">functions</span> : Search for
+                      functions with specific names.
+                    </li>
+                    <li>
+                      <span class="code">classes</span> : Search for classes
+                      with specific names.
+                    </li>
+                    <li>
+                      <span class="code">variables</span> : Search for
+                      variables with specific names.
+                    </li>
+                  </ul>
+
+                  <p>
+                    Each of the search fields allows for numerous values; just
+                    separate them with spaces. If you'd like to search for a
+                    multi-word, space-delimited string, on the other hand,
+                    enclose it in double quotes.
+
+                    A query for <span class="code">foo bar</span> will search
+                    for occurrences of both <span id="string">"foo"</span> and
+                    <span class="string">"bar"</span>, while
+                    <span class="code">"foo bar"</span> will search for
+                    occurrences of <span class="string">"foo bar"</span>.
+                  </p>
+                </li>
+
+                <li>
+                  <h3>search groups</h3>
+                  <p>
+                    Search groups facilitate even more robust queries: they're
+                    like a bunch of individual searches grouped into one. A
+                    user searching for occurrenes of symbol
+                    <span class="string">"curses"</span> in the language
+                    <span class="string">"Python"</span>, and
+                    <span class="string">"ncurses"</span> in
+                    <span id="string">"C"</span>, won't get away with:
+                    <span class="code">"symbols:curses ncurses"</span> and
+                    <span class="code">"languages:Python C"</span>. The engine
+                    might return results <span id="string">"curses"</span> in
+                    <span class="string">"C"</span> and
+                    <span class="string">"ncurses"</span> in
+                    <span class="string">"Python"</span>!
+
+                    To work around that, you can use two search groups: one for
+                    <span class="string">"curses"</span> in
+                    <span class="string">"Python"</span>, and another for
+                    <span class="string">"curses"</span> in
+                    <span id="string">"C"</span>.
+                    <span class="title">bitshift</span> will return the union
+                    of both sets of search results.
+                  </p>
+                </li>
+              </ul>
+            </p>
+          </li>
+        </ul>
+      </p>
+    </li>
+
+    <li>
+      <h1><span>&raquo;</span> API</h1>
+      <p>
+        <span class="title">bitshift</span> provides an API through GET
+        requests to
+        <a href="http://bitshift.it/search.json"><span class="code">/search.json</span></a>.
+      </p>
+      <h2>parameters</h2>
+      <ul>
+        <li>
+          <span class="code">q</span> : The search query, as entered into the
+          search bar.
+        </li>
+        <li>
+          <span class="code">p</span> : The result page to return. Defaults to
+          <span class="code">1</span>. Each page contains ten results, so this
+          effectively offsets the search by
+          <span class="code">10 * (p - 1)</span> codelets.
+        </li>
+        <li>
+          <span class="code">hl</span> : Whether to return code as
+          <a href="http://pygments.org/">pygments</a>-highlighted HTML or as
+          plain source. Defaults to <span class="code">false</span>.
+        </li>
+      </ul>
+      <h2>output</h2>
+      <p>
+        <span class="code">/search.json</span> returns a JSON-encoded
+        dictionary. If there was an error, it will contain a single key,
+        <span class="code">"error"</span>, whose value will contain a
+        human-readable description of the error. Otherwise, there will be two
+        keys: <span class="code">"count"</span>, storing the number of results,
+        and <span class="code">"results"</span>, storing a list of codelets.
+        Each codelet is a dictionary with the following key–value pairs:
+      </p>
+      <ul>
+        <li>
+          <span class="code">name</span> : The name of the codelet.
+        </li>
+        <li>
+          <span class="code">code</span> : The actual source code if
+          <span class="code">hl</span> was not given or was
+          <span class="code">false</span>; HTML code otherwise.
+        </li>
+        <li>
+          <span class="code">lang</span> : The language of the code.
+        </li>
+        <li>
+          <span class="code">authors</span> : A list of authors. Each author is
+          a list of two items: their name, and URL (or
+          <span class="code">null</span> if none is known).
+        </li>
+        <li>
+          <span class="code">url</span> : The URL of the page where the code
+          was crawled from.
+        </li>
+        <li>
+          <span class="code">created</span> : The date the code was created, as
+          a
+          <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>-formatted
+          string (e.g. <span class="code">"2014-06-01T12:41:28"</span>).
+        </li>
+        <li>
+          <span class="code">modified</span> : The date the code was last
+          modified, as a
+          <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a>-formatted
+          string (e.g. <span class="code">"2014-06-01T12:41:28"</span>).
+        </li>
+        <li>
+          <span class="code">origin</span> : A list of two items: the
+          originating site's name (e.g. <span class="code">"GitHub"</span>) and
+          URL (e.g. <span class="code">"https://github.com"</span>).
+        </li>
+      </ul>
+      <h2>example</h2>
+      <p>
+        The following example Python 2 code searches for a given Python
+        function definition and prints the URL of the first result:
+      </p>
+      <table class="highlighttable code-example">
+        <tr>
+          <td class="linenos">
+            <div class="linenodiv">
+              <pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre>
+            </div>
+          </td>
+          <td class="code">
+            <div class="highlight">
+              <pre><span class="c">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">json</span> <span class="kn">import</span> <span class="n">loads</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">argv</span>
+<span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlencode</span>
+<span class="kn">from</span> <span class="nn">urllib2</span> <span class="kn">import</span> <span class="n">urlopen</span>
+
+<span class="k">def</span> <span class="nf">get_function</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;q&quot;</span><span class="p">:</span> <span class="s">&quot;lang:python and func:def:</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">}</span>
+    <span class="n">request</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="s">&quot;http://bitshift.it/search.json?&quot;</span> <span class="o">+</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">read</span><span class="p">())[</span><span class="s">&quot;results&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s">&quot;url&quot;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> not found.&quot;</span> <span class="o">%</span> <span class="n">name</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">get_function</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></pre>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </li>
+
+    <li id="sec3">
+      <h1><span>&raquo;</span> Get Involved</h1>
+      <p>
+        <span class="title">bitshift</span> is <span id="gasp">(gasp)</span>
+        open-source! The project is hosted on
+        <a href="https://github.com/earwig/bitshift">GitHub</a>; feel free to
+        file an issue or submit a pull request.
+      </p>
+    </li>
+  </ul>
+= endblock

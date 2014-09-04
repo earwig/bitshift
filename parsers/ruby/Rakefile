@@ -1,0 +1,6 @@
+require 'pp'
+require File.expand_path('../lib/parser.rb', __FILE__)
+
+task :parse do |t|
+    parse
+end

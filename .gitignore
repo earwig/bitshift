@@ -1,4 +1,10 @@
+static/css/*
+!lib
+
+*.swp
 .sass-cache
+.DS_Store
+.my.cnf
 
 # github premade rules
 *.py[cod]
@@ -18,7 +24,6 @@ var
 sdist
 develop-eggs
 .installed.cfg
-lib
 lib64
 __pycache__
 
@@ -37,3 +42,15 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Maven
+target
+
+# Ruby
+!parsers/ruby/lib
+
+# Ctags
+*/tags
+logs
+Gemfile.lock
+parsing.jar

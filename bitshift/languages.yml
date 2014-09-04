@@ -1,0 +1,368 @@
+# A list of programming languages supported by bitshift:
+
+languages:
+    # With parsers:
+    - Python:
+        - Python
+        - Python 3
+        - Python 3.0 Traceback
+        - Python console session
+        - Python Traceback
+        - NumPy
+    - C
+    - Java
+    - Ruby:
+        - Ruby
+        - Ruby irb session
+
+    # Without parsers:
+    - ABAP
+    - APL
+    - ActionScript:
+        - ActionScript
+        - ActionScript 3
+    - ANTLR:
+        - ANTLR
+        - ANTLR With ActionScript Target
+        - ANTLR With CPP Target
+        - "ANTLR With C# Target"
+        - ANTLR With Java Target
+        - ANTLR With ObjectiveC Target
+        - ANTLR With Perl Target
+        - ANTLR With Python Target
+        - ANTLR With Ruby Target
+    - Ada
+    - Agda:
+        - Agda
+        - Literate Agda
+    - Alloy
+    - AmbientTalk
+    - ApacheConf
+    - AppleScript
+    - AspectJ
+    - aspx-cs
+    - aspx-vb
+    - Asymptote
+    - autohotkey
+    - AutoIt
+    - Awk
+    - BBCode
+    - BUGS
+    - Bash:
+        - Bash
+        - Bash Session
+    - Batchfile
+    - Befunge
+    - BlitzBasic:
+        - BlitzBasic
+        - BlitzMax
+    - Boo
+    - Brainfuck
+    - Bro
+    - "C#"
+    - C++
+    - ca65
+    - CBM BASIC V2
+    - Ceylon
+    - CFEngine3
+    - cfstatement
+    - ChaiScript
+    - Chapel
+    - Cheetah
+    - Cirru
+    - Clay
+    - Clojure:
+        - Clojure
+        - ClojureScript
+    - CMake
+    - COBOL:
+        - COBOL
+        - COBOLFree
+    - CoffeeScript
+    - Coldfusion CFC
+    - Coldfusion HTML
+    - Common Lisp
+    - Coq
+    - Croc
+    - Cryptol:
+        - Cryptol
+        - Literate Cryptol
+    - CSS:
+        - CSS
+        - CSS+Django/Jinja
+        - CSS+Genshi Text
+        - CSS+Lasso
+        - CSS+Mako
+        - CSS+Mako
+        - CSS+Myghty
+        - CSS+PHP
+        - CSS+Ruby
+        - CSS+Smarty
+    - CUDA
+    - Cypher
+    - Cython
+    - D
+    - Darcs Patch
+    - Dart
+    - Debian Control file
+    - Debian Sourcelist
+    - Delphi
+    - dg
+    - Diff
+    - Django/Jinja
+    - Docker
+    - DTD
+    - Duel
+    - Dylan:
+        - Dylan
+        - Dylan session
+    - DylanLID
+    - EBNF
+    - eC
+    - ECL
+    - Eiffel
+    - Elixir:
+        - Elixir
+        - Elixir iex session
+    - Embedded Ragel
+    - ERB:
+        - ERB
+        - RHTML
+    - Erlang:
+        - Erlang
+        - Erlang erl session
+    - Evoque
+    - Factor
+    - Fancy
+    - Fantom
+    - Felix
+    - Fortran
+    - FoxPro
+    - FSharp
+    - GAP
+    - GAS
+    - Genshi
+    - Genshi Text
+    - Gettext Catalog
+    - Gherkin
+    - GLSL
+    - Gnuplot
+    - Go
+    - Golo
+    - GoodData-CL
+    - Gosu
+    - Gosu Template
+    - Groff
+    - Groovy
+    - Haml
+    - Handlebars
+    - Haskell:
+        - Haskell
+        - Literate Haskell
+    - Haxe
+    - HTML:
+        - HTML
+        - HTML+Cheetah
+        - HTML+Django/Jinja
+        - HTML+Evoque
+        - HTML+Genshi
+        - HTML+Lasso
+        - HTML+Mako
+        - HTML+Mako
+        - HTML+Myghty
+        - HTML+PHP
+        - HTML+Smarty
+        - HTML+Velocity
+    - Hxml
+    - Hy
+    - Hybris
+    - IDL
+    - Idris:
+        - Idris
+        - Literate Idris
+    - Igor
+    - Inform 6:
+        - Inform 6
+        - Inform 6 template
+    - Inform 7
+    - INI
+    - Io
+    - Ioke
+    - Jade
+    - JAGS
+    - Jasmin
+    - Java Server Page
+    - JavaScript:
+        - JavaScript
+        - JavaScript+Cheetah
+        - JavaScript+Django/Jinja
+        - JavaScript+Genshi Text
+        - JavaScript+Lasso
+        - JavaScript+Mak
+        - JavaScript+Mako
+        - JavaScript+Myghty
+        - JavaScript+PHP
+        - JavaScript+Ruby
+        - JavaScript+Smarty
+    - JSON
+    - Julia:
+        - Julia
+        - Julia console
+    - Kal
+    - Kconfig
+    - Koka
+    - Kotlin
+    - Lasso
+    - Lighttpd configuration file
+    - Limbo
+    - LiveScript
+    - LLVM
+    - Logos
+    - Logtalk
+    - LSL
+    - Lua
+    - Makefile
+        - Makefile
+        - Base Makefile
+    - Mako
+    - MAQL
+    - Mask
+    - Mason
+    - Mathematica
+    - Matlab:
+        - Matlab
+        - Matlab session
+    - MiniD
+    - Modelica
+    - Modula-2
+    - Monkey
+    - MOOCode
+    - MoonScript
+    - MQL
+    - Mscgen
+    - MuPAD
+    - MXML
+    - Myghty
+    - NASM
+    - Nemerle
+    - nesC
+    - NewLisp
+    - Newspeak
+    - Nginx configuration file
+    - Nimrod
+    - Nix
+    - NSIS
+    - Objective-C
+    - Objective-C++
+    - Objective-J
+    - OCaml
+    - Octave
+    - Ooc
+    - Opa
+    - OpenEdge ABL
+    - Pan
+    - Pawn
+    - Perl:
+        - Perl
+        - Perl6
+    - PHP
+    - Pig
+    - Pike
+    - PostScript
+    - POVRay
+    - PowerShell
+    - Prolog
+    - Properties
+    - Protocol Buffer
+    - Puppet
+    - PyPy Log
+    - QBasic
+    - QML
+    - Racket
+    - Ragel:
+        - Ragel
+        - Ragel in C Host
+        - Ragel in CPP Host
+        - Ragel in D Host
+        - Ragel in Java Host
+        - Ragel in Objective C Host
+        - Ragel in Ruby Host
+    - RConsole
+    - Rd
+    - REBOL
+    - Red
+    - Redcode
+    - reg
+    - reStructuredText
+    - Rexx
+    - RobotFramework
+    - RPMSpec
+    - RQL
+    - RSL
+    - Rust
+    - S
+    - Sass:
+        - Sass
+        - SCSS
+    - Scala
+    - Scalate Server Page
+    - Scaml
+    - Scheme
+    - Scilab
+    - Shell Session
+    - Slim
+    - Smali
+    - Smalltalk
+    - Smarty
+    - Snobol
+    - SourcePawn
+    - SPARQL
+    - SQL:
+        - SQL
+        - MySQL
+        - PL/pgSQL
+        - PostgreSQL console (psql)
+        - PostgreSQL SQL dialect
+        - sqlite3con
+
+    - SquidConf
+    - Stan
+    - Standard ML
+    - SWIG
+    - systemverilog
+    - Tcl
+    - Tcsh
+    - Tea
+    - TeX
+    - Todotxt
+    - Treetop
+    - TypeScript
+    - UrbiScript
+    - Vala
+    - VB.net
+    - VCTreeStatus
+    - Velocity
+    - verilog
+    - VGL
+    - vhdl
+    - VimL
+    - XML:
+        - XML
+        - XML+Cheetah
+        - XML+Django/Jinja
+        - XML+Evoque
+        - XML+Lasso
+        - XML+Mako
+        - XML+Mako
+        - XML+Myghty
+        - XML+PHP
+        - XML+Ruby
+        - XML+Smarty
+        - XML+Velocity
+    - XQuery
+    - XSLT
+    - Xtend
+    - YAML:
+        - YAML
+        - YAML+Jinja
+    - Zephir

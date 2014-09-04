@@ -1,0 +1,63 @@
+@import mixins
+@import variables
+@import logo
+
+h1
+    color: $baseColor1
+
+    span
+        color: $baseColor2
+
+h2, h3
+    color: $baseColor2 * 0.8
+
+p
+    line-height: 1.8em
+
+ul
+    list-style: none
+    margin-bottom: 2%
+
+    li
+        margin-bottom: 2%
+
+a
+    color: #727070
+    font-style: italic
+    text-decoration: none
+
+    &:hover
+        @extend .t3
+
+        color: #575757
+
+span
+    &.code
+        background-color: $baseColor3 * 1.2
+        font-family: monospace
+        padding: 5px
+
+    &.string
+        color: $baseColor1
+        font-family: monospace
+        font-size: 1.1em
+
+    &.title
+        color: $baseColor1
+        font-weight: bold
+
+table.code-example
+    border-collapse: collapse
+    width: 100% !important
+
+    td.linenos
+        border: 1px solid $baseColor2
+        padding-left: 10px
+        width: 20px
+
+    td.code
+        padding-left: 10px
+
+li#sec3 span#gasp
+    color: $baseColor2 * 0.8
+    font-style: italic

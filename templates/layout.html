@@ -4,24 +4,44 @@
 <html>
   <head>
     <title>
-      = block title
-      = endblock
+      bitshift &laquo;
+      = filter lower
+        = block title
+        = endblock
+      = endfilter
     </title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
-    <meta name="description" content="bitshift is an online code snippet
-      exchange."/>
-    <meta name="keywords" content="code snippet exchange golf programming
-      software community"/>
+    <meta name="description" content="bitshift is a source code search engine."/>
+    <meta name="keywords" content="source code language search engine"/>
     <meta name="author" content="Benjamin Attal Ben Kurtovic Severyn Kozak"/>
 
     {{ assets.tag("main.css") }}
+    {{ assets.tag("main.js") }}
 
     = block head
     = endblock
   </head>
   <body>
-    = block body
-    = endblock
+    <div id="container">
+      <div id="header">
+      </div>
+
+      <div id="body">
+        <div id="center">
+          = block body
+          = endblock
+        </div>
+      </div>
+
+      = block after_body
+      = endblock
+
+      <div id="footer">
+        <a href="/">home</a>
+        <a href="/about">about</a>
+        <a href="/docs">docs</a>
+      </div>
+    </div>
   </body>
 </html>

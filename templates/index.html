@@ -1,9 +1,121 @@
 = extends "layout.html"
 
 = block title
-  Home
+  home
+= endblock
+
+= block head
+  {{ assets.tag("lib/jqueryui.custom.min.css") }}
+  {{ assets.tag("lib/jquery.min.js") }}
+  {{ assets.tag("lib/jquery-ui.min.js") }}
+  {{ assets.tag("lib/highlight.css") }}
+
+  {{ assets.tag("index.css") }}
+
+  <script>
+    AUTOCOMPLETE_LANGUAGES = {{ autocomplete_languages | safe }};
+  </script>
 = endblock
 
 = block body
-  <p>Hello, world.</p>
+  <div id="search-field">
+    <a id="logo" href="/">
+      <div id="logo">
+        <span id="logo-bit">bit</span
+        ><span id="logo-angle">&laquo;</span
+        ><span id="logo-shift">shift</span>
+      </div>
+    </a>
+
+    <form id="search-bar">
+      <input id="query" type="text" name="query"
+      ><button id="advanced-search" title="advanced search" type="button">
+        Adv. Search
+      </button>
+
+      <div id="advanced-search">
+        <div id="heading">
+          <div id="col1">Fields</div
+          ><div id="col2">
+            Search groups
+            <button id="submit">
+              <div>Search</div>
+            </button>
+            <button id="add-group">
+              <div><span>+</span> Add</div>
+            </button>
+            <button id="remove-group">
+              <div><span>-</span> Remove</div>
+            </button>
+          </div>
+        </div>
+
+        <div id="sidebar">
+          <ul>
+            <li>
+              <input type="checkbox" id="language" checked="true">
+              <label for="language"><div>languages</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="author">
+              <label for="author"><div>authors</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="date-last-modified">
+              <label for="date-last-modified"><div>date last modified</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="date-created">
+              <label for="date-created"><div>date created</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="symbol">
+              <label for="symbol"><div>symbols</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="function">
+              <label for="function"><div>functions</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="class">
+              <label for="class"><div>classes</div></label>
+            </li>
+            <li>
+              <input type="checkbox" id="variable">
+              <label for="variable"><div>variables</div></label>
+            </li>
+          </ul>
+        </div>
+
+        <div id="search-groups">
+          <div class="search-group" id="selected">
+            <div id="language">
+              <div class="name">languages</div
+              ><input id="autocomplete" class="language" name="language" type="text"
+              ><input type="checkbox" name="regex"
+              ><span class="regex">Regex</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="results"></div>
+
+  {{ assets.tag("index.js") }}
+  {{ assets.tag("index.advanced-search-form.js") }}
+= endblock
+
+= block after_body
+  <div id="hotkey-help" class="hidden">
+    <div>Hotkeys</div>
+    <ul>
+      <li><span class="hotkey">k</span> <span class="seperator">:</span> move window up to the previous result</li>
+      <li><span class="hotkey">j</span> <span class="seperator">:</span> move window down to the next result</li>
+      <li><span class="hotkey">h</span> <span class="seperator">:</span> move to the previous symbol match</li>
+      <li><span class="hotkey">l</span> <span class="seperator">:</span> move to the next symbol match</li>
+      <li><span class="hotkey">?</span> <span class="seperator">:</span> toggle help</li>
+    </ul>
+  </div>
 = endblock
