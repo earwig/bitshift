@@ -2,7 +2,11 @@ bitshift
 ========
 
 bitshift is a semantic search engine for source code developed by Benjamin
-Attal, Ben Kurtovic, and Severyn Kozak.
+Attal, Ben Kurtovic, and Severyn Kozak. This README is intended for developers
+only. For a user overview of the project:
+
+ * read our [about page](http://bitshift.it/)
+ * watch our [demo video](https://vimeo.com/98697078)
 
 Branches
 --------
